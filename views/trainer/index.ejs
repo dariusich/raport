@@ -1,5 +1,14 @@
 <%- include('../partials/header') %>
 
+<%
+  const seminarDayKey = (date) => {
+    const d = new Date(date);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  };
+
+  const countUniqueSeminarDays = (seminars = []) => new Set(seminars.map(s => seminarDayKey(s.date))).size;
+%>
+
 <section class="hero trainer-hero">
   <div>
     <p class="eyebrow">Trainer</p>
@@ -8,7 +17,7 @@
   </div>
   <div class="hero-stats compact">
     <div><strong><%= reports.filter(r => r.status === 'active').length %></strong><span>serii active</span></div>
-    <div><strong><%= reports.reduce((sum, r) => sum + new Set(r.seminars.map(s => new Date(s.date).toISOString().slice(0, 10))).size, 0) %></strong><span>seminarii salvate</span></div>
+    <div><strong><%= reports.reduce((sum, r) => sum + countUniqueSeminarDays(r.seminars), 0) %></strong><span>seminarii salvate</span></div>
   </div>
 </section>
 
@@ -30,7 +39,7 @@
           <p><%= r.location || 'fără filială' %><%= start || end ? ' · ' + start + (end ? ' - ' + end : '') : '' %></p>
         </div>
         <div class="course-meta">
-         <strong><%= new Set(r.seminars.map(s => new Date(s.date).toISOString().slice(0, 10))).size %></strong>
+          <strong><%= countUniqueSeminarDays(r.seminars) %></strong>
           <span>seminarii</span>
         </div>
       </a>
