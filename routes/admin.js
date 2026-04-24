@@ -183,7 +183,7 @@ function accountingByTrainer(trainers, reports) {
 
 router.get('/', async (req, res) => {
   const trainers = await User.find({ role: 'trainer' }).sort({ active: -1, name: 1 });
-  const reports = await Report.find().populate('trainer').sort({ updatedAt: -1 }).limit(200);
+  const reports = await Report.find().populate('trainer').sort({ startDate: 1, title: 1 });
   const totalSeminars = reports.reduce((sum, r) => sum + (r.seminars?.length || 0), 0);
   const activeReports = reports.filter((r) => r.status === 'active').length;
   const finalizedReports = reports.filter((r) => r.status === 'finalized').length;
