@@ -1370,3 +1370,32 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   .calendar-day span { font-size: 10px; }
   .toast-stack { right: 10px; bottom: 10px; width: calc(100vw - 20px); }
 }
+
+/* Mobile stacked flow for trainer course calendar */
+.mobile-stack-back {
+  display: none;
+  margin-bottom: 14px;
+}
+
+#calendar-section {
+  scroll-margin-top: 18px;
+}
+
+@media (max-width: 720px) {
+  .trainer-months-card.is-stacked-hidden {
+    display: none;
+  }
+
+  .mobile-stack-back {
+    display: block;
+  }
+
+  .mobile-stack-back .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  #calendar-section {
+    scroll-margin-top: 10px;
+  }
+}

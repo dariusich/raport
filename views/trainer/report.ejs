@@ -321,7 +321,7 @@ const countUniqueSeminarDays = (seminars = []) => {
   </div>
 </section>
 
-<section class="card luxe-card">
+<section class="card luxe-card trainer-months-card <%= selectedMonth ? 'is-stacked-hidden' : '' %>" id="months-section">
   <div class="section-title">
     <span class="pill red">Lunile cursului</span>
     <h2>Alege luna pentru completare</h2>
@@ -331,7 +331,7 @@ const countUniqueSeminarDays = (seminars = []) => {
   <div class="month-list-trainer">
     <% months.forEach(m => { %>
       <% const count = countUniqueSeminarDays(report.seminars.filter(s => seminarDayKey(s.date).startsWith(m.key))); %>
-      <a class="month-row <%= selectedMonth === m.key ? 'active' : '' %>" href="/trainer/reports/<%= report._id %>?month=<%= m.key %>">
+      <a class="month-row <%= selectedMonth === m.key ? 'active' : '' %>" href="/trainer/reports/<%= report._id %>?month=<%= m.key %>#calendar-section">
         <div>
           <strong><%= m.label %></strong>
           <span><%= m.year %></span>
@@ -359,7 +359,7 @@ seminarsInMonth.forEach(s => {
     const weekdayLabels = ['Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm', 'Dum'];
   %>
 
-  <section class="trainer-layout">
+  <section class="trainer-layout" id="calendar-section" tabindex="-1">
     <aside class="trainee-panel">
       <div class="sticky-card">
         <h2>Lista cursanți</h2>
@@ -374,6 +374,10 @@ seminarsInMonth.forEach(s => {
 
     <div class="report-panel">
       <section class="card history-card">
+        <div class="mobile-stack-back">
+          <a class="btn ghost" href="/trainer/reports/<%= report._id %>#months-section">← Înapoi la luni</a>
+        </div>
+
         <div class="section-title row-title">
           <div>
             <span class="pill green">Calendar seminar</span>
@@ -406,7 +410,7 @@ seminarsInMonth.forEach(s => {
             <% if (savedSeminar) { %>
               <a
                 class="calendar-day saved <%= selectedDateKey === dateKey ? 'selected' : '' %>"
-                href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= savedSeminar._id %>"
+                href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= savedSeminar._id %>#calendar-section"
                 title="Vezi detalii seminar"
               >
                 <strong><%= day %></strong>
@@ -436,7 +440,7 @@ seminarsInMonth.forEach(s => {
             </div>
 <div class="actions" data-testid="seminar-actions">
   <a class="btn primary" data-testid="seminar-edit-btn"
-     href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= selectedSeminar._id %>&edit=1">
+     href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= selectedSeminar._id %>&edit=1#calendar-section">
     Modifică
   </a>
 
@@ -588,7 +592,7 @@ seminarsInMonth.forEach(s => {
           <div class="actions">
             <button class="btn primary" type="submit"><%= formSeminar ? 'Salvează modificările' : 'Salvează seminar' %></button>
             <% if (formSeminar) { %>
-              <a class="btn ghost" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= formSeminar._id %>">Renunță</a>
+              <a class="btn ghost" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= formSeminar._id %>#calendar-section">Renunță</a>
             <% } %>
           </div>
             </form>
@@ -661,6 +665,14 @@ seminarsInMonth.forEach(s => {
       return;
     }
   });
+
+  const calendarSection = document.getElementById('calendar-section');
+  if (calendarSection && window.location.hash === '#calendar-section') {
+    setTimeout(() => {
+      calendarSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      calendarSection.focus({ preventScroll: true });
+    }, 120);
+  }
 </script>
 
 <%- include('../partials/footer') %>
