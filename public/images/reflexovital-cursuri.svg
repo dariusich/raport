@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" role="img" aria-label="Cursuri Reflexovital">
+  <defs><linearGradient id="p" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#ffd7e5" stop-opacity=".75"/></linearGradient></defs>
+  <rect x="34" y="54" width="620" height="320" rx="42" fill="url(#p)" opacity=".95"/>
+  <circle cx="170" cy="170" r="62" fill="#d4145a" opacity=".28"/>
+  <circle cx="320" cy="150" r="50" fill="#9f0f43" opacity=".22"/>
+  <circle cx="475" cy="170" r="62" fill="#ff5f9e" opacity=".26"/>
+  <path d="M96 298c35-54 113-60 158-10 31-42 98-45 132 0 44-58 133-48 170 10" fill="none" stroke="#d4145a" stroke-width="22" stroke-linecap="round" opacity=".42"/>
+  <rect x="118" y="78" width="140" height="28" rx="14" fill="#d4145a" opacity=".38"/>
+  <rect x="118" y="326" width="420" height="18" rx="9" fill="#9f0f43" opacity=".2"/>
+</svg>

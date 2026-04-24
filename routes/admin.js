@@ -251,7 +251,7 @@ router.get('/reports/:id/export.xlsx', async (req, res) => {
     { header: 'Observații', key: 'notes', width: 45 },
   ];
   sheet.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
-  sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF143D2B' } };
+  sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD4145A' } };
 
   for (const seminar of report.seminars) {
     sheet.addRow({

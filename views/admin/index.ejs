@@ -4,7 +4,7 @@
   <div>
     <p class="eyebrow">Dashboard manageri</p>
     <h1>Reflexovital · Academia de Cursuri</h1>
-    <p class="hero-text">Gestionezi trainerii, rapoartele active și evidența pentru contabilitate într-un singur loc.</p>
+    <p class="hero-text">Administrezi rapoarte, traineri și evidența pentru contabilitate în taburi separate, mai curate și mai rapide.</p>
   </div>
   <div class="hero-stats">
     <div><strong><%= totalSeminars %></strong><span>seminarii</span></div>
@@ -13,127 +13,163 @@
   </div>
 </section>
 
-<section class="grid-2" id="trainers">
-  <div class="card">
-    <div class="section-title">
-      <span class="pill">Traineri</span>
-      <h2>Adaugă trainer</h2>
-    </div>
-    <form action="/admin/trainers" method="post" class="form-grid">
-      <label>Nume<input name="name" required placeholder="Nume trainer"></label>
-      <label>User<input name="username" required placeholder="ex: maria.pop"></label>
-      <label>Parolă<input name="password" type="password" required placeholder="Parolă inițială"></label>
-      <label>Filială<input name="location" placeholder="ex: Bacău"></label>
-      <button class="btn primary full" type="submit">Creează trainer</button>
-    </form>
+<nav class="admin-tabs" aria-label="Secțiuni admin">
+  <button class="tab-button" data-tab-target="rapoarte" type="button">Rapoarte</button>
+  <button class="tab-button" data-tab-target="traineri" type="button">Traineri</button>
+  <button class="tab-button" data-tab-target="contabilitate" type="button">Contabilitate</button>
+</nav>
+
+<section class="tab-panel" id="rapoarte">
+  <div class="subtabs">
+    <button class="tab-button active" data-subtab-target="genereaza-raport" type="button">Generează raport</button>
+    <button class="tab-button" data-subtab-target="rapoarte-generate" type="button">Rapoarte generate</button>
   </div>
 
-  <div class="card" id="reports">
-    <div class="section-title">
-      <span class="pill gold">Rapoarte</span>
-      <h2>Creează raport</h2>
+  <div class="subpanel active" id="genereaza-raport">
+    <div class="card">
+      <div class="section-title">
+        <span class="pill gold">Rapoarte</span>
+        <h2>Creează și alocă raport</h2>
+        <p>Încarcă tabelul nominal Word ca să se precompleteze automat cursul, perioada și lista de cursanți.</p>
+      </div>
+      <form action="/admin/reports" method="post" enctype="multipart/form-data" class="form-grid">
+        <label>Trainer
+          <select name="trainerId" required>
+            <% trainers.forEach(t => { %>
+              <option value="<%= t._id %>"><%= t.name %> · <%= t.location || 'fără filială' %></option>
+            <% }) %>
+          </select>
+        </label>
+        <label>Tabel nominal Word (.docx)
+          <input name="nominalDoc" type="file" accept=".docx">
+          <small>Opțional. Sistemul încearcă să citească automat numele cursului, seria/perioada și cursanții.</small>
+        </label>
+        <label>Titlu raport <input name="title" placeholder="Se completează automat din Word sau manual"></label>
+        <div class="inline-2">
+          <label>Data început <input name="startDate" type="date"></label>
+          <label>Data final <input name="endDate" type="date"></label>
+        </div>
+        <label>Filială <input name="location" placeholder="implicit filiala trainerului"></label>
+        <label>Lista cursanți manual, un nume pe rând
+          <textarea name="traineesText" rows="5" placeholder="Folosește doar dacă nu încarci Word sau dacă vrei să completezi manual lista."></textarea>
+        </label>
+        <label>Note admin <textarea name="adminNotes" rows="3" placeholder="Detalii interne despre serie, program, observații."></textarea></label>
+        <button class="btn primary full" type="submit">Alocă raport trainerului</button>
+      </form>
     </div>
-    <form action="/admin/reports" method="post" enctype="multipart/form-data" class="form-grid">
-      <label>Trainer
-        <select name="trainerId" required>
-          <% trainers.forEach(t => { %>
-            <option value="<%= t._id %>"><%= t.name %> · <%= t.location || 'fără filială' %></option>
+  </div>
+
+  <div class="subpanel" id="rapoarte-generate">
+    <section class="card">
+      <div class="section-title row-title">
+        <div>
+          <span class="pill gold">Rapoarte generate</span>
+          <h2>Rapoarte create</h2>
+          <p>Vezi rapid statusul, trainerul și numărul de seminarii completate.</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Raport</th><th>Trainer</th><th>Filială</th><th>Status</th><th>Seminarii</th><th>Actualizat</th><th></th></tr></thead>
+          <tbody>
+            <% reports.forEach(r => { %>
+              <tr>
+                <td><strong><%= r.title %></strong></td>
+                <td><%= r.trainer?.name || '-' %></td>
+                <td><%= r.location %></td>
+                <td><span class="status <%= r.status %>"><%= r.status === 'finalized' ? 'finalizat' : 'activ' %></span></td>
+                <td><%= r.seminars.length %></td>
+                <td><%= r.updatedAt.toLocaleDateString('ro-RO') %></td>
+                <td><a class="btn small primary" href="/admin/reports/<%= r._id %>">Detalii</a></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="tab-panel" id="traineri">
+  <section class="grid-2">
+    <div class="card">
+      <div class="section-title">
+        <span class="pill">Traineri</span>
+        <h2>Adaugă trainer</h2>
+        <p>Comisionul nu mai este aici. Plata se calculează separat în Contabilitate.</p>
+      </div>
+      <form action="/admin/trainers" method="post" class="form-grid">
+        <label>Nume<input name="name" required placeholder="Nume trainer"></label>
+        <label>User<input name="username" required placeholder="ex: maria.pop"></label>
+        <label>Parolă<input name="password" type="password" required placeholder="Parolă inițială"></label>
+        <label>Filială<input name="location" placeholder="ex: Bacău"></label>
+        <button class="btn primary full" type="submit">Creează trainer</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span class="pill">Listă</span><h2>Traineri existenți</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nume</th><th>User</th><th>Filială</th><th>Status</th><th>Acțiuni</th></tr></thead>
+          <tbody>
+            <% trainers.forEach(t => { %>
+              <tr>
+                <td><strong><%= t.name %></strong></td><td><%= t.username %></td><td><%= t.location %></td><td><%= t.active ? 'activ' : 'inactiv' %></td>
+                <td class="actions">
+                  <form action="/admin/trainers/<%= t._id %>/toggle" method="post"><button class="btn small" type="submit"><%= t.active ? 'Dezactivează' : 'Activează' %></button></form>
+                  <form action="/admin/trainers/<%= t._id %>/password" method="post" class="inline-form"><input name="password" type="password" placeholder="Parolă nouă"><button class="btn small" type="submit">Schimbă</button></form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</section>
+
+<section class="tab-panel" id="contabilitate">
+  <section class="card">
+    <div class="section-title row-title">
+      <div>
+        <span class="pill green">Contabilitate</span>
+        <h2>Evidență lunară și calcul plată</h2>
+        <p>Selectezi trainerul, vezi totalul de seminarii și poți calcula plata: seminarii × comision.</p>
+      </div>
+      <label class="compact-select">Selectează trainer
+        <select id="accountingFilter">
+          <option value="all">Toți trainerii</option>
+          <% accounting.forEach(item => { %>
+            <option value="<%= item.trainer._id %>"><%= item.trainer.name %></option>
           <% }) %>
         </select>
       </label>
-      <label>Tabel nominal Word (.docx)
-        <input name="nominalDoc" type="file" accept=".docx">
-        <small>Se citesc automat cursul, perioada și cursanții, dacă documentul are formatul tabelului nominal.</small>
-      </label>
-      <label>Titlu raport <input name="title" placeholder="Se completează automat din Word sau manual"></label>
-      <div class="inline-2">
-        <label>Data început <input name="startDate" type="date"></label>
-        <label>Data final <input name="endDate" type="date"></label>
-      </div>
-      <label>Filială <input name="location" placeholder="implicit filiala trainerului"></label>
-      <label>Lista cursanți manual, un nume pe rând
-        <textarea name="traineesText" rows="5" placeholder="Folosește doar dacă nu încarci Word."></textarea>
-      </label>
-      <label>Note admin <textarea name="adminNotes" rows="3"></textarea></label>
-      <button class="btn primary full" type="submit">Alocă raport</button>
-    </form>
-  </div>
-</section>
-
-<section class="card" id="contabilitate">
-  <div class="section-title row-title">
-    <div>
-      <span class="pill green">Contabilitate</span>
-      <h2>Evidență lunară și calcul plată</h2>
     </div>
-    <label class="compact-select">Selectează trainer
-      <select id="accountingFilter">
-        <option value="all">Toți trainerii</option>
-        <% accounting.forEach(item => { %>
-          <option value="<%= item.trainer._id %>"><%= item.trainer.name %></option>
-        <% }) %>
-      </select>
-    </label>
-  </div>
 
-  <div class="accounting-list">
-    <% accounting.forEach(item => { %>
-      <article class="accounting-card" data-trainer-card="<%= item.trainer._id %>">
-        <div class="accounting-head">
-          <div>
-            <h3><%= item.trainer.name %></h3>
-            <p><%= item.trainer.location || 'Fără filială' %> · <%= item.reports.length %> rapoarte</p>
+    <div class="accounting-list">
+      <% accounting.forEach(item => { %>
+        <article class="accounting-card" data-trainer-card="<%= item.trainer._id %>">
+          <div class="accounting-head">
+            <div>
+              <h3><%= item.trainer.name %></h3>
+              <p><%= item.trainer.location || 'Fără filială' %> · <%= item.reports.length %> rapoarte</p>
+            </div>
+            <strong><%= item.total %> seminarii</strong>
           </div>
-          <strong><%= item.total %> seminarii</strong>
-        </div>
-        <div class="months-grid">
-          <% item.monthly.forEach(m => { %>
-            <span class="month-chip <%= m.count ? 'has-count' : '' %>"><%= m.name.slice(0,3) %>: <b><%= m.count %></b></span>
-          <% }) %>
-        </div>
-        <form class="pay-calc" oninput="this.querySelector('[data-total]').textContent = ((Number(this.commission.value)||0) * <%= item.total %>).toFixed(2) + ' lei'">
-          <label>Comision/seminar <input name="commission" type="number" step="0.01" min="0" placeholder="lei"></label>
-          <span>Total plată: <strong data-total>0.00 lei</strong></span>
-        </form>
-      </article>
-    <% }) %>
-  </div>
-</section>
-
-<section class="card">
-  <div class="section-title"><span class="pill">Traineri</span><h2>Listă traineri</h2></div>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Nume</th><th>User</th><th>Filială</th><th>Status</th><th>Acțiuni</th></tr></thead>
-      <tbody>
-        <% trainers.forEach(t => { %>
-          <tr>
-            <td><%= t.name %></td><td><%= t.username %></td><td><%= t.location %></td><td><%= t.active ? 'activ' : 'inactiv' %></td>
-            <td class="actions">
-              <form action="/admin/trainers/<%= t._id %>/toggle" method="post"><button class="btn small" type="submit"><%= t.active ? 'Dezactivează' : 'Activează' %></button></form>
-              <form action="/admin/trainers/<%= t._id %>/password" method="post" class="inline-form"><input name="password" type="password" placeholder="Parolă nouă"><button class="btn small" type="submit">Schimbă</button></form>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<section class="card">
-  <div class="section-title"><span class="pill gold">Rapoarte</span><h2>Rapoarte create</h2></div>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Raport</th><th>Trainer</th><th>Filială</th><th>Status</th><th>Seminarii</th><th>Actualizat</th><th></th></tr></thead>
-      <tbody>
-        <% reports.forEach(r => { %>
-          <tr>
-            <td><%= r.title %></td><td><%= r.trainer?.name || '-' %></td><td><%= r.location %></td><td><%= r.status === 'finalized' ? 'finalizat' : 'activ' %></td><td><%= r.seminars.length %></td><td><%= r.updatedAt.toLocaleDateString('ro-RO') %></td><td><a class="btn small primary" href="/admin/reports/<%= r._id %>">Detalii</a></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
+          <div class="months-grid">
+            <% item.monthly.forEach(m => { %>
+              <span class="month-chip <%= m.count ? 'has-count' : '' %>"><%= m.name.slice(0,3) %>: <b><%= m.count %></b></span>
+            <% }) %>
+          </div>
+          <form class="pay-calc" oninput="this.querySelector('[data-total]').textContent = ((Number(this.commission.value)||0) * <%= item.total %>).toFixed(2) + ' lei'">
+            <label>Comision/seminar <input name="commission" type="number" step="0.01" min="0" placeholder="lei"></label>
+            <span>Total plată: <strong data-total>0.00 lei</strong></span>
+          </form>
+        </article>
+      <% }) %>
+    </div>
+  </section>
 </section>
 
 <%- include('../partials/footer') %>

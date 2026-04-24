@@ -1,5 +1,9 @@
 <%- include('../partials/header') %>
 
+<div class="back-row">
+  <a class="btn ghost" href="/trainer">← Înapoi la toate cursurile alocate</a>
+</div>
+
 <section class="report-hero">
   <div>
     <p class="eyebrow">Formular raport trainer</p>
@@ -37,25 +41,31 @@
         <label>Activitate desfășurată conform programei
           <textarea name="activity" rows="3" placeholder="Ex: Masaj relaxare - tehnici practice, recapitulare, demonstrație..."></textarea>
         </label>
-        <label>Conform programei
-          <select name="activityConform">
-            <option value="da">Da</option>
-            <option value="partial">Parțial</option>
-            <option value="nu">Nu</option>
-          </select>
+
+        <label>Absenți / nume prenume
+          <details class="multi-select" data-multi-select>
+            <summary data-default="Selectează absenții">Selectează absenții</summary>
+            <div class="multi-menu">
+              <% report.trainees.forEach(t => { %>
+                <label><input type="checkbox" name="absents" value="<%= t.name %>"> <%= t.name %></label>
+              <% }) %>
+            </div>
+          </details>
         </label>
-        <label>Absenți / nume prenume <small>Ține CTRL apăsat pe desktop pentru selectare multiplă.</small>
-          <select name="absents" multiple size="6">
-            <% report.trainees.forEach(t => { %><option value="<%= t.name %>"><%= t.name %></option><% }) %>
-          </select>
-        </label>
-        <label>Cursanți cu probleme <small>Persoane care deranjează, absentează, restante plată, antitalente etc.</small>
-          <select name="issues" multiple size="6">
-            <% report.trainees.forEach(t => { %><option value="<%= t.name %>"><%= t.name %></option><% }) %>
-          </select>
+
+        <label>Cursanți cu probleme
+          <small>Persoane care deranjează cursul, absentează, sunt restante la plată dar frecventează cursul sau au dificultăți mari.</small>
+          <details class="multi-select" data-multi-select>
+            <summary data-default="Selectează cursanții cu probleme">Selectează cursanții cu probleme</summary>
+            <div class="multi-menu">
+              <% report.trainees.forEach(t => { %>
+                <label><input type="checkbox" name="issues" value="<%= t.name %>"> <%= t.name %></label>
+              <% }) %>
+            </div>
+          </details>
         </label>
         <label>Exemplificați problemele
-          <textarea name="issuesDetails" rows="3" placeholder="Detalii scurte, clare, utile pentru manager."></textarea>
+          <textarea name="issuesDetails" rows="3" placeholder="Detalii scurte și clare: ce s-a întâmplat, când, ce trebuie urmărit."></textarea>
         </label>
         <label>Starea sălii la venire / plecare
           <textarea name="roomState" rows="2" placeholder="Ex: sala curată la venire, lăsată în ordine la plecare."></textarea>
@@ -70,7 +80,7 @@
               <option value="insuficienta">Insuficientă</option>
             </select>
           </label>
-          <label>Poze/filmulețe trimise
+          <label>Poze/filmulețe trimise din cadrul cursului
             <select name="mediaSent">
               <option value="da">Da</option>
               <option value="nu">Nu</option>
@@ -78,12 +88,17 @@
           </label>
         </div>
         <label>Persoana/persoanele talentate din serie
-          <select name="talents" multiple size="6">
-            <% report.trainees.forEach(t => { %><option value="<%= t.name %>"><%= t.name %></option><% }) %>
-          </select>
+          <details class="multi-select" data-multi-select>
+            <summary data-default="Selectează persoanele talentate">Selectează persoanele talentate</summary>
+            <div class="multi-menu">
+              <% report.trainees.forEach(t => { %>
+                <label><input type="checkbox" name="talents" value="<%= t.name %>"> <%= t.name %></label>
+              <% }) %>
+            </div>
+          </details>
         </label>
         <label>Observații finale
-          <textarea name="notes" rows="3"></textarea>
+          <textarea name="notes" rows="3" placeholder="Orice informație utilă pentru manager / contabilitate."></textarea>
         </label>
         <button class="btn primary full" type="submit">Salvează seminar</button>
       </form>

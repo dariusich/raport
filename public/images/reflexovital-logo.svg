@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-label="Reflexovital logo">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9f0f43"/><stop offset=".55" stop-color="#d4145a"/><stop offset="1" stop-color="#ff5f9e"/></linearGradient></defs>
+  <rect width="220" height="220" rx="54" fill="url(#g)"/>
+  <circle cx="110" cy="110" r="78" fill="none" stroke="#fff" stroke-width="12" opacity=".9"/>
+  <path d="M68 119c24 4 41-2 51-18 12-20 31-29 55-25-8 29-27 49-56 58-18 5-36 4-50-15Z" fill="#fff" opacity=".95"/>
+  <path d="M72 80c16-6 33-4 47 8-19 9-33 21-42 38-10-15-12-31-5-46Z" fill="#ffd7e5"/>
+  <text x="110" y="172" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="34" fill="#fff">RV</text>
+</svg>

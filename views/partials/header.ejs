@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= title %> · Academia Reflexovital</title>
+  <title><%= title %> · Reflexovital</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="/">
-      <span class="brand-mark">RV</span>
+      <img src="/images/reflexovital-logo.svg" alt="Reflexovital" class="brand-logo">
       <span>
         <strong>Reflexovital</strong>
         <small>Academia de Cursuri</small>
@@ -22,8 +22,9 @@
       <nav class="topnav">
         <a href="<%= currentUser.role === 'admin' ? '/admin' : '/trainer' %>">Dashboard</a>
         <% if (currentUser.role === 'admin') { %>
+          <a href="/admin#rapoarte">Rapoarte</a>
+          <a href="/admin#traineri">Traineri</a>
           <a href="/admin#contabilitate">Contabilitate</a>
-          <a href="/admin#reports">Rapoarte</a>
         <% } %>
         <form action="/logout" method="post"><button class="link-button">Ieșire</button></form>
       </nav>
