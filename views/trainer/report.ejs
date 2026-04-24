@@ -138,7 +138,7 @@
   </div>
   <div class="hero-stats compact">
     <div><strong><%= report.trainees.length %></strong><span>cursanți</span></div>
-    <div><strong><%= report.seminars.length %></strong><span>seminarii</span></div>
+<div><strong><%= new Set(report.seminars.map(s => dateInputValue(s.date))).size %></strong><span>seminarii</span></div>
   </div>
 </section>
 
@@ -151,7 +151,7 @@
 
   <div class="month-list-trainer">
     <% months.forEach(m => { %>
-      <% const count = report.seminars.filter(s => { const d = new Date(s.date); const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); return key === m.key; }).length; %>
+      <% const count = new Set(report.seminars.filter(s => { const d = new Date(s.date); const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); return key === m.key; }).map(s => dateInputValue(s.date))).size; %>
       <a class="month-row <%= selectedMonth === m.key ? 'active' : '' %>" href="/trainer/reports/<%= report._id %>?month=<%= m.key %>">
         <div>
           <strong><%= m.label %></strong>
@@ -201,7 +201,7 @@
             <h2>Calendarul lunii selectate</h2>
             <p>Alege ziua seminarului. Zilele completate apar cu verde.</p>
           </div>
-          <strong class="pill red"><%= seminarsInMonth.length %> salvate</strong>
+          <strong class="pill red"><%= Object.keys(seminarsByDate).length %> salvate</strong>
         </div>
 
         <div class="calendar-info">
