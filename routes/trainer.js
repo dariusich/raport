@@ -22,6 +22,15 @@ const dateInputValue = (date) => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
 
+const dateDisplayValue = (date) => {
+  if (!date) return '';
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'long', year: 'numeric' });
+};
+
+const wantsJson = (req) => req.xhr || String(req.headers.accept || '').includes('application/json');
+
 const buildCourseMonths = (report) => {
   const start = report.startDate ? new Date(report.startDate) : null;
   const end = report.endDate ? new Date(report.endDate) : null;
@@ -76,6 +85,7 @@ router.get('/reports/:id', async (req, res) => {
   const editMode = req.query.edit === '1';
   const showMonths = req.query.showMonths === '1';
   const saveSuccess = req.query.saved === '1';
+  const savedDateDisplay = dateDisplayValue(req.query.savedDate || '');
   const selectedMonthInfo = selectedMonth ? months.find((m) => m.key === selectedMonth) || null : null;
 
   let seminarsInMonth = [];
@@ -97,6 +107,7 @@ router.get('/reports/:id', async (req, res) => {
     selectedMonthInfo,
     showMonths,
     saveSuccess,
+    savedDateDisplay,
     seminarsInMonth,
     selectedSeminar,
     editMode,
@@ -107,6 +118,7 @@ router.get('/reports/:id', async (req, res) => {
 router.post('/reports/:id/seminars', async (req, res) => {
   const report = await Report.findOne({ _id: req.params.id, trainer: req.session.user.id });
   if (!report || report.status !== 'active') {
+    if (wantsJson(req)) return res.status(400).json({ ok: false, message: 'Raportul nu poate fi editat.' });
     req.session.flash = { type: 'error', message: 'Raportul nu poate fi editat.' };
     return res.redirect('/trainer');
   }
@@ -138,15 +150,24 @@ router.post('/reports/:id/seminars', async (req, res) => {
     if (seminar) {
       Object.assign(seminar, payload);
       await report.save();
+      const savedDateText = dateDisplayValue(date);
+      if (wantsJson(req)) {
+        return res.json({ ok: true, message: `Seminarul din data ${savedDateText} a fost salvat cu succes!`, seminarId: String(seminar._id), date, savedDateDisplay: savedDateText, month });
+      }
       req.session.flash = { type: 'success', message: 'Seminar modificat.' };
-      return res.redirect(`/trainer/reports/${report._id}?month=${month}&seminar=${seminar._id}&saved=1#save-success`);
+      return res.redirect(`/trainer/reports/${report._id}?month=${month}&seminar=${seminar._id}&saved=1&savedDate=${encodeURIComponent(date)}#save-success`);
     }
   }
 
-  report.seminars.push(payload);
+  const seminar = report.seminars.create(payload);
+  report.seminars.push(seminar);
   await report.save();
+  const savedDateText = dateDisplayValue(date);
+  if (wantsJson(req)) {
+    return res.json({ ok: true, message: `Seminarul din data ${savedDateText} a fost salvat cu succes!`, seminarId: String(seminar._id), date, savedDateDisplay: savedDateText, month });
+  }
   req.session.flash = { type: 'success', message: 'Seminar salvat.' };
-  res.redirect(`/trainer/reports/${report._id}?month=${month}&saved=1#save-success`);
+  res.redirect(`/trainer/reports/${report._id}?month=${month}&saved=1&savedDate=${encodeURIComponent(date)}#save-success`);
 });
 router.post('/reports/:id/seminars/:seminarId/delete', async (req, res) => {
   const report = await Report.findOne({ 
