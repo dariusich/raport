@@ -1,14 +1,18 @@
 <%- include('partials/header') %>
-<section class="login-card">
+<section class="login-card" data-testid="login-card">
   <div>
     <p class="eyebrow">platformă rapoarte</p>
-    <h1>Autentificare</h1>
+    <h1>Bine ai revenit</h1>
     <p class="muted">Platformă internă Reflexovital pentru gestionarea rapoartelor de curs și evidența trainerilor.</p>
   </div>
-  <form method="post" action="/login" class="stack">
-    <label>User<input name="username" autocomplete="username" required></label>
-    <label>Parolă<input name="password" type="password" autocomplete="current-password" required></label>
-    <button class="primary">Intră în cont</button>
+  <form method="post" action="/login" class="stack" data-testid="login-form">
+    <label>Utilizator
+      <input name="username" autocomplete="username" required placeholder="ex: maria.pop" data-testid="login-username">
+    </label>
+    <label>Parolă
+      <input name="password" type="password" autocomplete="current-password" required placeholder="••••••••" data-testid="login-password">
+    </label>
+    <button class="btn primary full" type="submit" data-testid="login-submit">Intră în cont</button>
   </form>
 </section>
 <%- include('partials/footer') %>

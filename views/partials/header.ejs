@@ -3,46 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#C41E3A">
   <title><%= title %> · Reflexovital</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/app.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23C41E3A'/%3E%3Cstop offset='100%25' stop-color='%23821224'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-family='Georgia,serif' font-size='54' font-weight='600' fill='white'%3ER%3C/text%3E%3C/svg%3E">
 </head>
 <body>
-  <header class="app-header topbar">
+  <header class="app-header topbar" data-testid="app-header">
     <div class="header-glow"></div>
 
-    <a class="brand brand-real premium-brand" href="/" aria-label="Reflexovital Dashboard">
-      <img src="/images/reflexovital-logo-real.png" alt="Reflexovital Academia de Cursuri" class="brand-logo-real">
+    <a class="brand brand-real premium-brand" href="/" aria-label="Reflexovital Dashboard" data-testid="brand-link">
       <span class="brand-divider"></span>
       <span class="brand-copy">
         <strong>Academia de Cursuri</strong>
-        <small>Platformă rapoarte</small>
+        <small>Platformă rapoarte · Beauty &amp; Wellness</small>
       </span>
     </a>
 
     <% if (currentUser) { %>
       <div class="header-actions">
-        <nav class="topnav premium-nav" aria-label="Navigație principală">
-          <a href="<%= currentUser.role === 'admin' ? '/admin' : '/trainer' %>">Dashboard</a>
+        <nav class="topnav premium-nav" aria-label="Navigație principală" data-testid="top-nav">
+          <a href="<%= currentUser.role === 'admin' ? '/admin' : '/trainer' %>" data-testid="nav-dashboard">Dashboard</a>
           <% if (currentUser.role === 'admin') { %>
-            <a href="/admin#rapoarte">Rapoarte</a>
-            <a href="/admin#traineri">Traineri</a>
-            <a href="/admin#contabilitate">Contabilitate</a>
+            <a href="/admin#rapoarte" data-testid="nav-rapoarte">Rapoarte</a>
+            <a href="/admin#traineri" data-testid="nav-traineri">Traineri</a>
+            <a href="/admin#contabilitate" data-testid="nav-contabilitate">Contabilitate</a>
           <% } %>
         </nav>
 
         <div class="user-menu" data-user-menu>
-          <button class="user-chip" type="button" data-user-menu-button aria-label="Utilizator logat">
+          <button class="user-chip" type="button" data-user-menu-button aria-label="Utilizator logat" data-testid="user-menu-button">
             <span class="avatar"><%= (currentUser.name || currentUser.username || 'U').trim().charAt(0).toUpperCase() %></span>
             <span class="user-copy">
               <small>Logat ca</small>
               <strong><%= currentUser.name || currentUser.username %></strong>
             </span>
-            <span class="chevron">⌄</span>
+            <span class="chevron">▾</span>
           </button>
-          <div class="user-dropdown">
+          <div class="user-dropdown" data-testid="user-dropdown">
             <div class="dropdown-user">
               <span class="avatar large"><%= (currentUser.name || currentUser.username || 'U').trim().charAt(0).toUpperCase() %></span>
               <div>
@@ -55,7 +56,7 @@
               <a href="/admin#contabilitate">Contabilitate</a>
             <% } %>
             <form action="/logout" method="post">
-              <button class="logout-button" type="submit">Ieșire din cont</button>
+              <button class="logout-button" type="submit" data-testid="logout-button">Ieșire din cont</button>
             </form>
           </div>
         </div>
@@ -65,5 +66,5 @@
 
   <main class="page-shell">
     <% if (flash) { %>
-      <div class="flash flash-<%= flash.type %>"><%= flash.message %></div>
+      <div class="flash flash-<%= flash.type %>" data-testid="flash-message"><%= flash.message %></div>
     <% } %>

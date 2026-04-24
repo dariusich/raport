@@ -255,17 +255,19 @@
               <span class="pill red">Detalii seminar</span>
               <h2><%= new Date(selectedSeminar.date).toLocaleDateString('ro-RO') %></h2>
             </div>
-<div class="actions">
-  <a class="btn primary" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= selectedSeminar._id %>&edit=1">
+<div class="actions" data-testid="seminar-actions">
+  <a class="btn primary" data-testid="seminar-edit-btn"
+     href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= selectedSeminar._id %>&edit=1">
     Modifică
   </a>
 
-  <form 
-    action="/trainer/reports/<%= report._id %>/seminars/<%= selectedSeminar._id %>/delete" 
+  <form
+    action="/trainer/reports/<%= report._id %>/seminars/<%= selectedSeminar._id %>/delete?month=<%= selectedMonth %>"
     method="post"
-    onsubmit="return confirm('Sigur vrei să ștergi acest seminar?');"
+    onsubmit="return confirm('Ești sigur că vrei să ștergi acest seminar?\n\nAceastă acțiune nu poate fi anulată.');"
+    style="margin: 0;"
   >
-    <button class="btn danger" type="submit">Șterge</button>
+    <button class="btn danger" type="submit" data-testid="seminar-delete-btn">Șterge</button>
   </form>
 </div>
 
