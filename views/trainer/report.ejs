@@ -237,6 +237,38 @@ const countUniqueSeminarDays = (seminars = []) => {
 
   body.modal-open { overflow: hidden; }
 
+  .save-success-card {
+    border: 1px solid rgba(19, 201, 120, 0.28);
+    background: linear-gradient(135deg, rgba(19, 201, 120, 0.12), rgba(255, 255, 255, 0.92));
+    box-shadow: 0 18px 45px rgba(19, 201, 120, 0.12);
+    margin-bottom: 18px;
+  }
+
+  .save-success-card h2 {
+    color: #0f7a4a;
+    margin-bottom: 8px;
+  }
+
+  .save-success-card p {
+    color: #5c6870;
+    margin-bottom: 16px;
+  }
+
+  .save-success-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: #13c978;
+    color: #fff;
+    font-size: 30px;
+    font-weight: 900;
+    margin-bottom: 14px;
+    box-shadow: 0 16px 30px rgba(19, 201, 120, 0.24);
+  }
+
+
   @media (max-width: 720px) {
     .seminar-calendar {
       grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -321,7 +353,7 @@ const countUniqueSeminarDays = (seminars = []) => {
   </div>
 </section>
 
-<section class="card luxe-card trainer-months-card <%= selectedMonth ? 'is-stacked-hidden' : '' %>" id="months-section">
+<section class="card luxe-card trainer-months-card <%= selectedMonth && !showMonths ? 'is-stacked-hidden' : '' %>" id="months-section">
   <div class="section-title">
     <span class="pill red">Lunile cursului</span>
     <h2>Alege luna pentru completare</h2>
@@ -342,7 +374,7 @@ const countUniqueSeminarDays = (seminars = []) => {
   </div>
 </section>
 
-<% if (selectedMonth) { %>
+<% if (selectedMonth && !showMonths) { %>
   <%
     const [calendarYear, calendarMonth] = selectedMonth.split('-').map(Number);
     const firstDay = new Date(calendarYear, calendarMonth - 1, 1);
@@ -373,15 +405,28 @@ seminarsInMonth.forEach(s => {
     </aside>
 
     <div class="report-panel">
+      <% if (saveSuccess) { %>
+        <section class="card save-success-card" id="save-success">
+          <div class="save-success-icon">✓</div>
+          <h2>Seminar salvat cu succes!</h2>
+          <p>Poți continua rapid cu aceeași lună sau poți reveni la lista de luni/serii.</p>
+          <div class="actions">
+            <a class="btn primary" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>#calendar-section">Alege altă zi</a>
+            <a class="btn ghost" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&showMonths=1#months-section">Alege altă lună</a>
+            <a class="btn ghost" href="/trainer">Alege altă serie</a>
+          </div>
+        </section>
+      <% } %>
+
       <section class="card history-card">
         <div class="mobile-stack-back">
-          <a class="btn ghost" href="/trainer/reports/<%= report._id %>#months-section">← Înapoi la luni</a>
+          <a class="btn ghost" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&showMonths=1#months-section">← Înapoi la luni</a>
         </div>
 
         <div class="section-title row-title">
           <div>
             <span class="pill green">Calendar seminar</span>
-            <h2>Calendarul lunii selectate</h2>
+            <h2>Calendar <%= selectedMonthInfo ? selectedMonthInfo.label + ' ' + selectedMonthInfo.year : 'luna selectată' %></h2>
             <p>Alege ziua seminarului. Zilele completate apar cu verde.</p>
           </div>
           <strong class="pill red"><%= countUniqueSeminarDays(seminarsInMonth) %> salvate</strong>

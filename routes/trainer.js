@@ -74,6 +74,9 @@ router.get('/reports/:id', async (req, res) => {
   const selectedMonth = req.query.month || '';
   const selectedSeminarId = String(req.query.seminar || '');
   const editMode = req.query.edit === '1';
+  const showMonths = req.query.showMonths === '1';
+  const saveSuccess = req.query.saved === '1';
+  const selectedMonthInfo = selectedMonth ? months.find((m) => m.key === selectedMonth) || null : null;
 
   let seminarsInMonth = [];
   if (selectedMonth) {
@@ -91,6 +94,9 @@ router.get('/reports/:id', async (req, res) => {
     report,
     months,
     selectedMonth,
+    selectedMonthInfo,
+    showMonths,
+    saveSuccess,
     seminarsInMonth,
     selectedSeminar,
     editMode,
@@ -133,14 +139,14 @@ router.post('/reports/:id/seminars', async (req, res) => {
       Object.assign(seminar, payload);
       await report.save();
       req.session.flash = { type: 'success', message: 'Seminar modificat.' };
-      return res.redirect(`/trainer/reports/${report._id}?month=${month}&seminar=${seminar._id}`);
+      return res.redirect(`/trainer/reports/${report._id}?month=${month}&seminar=${seminar._id}&saved=1#save-success`);
     }
   }
 
   report.seminars.push(payload);
   await report.save();
   req.session.flash = { type: 'success', message: 'Seminar salvat.' };
-  res.redirect(`/trainer/reports/${report._id}?month=${month}`);
+  res.redirect(`/trainer/reports/${report._id}?month=${month}&saved=1#save-success`);
 });
 router.post('/reports/:id/seminars/:seminarId/delete', async (req, res) => {
   const report = await Report.findOne({ 
