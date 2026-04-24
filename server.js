@@ -14,6 +14,9 @@ const adminRoutes = require('./routes/admin');
 const trainerRoutes = require('./routes/trainer');
 
 const app = express();
+
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI;
 const SESSION_SECRET = process.env.SESSION_SECRET || 'change-me-in-production';
@@ -46,7 +49,11 @@ app.use(
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: MONGODB_URI }),
+    proxy: true,
+    store: MongoStore.create({
+      mongoUrl: MONGODB_URI,
+      touchAfter: 24 * 3600,
+    }),
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
