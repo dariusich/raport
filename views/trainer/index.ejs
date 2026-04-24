@@ -2,11 +2,24 @@
 
 <%
   const seminarDayKey = (date) => {
-    const d = new Date(date);
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    if (!date) return '';
+    return new Date(date).toISOString().slice(0, 10);
   };
 
-  const countUniqueSeminarDays = (seminars = []) => new Set(seminars.map(s => seminarDayKey(s.date))).size;
+  const countUniqueSeminarDays = (report) => {
+    const startKey = report.startDate ? seminarDayKey(report.startDate).slice(0, 7) : '';
+    const endKey = report.endDate ? seminarDayKey(report.endDate).slice(0, 7) : '';
+
+    const validDays = (report.seminars || [])
+      .filter(s => s && s.date)
+      .map(s => seminarDayKey(s.date))
+      .filter(dateKey => {
+        const monthKey = dateKey.slice(0, 7);
+        return (!startKey || monthKey >= startKey) && (!endKey || monthKey <= endKey);
+      });
+
+    return new Set(validDays).size;
+  };
 %>
 
 <section class="hero trainer-hero">
@@ -16,7 +29,7 @@
     <p class="hero-text">Alege seria, apoi luna în care vrei să adaugi ziua de seminar.</p>
   </div>
   <div class="hero-stats compact">
-    <div><strong><%= reports.filter(r => r.status === 'active').length %></strong><span>serii active</span></div>
+  <div><strong><%= reports.reduce((sum, r) => sum + countUniqueSeminarDays(r), 0) %></strong><span>seminarii salvate</span></div>
     <div><strong><%= reports.reduce((sum, r) => sum + countUniqueSeminarDays(r.seminars), 0) %></strong><span>seminarii salvate</span></div>
   </div>
 </section>
@@ -39,7 +52,7 @@
           <p><%= r.location || 'fără filială' %><%= start || end ? ' · ' + start + (end ? ' - ' + end : '') : '' %></p>
         </div>
         <div class="course-meta">
-          <strong><%= countUniqueSeminarDays(r.seminars) %></strong>
+          <strong><%= countUniqueSeminarDays(r) %></strong>
           <span>seminarii</span>
         </div>
       </a>
