@@ -1,22 +1,41 @@
 <%- include('../partials/header') %>
 
-<section class="hero">
+<section class="hero trainer-hero">
   <div>
     <p class="eyebrow">Trainer</p>
     <h1>Rapoartele mele</h1>
-    <p class="hero-text">Completează rapoartele active. Cele finalizate rămân în arhivă.</p>
+    <p class="hero-text">Alege seria, apoi luna în care vrei să adaugi ziua de seminar.</p>
+  </div>
+  <div class="hero-stats compact">
+    <div><strong><%= reports.filter(r => r.status === 'active').length %></strong><span>serii active</span></div>
+    <div><strong><%= reports.reduce((sum, r) => sum + r.seminars.length, 0) %></strong><span>seminarii salvate</span></div>
   </div>
 </section>
 
-<div class="report-grid">
-  <% reports.forEach(r => { %>
-    <a class="report-tile" href="/trainer/reports/<%= r._id %>">
-      <span class="status <%= r.status %>"><%= r.status === 'active' ? 'activ' : 'finalizat' %></span>
-      <h2><%= r.title %></h2>
-      <p><%= r.location || 'fără filială' %></p>
-      <strong><%= r.seminars.length %> seminarii completate</strong>
-    </a>
-  <% }) %>
-</div>
+<section class="card luxe-card">
+  <div class="section-title">
+    <span class="pill red">Serii în derulare</span>
+    <h2>Alege cursul</h2>
+    <p>Lista este compactă ca să vezi rapid toate seriile alocate.</p>
+  </div>
+
+  <div class="course-list">
+    <% reports.forEach(r => { %>
+      <% const start = r.startDate ? new Date(r.startDate).toLocaleDateString('ro-RO') : ''; %>
+      <% const end = r.endDate ? new Date(r.endDate).toLocaleDateString('ro-RO') : ''; %>
+      <a class="course-row" href="/trainer/reports/<%= r._id %>">
+        <div class="course-main">
+          <span class="status <%= r.status %>"><%= r.status === 'active' ? 'activ' : 'finalizat' %></span>
+          <h3><%= r.title %></h3>
+          <p><%= r.location || 'fără filială' %><%= start || end ? ' · ' + start + (end ? ' - ' + end : '') : '' %></p>
+        </div>
+        <div class="course-meta">
+          <strong><%= r.seminars.length %></strong>
+          <span>seminarii</span>
+        </div>
+      </a>
+    <% }) %>
+  </div>
+</section>
 
 <%- include('../partials/footer') %>
