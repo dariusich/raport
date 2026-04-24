@@ -99,4 +99,21 @@ document.addEventListener('DOMContentLoaded', () => {
     boxes.forEach((box) => box.addEventListener('change', update));
     update();
   });
+
+  document.querySelectorAll('[data-user-menu]').forEach((menu) => {
+    const button = menu.querySelector('[data-user-menu-button]');
+    if (!button) return;
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      document.querySelectorAll('[data-user-menu]').forEach((other) => {
+        if (other !== menu) other.classList.remove('open');
+      });
+      menu.classList.toggle('open');
+    });
+  });
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('[data-user-menu]').forEach((menu) => menu.classList.remove('open'));
+  });
+
 });

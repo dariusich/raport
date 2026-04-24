@@ -10,20 +10,56 @@
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand brand-real" href="/">
+  <header class="app-header topbar">
+    <div class="header-glow"></div>
+
+    <a class="brand brand-real premium-brand" href="/" aria-label="Reflexovital Dashboard">
       <img src="/images/reflexovital-logo-real.png" alt="Reflexovital Academia de Cursuri" class="brand-logo-real">
+      <span class="brand-divider"></span>
+      <span class="brand-copy">
+        <strong>Academia de Cursuri</strong>
+        <small>Platformă rapoarte</small>
+      </span>
     </a>
+
     <% if (currentUser) { %>
-      <nav class="topnav">
-        <a href="<%= currentUser.role === 'admin' ? '/admin' : '/trainer' %>">Dashboard</a>
-        <% if (currentUser.role === 'admin') { %>
-          <a href="/admin#rapoarte">Rapoarte</a>
-          <a href="/admin#traineri">Traineri</a>
-          <a href="/admin#contabilitate">Contabilitate</a>
-        <% } %>
-        <form action="/logout" method="post"><button class="link-button">Ieșire</button></form>
-      </nav>
+      <div class="header-actions">
+        <nav class="topnav premium-nav" aria-label="Navigație principală">
+          <a href="<%= currentUser.role === 'admin' ? '/admin' : '/trainer' %>">Dashboard</a>
+          <% if (currentUser.role === 'admin') { %>
+            <a href="/admin#rapoarte">Rapoarte</a>
+            <a href="/admin#traineri">Traineri</a>
+            <a href="/admin#contabilitate">Contabilitate</a>
+          <% } %>
+        </nav>
+
+        <div class="user-menu" data-user-menu>
+          <button class="user-chip" type="button" data-user-menu-button aria-label="Utilizator logat">
+            <span class="avatar"><%= (currentUser.name || currentUser.username || 'U').trim().charAt(0).toUpperCase() %></span>
+            <span class="user-copy">
+              <small>Logat ca</small>
+              <strong><%= currentUser.name || currentUser.username %></strong>
+            </span>
+            <span class="chevron">⌄</span>
+          </button>
+          <div class="user-dropdown">
+            <div class="dropdown-user">
+              <span class="avatar large"><%= (currentUser.name || currentUser.username || 'U').trim().charAt(0).toUpperCase() %></span>
+              <div>
+                <strong><%= currentUser.name || currentUser.username %></strong>
+                <small><%= currentUser.role === 'admin' ? 'Administrator' : 'Trainer' %><%= currentUser.location ? ' · ' + currentUser.location : '' %></small>
+              </div>
+            </div>
+            <a href="<%= currentUser.role === 'admin' ? '/admin' : '/trainer' %>">Dashboard</a>
+            <% if (currentUser.role === 'admin') { %>
+              <a href="/admin#contabilitate">Contabilitate</a>
+            <% } %>
+            <form action="/logout" method="post">
+              <button class="logout-button" type="submit">Ieșire din cont</button>
+            </form>
+          </div>
+        </div>
+      </div>
     <% } %>
   </header>
 
