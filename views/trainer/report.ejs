@@ -117,6 +117,126 @@ const countUniqueSeminarDays = (seminars = []) => {
     color: #7a2030;
   }
 
+
+
+  .seminar-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(18, 18, 24, 0.48);
+    backdrop-filter: blur(6px);
+  }
+
+  .seminar-modal.open { display: flex; }
+
+  .seminar-modal-panel {
+    width: min(920px, 100%);
+    max-height: 92vh;
+    overflow: auto;
+    border-radius: 28px;
+    background: #fffaf8;
+    box-shadow: 0 28px 80px rgba(60, 20, 28, 0.28);
+    position: relative;
+  }
+
+  .seminar-modal-close {
+    position: sticky;
+    top: 12px;
+    float: right;
+    z-index: 2;
+    width: 42px;
+    height: 42px;
+    margin: 12px 12px 0 0;
+    border: 1px solid rgba(196, 31, 45, 0.22);
+    border-radius: 999px;
+    background: #fff;
+    color: #9b1632;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(178, 24, 34, 0.12);
+  }
+
+  .seminar-modal .seminar-form {
+    margin: 0;
+    border-radius: 28px;
+    box-shadow: none;
+  }
+
+  .trainee-compact {
+    border: 1px solid rgba(196, 31, 45, 0.16);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.68);
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .trainee-compact summary {
+    cursor: pointer;
+    padding: 14px 16px;
+    font-weight: 900;
+    color: #7a2030;
+    list-style: none;
+  }
+
+  .trainee-compact summary::-webkit-details-marker { display: none; }
+
+  .trainee-compact-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    padding: 0 16px 16px;
+  }
+
+  .trainee-chip {
+    border: 1px solid rgba(196, 31, 45, 0.13);
+    border-radius: 999px;
+    padding: 8px 10px;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .multi-select summary {
+    cursor: pointer;
+    border: 1px solid rgba(196, 31, 45, 0.18);
+    border-radius: 14px;
+    padding: 13px 14px;
+    background: #fff;
+    font-weight: 800;
+    color: #7a2030;
+    list-style: none;
+  }
+
+  .multi-select summary::-webkit-details-marker { display: none; }
+
+  .multi-menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    max-height: 230px;
+    overflow: auto;
+    padding: 10px 0 0;
+  }
+
+  .multi-menu label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(196, 31, 45, 0.13);
+    border-radius: 14px;
+    background: #fff;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  body.modal-open { overflow: hidden; }
+
   @media (max-width: 720px) {
     .seminar-calendar {
       gap: 5px;
@@ -134,6 +254,29 @@ const countUniqueSeminarDays = (seminars = []) => {
 
     .calendar-day span {
       font-size: 10px;
+    }
+
+    .trainee-panel { display: none; }
+
+    .seminar-modal {
+      align-items: flex-end;
+      padding: 0;
+    }
+
+    .seminar-modal-panel {
+      width: 100%;
+      max-height: 92vh;
+      border-radius: 26px 26px 0 0;
+    }
+
+    .seminar-modal .seminar-form {
+      border-radius: 26px 26px 0 0;
+      padding-bottom: 28px;
+    }
+
+    .multi-menu {
+      grid-template-columns: 1fr;
+      max-height: 190px;
     }
   }
 </style>
@@ -194,7 +337,7 @@ seminarsInMonth.forEach(s => {
   seminarsByDate[key] = s;
 });
 
-    const selectedDateKey = selectedSeminar ? dateInputValue(selectedSeminar.date) : '';
+    const selectedDateKey = selectedSeminar ? seminarDayKey(selectedSeminar.date) : '';
     const weekdayLabels = ['Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm', 'Dum'];
   %>
 
@@ -306,7 +449,11 @@ seminarsInMonth.forEach(s => {
       <% } else if (report.status === 'active') { %>
         <% const formSeminar = editMode && selectedSeminar ? selectedSeminar : null; %>
 
-        <form action="/trainer/reports/<%= report._id %>/seminars" method="post" class="card form-grid seminar-form" id="seminarForm">
+        <div class="seminar-modal <%= formSeminar ? 'open' : '' %>" id="seminarModal" aria-hidden="<%= formSeminar ? 'false' : 'true' %>">
+          <div class="seminar-modal-panel" role="dialog" aria-modal="true" aria-labelledby="seminarFormTitle">
+            <button type="button" class="seminar-modal-close" id="seminarModalClose" aria-label="Închide formularul">×</button>
+
+            <form action="/trainer/reports/<%= report._id %>/seminars" method="post" class="card form-grid seminar-form" id="seminarForm">
           <input type="hidden" name="selectedMonth" value="<%= selectedMonth %>">
           <% if (formSeminar) { %>
             <input type="hidden" name="seminarId" value="<%= formSeminar._id %>">
@@ -314,7 +461,7 @@ seminarsInMonth.forEach(s => {
 
           <div class="section-title">
             <span class="pill green"><%= formSeminar ? 'Modificare' : 'Seminar' %></span>
-            <h2><%= formSeminar ? 'Modifică ziua de curs' : 'Adaugă zi de curs' %></h2>
+            <h2 id="seminarFormTitle"><%= formSeminar ? 'Modifică ziua de curs' : 'Adaugă zi de curs' %></h2>
             <p><%= formSeminar ? 'Actualizează informațiile pentru seminarul selectat.' : 'Selectează ziua din calendar, apoi completează detaliile seminarului.' %></p>
           </div>
 
@@ -324,6 +471,15 @@ seminarsInMonth.forEach(s => {
               <%= formSeminar ? new Date(formSeminar.date).toLocaleDateString('ro-RO') : 'alege o zi din calendar' %>
             </span>
           </div>
+
+          <details class="trainee-compact">
+            <summary>Lista cursanți din serie (<%= report.trainees.length %>)</summary>
+            <div class="trainee-compact-list">
+              <% report.trainees.forEach((t, index) => { %>
+                <span class="trainee-chip"><%= index + 1 %>. <%= t.name %></span>
+              <% }) %>
+            </div>
+          </details>
 
           <div class="inline-3">
             <label>Data
@@ -417,39 +573,70 @@ seminarsInMonth.forEach(s => {
               <a class="btn ghost" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= formSeminar._id %>">Renunță</a>
             <% } %>
           </div>
-        </form>
+            </form>
+          </div>
+        </div>
       <% } %>
     </div>
   </section>
 <% } %>
 
 <script>
+  const seminarModal = document.getElementById('seminarModal');
+  const seminarModalClose = document.getElementById('seminarModalClose');
+
+  function openSeminarModal() {
+    if (!seminarModal) return;
+    seminarModal.classList.add('open');
+    seminarModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeSeminarModal() {
+    if (!seminarModal) return;
+    seminarModal.classList.remove('open');
+    seminarModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  }
+
+  function refreshMultiSelectSummary(details) {
+    const summary = details.querySelector('summary');
+    if (!summary) return;
+    const defaultText = summary.dataset.default || summary.textContent.trim();
+    const checked = details.querySelectorAll('input[type="checkbox"]:checked');
+    summary.textContent = checked.length ? `${defaultText} (${checked.length})` : defaultText;
+  }
+
+  document.querySelectorAll('[data-multi-select]').forEach((details) => {
+    refreshMultiSelectSummary(details);
+    details.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+      input.addEventListener('change', () => refreshMultiSelectSummary(details));
+    });
+  });
+
   document.querySelectorAll('.js-pick-day').forEach((button) => {
     button.addEventListener('click', () => {
       const date = button.dataset.date;
       const input = document.getElementById('seminarDateInput');
       const text = document.getElementById('selectedDateText');
-
       if (!input || !text) return;
-
       input.value = date;
-
       const parts = date.split('-');
       text.textContent = `${parts[2]}.${parts[1]}.${parts[0]}`;
-
       document.querySelectorAll('.calendar-day').forEach((day) => day.classList.remove('selected'));
       button.classList.add('selected');
-
-      document.getElementById('seminarForm')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
+      openSeminarModal();
+      setTimeout(() => { document.getElementById('seminarDateInput')?.focus({ preventScroll: true }); }, 150);
     });
   });
 
+  seminarModalClose?.addEventListener('click', closeSeminarModal);
+  seminarModal?.addEventListener('click', (event) => { if (event.target === seminarModal) closeSeminarModal(); });
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSeminarModal(); });
+  if (seminarModal?.classList.contains('open')) document.body.classList.add('modal-open');
+
   document.getElementById('seminarForm')?.addEventListener('submit', (event) => {
     const input = document.getElementById('seminarDateInput');
-
     if (!input || !input.value) {
       event.preventDefault();
       alert('Selectează mai întâi ziua seminarului din calendar.');
