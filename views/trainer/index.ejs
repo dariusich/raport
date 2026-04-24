@@ -41,11 +41,20 @@
     <p>Seriile tale active sunt afișate compact, ca să alegi rapid cursul și luna în care completezi seminarul.</p>
   </div>
 
-  <div class="course-list">
+  <div class="trainer-list-tools">
+    <input id="seriesSearch" type="search" placeholder="Caută după curs sau filială...">
+    <select id="seriesStatusFilter">
+      <option value="all">Toate seriile</option>
+      <option value="active">Active</option>
+      <option value="finalized">Finalizate</option>
+    </select>
+  </div>
+
+  <div class="course-list" id="seriesList">
     <% reports.forEach(r => { %>
       <% const start = r.startDate ? new Date(r.startDate).toLocaleDateString('ro-RO') : ''; %>
       <% const end = r.endDate ? new Date(r.endDate).toLocaleDateString('ro-RO') : ''; %>
-      <a class="course-row" href="/trainer/reports/<%= r._id %>">
+      <a class="course-row" href="/trainer/reports/<%= r._id %>" data-series-row data-title="<%= (r.title || '').toLowerCase() %>" data-location="<%= (r.location || '').toLowerCase() %>" data-status="<%= r.status %>">
         <div class="course-main">
           <span class="status <%= r.status %>"><%= r.status === 'active' ? 'activ' : 'finalizat' %></span>
           <h3><%= r.title %></h3>
@@ -59,5 +68,23 @@
     <% }) %>
   </div>
 </section>
+
+
+<script>
+  const seriesSearch = document.getElementById('seriesSearch');
+  const seriesStatusFilter = document.getElementById('seriesStatusFilter');
+  const seriesRows = Array.from(document.querySelectorAll('[data-series-row]'));
+  function updateSeriesList() {
+    const q = (seriesSearch?.value || '').toLowerCase().trim();
+    const status = seriesStatusFilter?.value || 'all';
+    seriesRows.forEach((row) => {
+      const matchesText = !q || row.dataset.title.includes(q) || row.dataset.location.includes(q);
+      const matchesStatus = status === 'all' || row.dataset.status === status;
+      row.style.display = matchesText && matchesStatus ? '' : 'none';
+    });
+  }
+  seriesSearch?.addEventListener('input', updateSeriesList);
+  seriesStatusFilter?.addEventListener('change', updateSeriesList);
+</script>
 
 <%- include('../partials/footer') %>

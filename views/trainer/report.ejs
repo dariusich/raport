@@ -277,6 +277,34 @@ const countUniqueSeminarDays = (seminars = []) => {
     margin-bottom: 16px;
   }
 
+  .seminar-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10060;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(18, 18, 24, 0.52);
+    backdrop-filter: blur(8px);
+  }
+
+  .seminar-delete-modal.open {
+    display: flex;
+    animation: modalFadeIn 0.22s ease both;
+  }
+
+  .seminar-delete-card {
+    width: min(460px, 100%);
+    margin: 0;
+    animation: modalScaleIn 0.26s cubic-bezier(.2,.8,.2,1) both;
+  }
+
+  .field-error {
+    border-color: #b91c1c !important;
+    box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.10);
+  }
+
   .save-success-icon {
     width: 62px;
     height: 62px;
@@ -523,14 +551,13 @@ seminarsInMonth.forEach(s => {
     Modifică
   </a>
 
-  <form
-    action="/trainer/reports/<%= report._id %>/seminars/<%= selectedSeminar._id %>/delete?month=<%= selectedMonth %>"
-    method="post"
-    onsubmit="return confirm('Ești sigur că vrei să ștergi acest seminar?\n\nAceastă acțiune nu poate fi anulată.');"
-    style="margin: 0;"
-  >
-    <button class="btn danger" type="submit" data-testid="seminar-delete-btn">Șterge</button>
-  </form>
+  <button
+    class="btn danger js-delete-seminar"
+    type="button"
+    data-testid="seminar-delete-btn"
+    data-delete-url="/trainer/reports/<%= report._id %>/seminars/<%= selectedSeminar._id %>/delete?month=<%= selectedMonth %>"
+    data-date="<%= new Date(selectedSeminar.date).toLocaleDateString('ro-RO') %>"
+  >Șterge</button>
 </div>
 
           <div class="detail-grid">
@@ -594,12 +621,12 @@ seminarsInMonth.forEach(s => {
                 max="<%= selectedMonth %>-<%= String(daysInMonth).padStart(2, '0') %>"
               >
             </label>
-            <label>Ora început <input name="startTime" type="time" value="<%= formSeminar ? formSeminar.startTime : '' %>"></label>
-            <label>Ora final <input name="endTime" type="time" value="<%= formSeminar ? formSeminar.endTime : '' %>"></label>
+            <label>Ora început <input name="startTime" type="time" required value="<%= formSeminar ? formSeminar.startTime : '' %>"></label>
+            <label>Ora final <input name="endTime" type="time" required value="<%= formSeminar ? formSeminar.endTime : '' %>"></label>
           </div>
 
           <label>Activitate desfășurată
-            <textarea name="activity" rows="3" placeholder="Ex: Masaj relaxare - tehnici practice, recapitulare, demonstrație..."><%= formSeminar ? formSeminar.activity : '' %></textarea>
+            <textarea name="activity" rows="3" required placeholder="Ex: Masaj relaxare - tehnici practice, recapitulare, demonstrație..."><%= formSeminar ? formSeminar.activity : '' %></textarea>
           </label>
 
           <label>Absenți / nume prenume
@@ -681,6 +708,18 @@ seminarsInMonth.forEach(s => {
     </div>
   </section>
 <% } %>
+
+<div class="seminar-delete-modal" id="seminarDeleteModal" aria-hidden="true">
+  <section class="card seminar-delete-card" role="dialog" aria-modal="true" aria-labelledby="seminarDeleteTitle">
+    <span class="pill red">Confirmare</span>
+    <h2 id="seminarDeleteTitle">Ștergi seminarul?</h2>
+    <p id="seminarDeleteText">Această acțiune nu poate fi anulată.</p>
+    <div class="actions">
+      <button class="btn ghost" type="button" id="seminarDeleteCancel">Anulează</button>
+      <button class="btn danger" type="button" id="seminarDeleteConfirm">Șterge seminar</button>
+    </div>
+  </section>
+</div>
 
 <script>
   const seminarModal = document.getElementById('seminarModal');
@@ -778,7 +817,28 @@ seminarsInMonth.forEach(s => {
     event.preventDefault();
 
     const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton?.disabled) return;
     const originalText = submitButton ? submitButton.textContent : '';
+
+    const startInput = form.querySelector('[name="startTime"]');
+    const endInput = form.querySelector('[name="endTime"]');
+    const activityInput = form.querySelector('[name="activity"]');
+    form.querySelectorAll('.field-error').forEach((el) => el.classList.remove('field-error'));
+
+    if (!startInput?.value || !endInput?.value || !activityInput?.value.trim()) {
+      event.preventDefault();
+      [startInput, endInput, activityInput].forEach((el) => { if (el && !el.value.trim()) el.classList.add('field-error'); });
+      alert('Completează data, ora de început, ora finală și activitatea.');
+      return;
+    }
+
+    if (startInput.value && endInput.value && endInput.value <= startInput.value) {
+      event.preventDefault();
+      endInput.classList.add('field-error');
+      alert('Ora finală trebuie să fie după ora de început.');
+      return;
+    }
+
     if (submitButton) {
       submitButton.disabled = true;
       submitButton.textContent = 'Se salvează...';
@@ -787,8 +847,12 @@ seminarsInMonth.forEach(s => {
     try {
       const response = await fetch(form.action, {
         method: 'POST',
-        headers: { Accept: 'application/json' },
-        body: new FormData(form),
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: new URLSearchParams(new FormData(form)),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.ok) throw new Error(result.message || 'Nu am putut salva seminarul.');
@@ -818,6 +882,52 @@ seminarsInMonth.forEach(s => {
         submitButton.disabled = false;
         submitButton.textContent = originalText;
       }
+    }
+  });
+
+  const seminarDeleteModal = document.getElementById('seminarDeleteModal');
+  const seminarDeleteText = document.getElementById('seminarDeleteText');
+  const seminarDeleteCancel = document.getElementById('seminarDeleteCancel');
+  const seminarDeleteConfirm = document.getElementById('seminarDeleteConfirm');
+  let pendingSeminarDelete = null;
+
+  document.querySelectorAll('.js-delete-seminar').forEach((button) => {
+    button.addEventListener('click', () => {
+      pendingSeminarDelete = button;
+      if (seminarDeleteText) seminarDeleteText.textContent = `Sigur vrei să ștergi seminarul din ${button.dataset.date}? Această acțiune nu poate fi anulată.`;
+      seminarDeleteModal?.classList.add('open');
+      seminarDeleteModal?.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+    });
+  });
+
+  function closeSeminarDeleteModal() {
+    seminarDeleteModal?.classList.remove('open');
+    seminarDeleteModal?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    pendingSeminarDelete = null;
+  }
+
+  seminarDeleteCancel?.addEventListener('click', closeSeminarDeleteModal);
+  seminarDeleteModal?.addEventListener('click', (event) => { if (event.target === seminarDeleteModal) closeSeminarDeleteModal(); });
+  seminarDeleteConfirm?.addEventListener('click', async () => {
+    if (!pendingSeminarDelete) return;
+    seminarDeleteConfirm.disabled = true;
+    const original = seminarDeleteConfirm.textContent;
+    seminarDeleteConfirm.textContent = 'Se șterge...';
+    try {
+      const response = await fetch(pendingSeminarDelete.dataset.deleteUrl, {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) throw new Error(result.message || 'Nu am putut șterge seminarul.');
+      window.location.href = `/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>#calendar-section`;
+    } catch (error) {
+      alert(error.message || 'A apărut o eroare la ștergere.');
+    } finally {
+      seminarDeleteConfirm.disabled = false;
+      seminarDeleteConfirm.textContent = original;
     }
   });
 

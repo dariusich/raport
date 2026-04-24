@@ -132,6 +132,22 @@
                 <p><b>Status:</b> <%= t.active ? 'activ' : 'inactiv' %></p>
               </div>
 
+              <details class="trainer-edit-box">
+                <summary>Editează trainer</summary>
+                <form action="/admin/trainers/<%= t._id %>/update" method="post" class="form-grid compact-form">
+                  <label>Nume<input name="name" required value="<%= t.name %>"></label>
+                  <label>User<input name="username" required value="<%= t.username %>"></label>
+                  <label>Filială<input name="location" value="<%= t.location || '' %>"></label>
+                  <label>Status
+                    <select name="active">
+                      <option value="true" <%= t.active ? 'selected' : '' %>>Activ</option>
+                      <option value="false" <%= !t.active ? 'selected' : '' %>>Inactiv</option>
+                    </select>
+                  </label>
+                  <button class="btn small primary" type="submit">Salvează trainer</button>
+                </form>
+              </details>
+
               <div class="actions trainer-inline-actions">
                 <form action="/admin/trainers/<%= t._id %>/toggle" method="post">
                   <button class="btn small" type="submit"><%= t.active ? 'Dezactivează' : 'Activează' %></button>
@@ -176,6 +192,7 @@
         <span class="pill red">Contabilitate</span>
         <h2>Evidență lunară, anuală și calcul plată</h2>
         <p>Filtrează după trainer, filială, an și lună. Contabila vede rapid seminariile efectuate și calculează plata trainerului.</p>
+        <a class="btn small ghost" href="/admin/exports/accounting.xlsx">Export Excel contabilitate</a>
       </div>
       <div class="accounting-total-box">
         <span>Total filtrat</span>

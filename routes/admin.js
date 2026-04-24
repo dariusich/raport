@@ -230,6 +230,28 @@ router.post('/trainers/:id/toggle', async (req, res) => {
   res.redirect('/admin#traineri');
 });
 
+router.post('/trainers/:id/update', async (req, res) => {
+  const trainer = await User.findById(req.params.id);
+  if (!trainer || trainer.role !== 'trainer') {
+    req.session.flash = { type: 'error', message: 'Trainerul nu a fost găsit.' };
+    return res.redirect('/admin#traineri');
+  }
+
+  trainer.name = String(req.body.name || trainer.name).trim();
+  trainer.username = String(req.body.username || trainer.username).toLowerCase().trim();
+  trainer.location = String(req.body.location || '').trim();
+  trainer.active = req.body.active === 'true';
+
+  try {
+    await trainer.save();
+    req.session.flash = { type: 'success', message: 'Trainer actualizat.' };
+  } catch (error) {
+    req.session.flash = { type: 'error', message: 'Nu am putut actualiza trainerul. Verifică userul să fie unic.' };
+  }
+
+  res.redirect('/admin#traineri');
+});
+
 router.post('/trainers/:id/password', async (req, res) => {
   const trainer = await User.findById(req.params.id);
   if (trainer && trainer.role === 'trainer' && req.body.password) {
@@ -380,6 +402,43 @@ router.get('/reports/:id/export.xlsx', async (req, res) => {
 
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', `attachment; filename="raport-${report._id}.xlsx"`);
+  await workbook.xlsx.write(res);
+  res.end();
+});
+
+
+router.get('/exports/accounting.xlsx', async (req, res) => {
+  const reports = await Report.find().populate('trainer').sort({ startDate: 1, title: 1 });
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('Contabilitate');
+  sheet.columns = [
+    { header: 'Trainer', key: 'trainer', width: 28 },
+    { header: 'Filială', key: 'location', width: 18 },
+    { header: 'Curs', key: 'course', width: 34 },
+    { header: 'Data seminar', key: 'date', width: 16 },
+    { header: 'Program', key: 'interval', width: 18 },
+    { header: 'Ore', key: 'hours', width: 10 },
+    { header: 'Status curs', key: 'status', width: 14 },
+  ];
+  sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD4145A' } };
+
+  for (const report of reports) {
+    for (const seminar of report.seminars || []) {
+      sheet.addRow({
+        trainer: report.trainer?.name || '-',
+        location: report.location || report.trainer?.location || '-',
+        course: report.title,
+        date: seminar.date ? new Date(seminar.date).toLocaleDateString('ro-RO') : '',
+        interval: `${seminar.startTime || ''}${seminar.endTime ? ' - ' + seminar.endTime : ''}`,
+        hours: seminar.hours || '',
+        status: report.status === 'finalized' ? 'finalizat' : 'activ',
+      });
+    }
+  }
+
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', 'attachment; filename="contabilitate-reflexovital.xlsx"');
   await workbook.xlsx.write(res);
   res.end();
 });

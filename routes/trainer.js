@@ -70,6 +70,33 @@ const calculateHours = (startTime, endTime) => {
   return Math.round(((end - start) / 60) * 100) / 100;
 };
 
+const minutesFromTime = (value) => {
+  const [h, m] = String(value || '').split(':').map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return null;
+  return h * 60 + m;
+};
+
+const validateSeminarPayload = (body, selectedMonth) => {
+  const errors = [];
+  const date = String(body.date || '').trim();
+  const startTime = String(body.startTime || '').trim();
+  const endTime = String(body.endTime || '').trim();
+  const activity = String(body.activity || '').trim();
+
+  if (!date) errors.push('Selectează data seminarului.');
+  if (selectedMonth && date && !date.startsWith(selectedMonth)) errors.push('Data aleasă nu aparține lunii selectate.');
+  if (!startTime) errors.push('Completează ora de început.');
+  if (!endTime) errors.push('Completează ora finală.');
+  if (startTime && endTime) {
+    const start = minutesFromTime(startTime);
+    const end = minutesFromTime(endTime);
+    if (start === null || end === null) errors.push('Orele introduse nu sunt valide.');
+    else if (end <= start) errors.push('Ora finală trebuie să fie după ora de început.');
+  }
+  if (!activity) errors.push('Completează activitatea desfășurată.');
+  return errors;
+};
+
 router.get('/', async (req, res) => {
   const reports = await Report.find({ trainer: req.session.user.id }).sort({ status: 1, startDate: 1, createdAt: -1 });
   res.render('trainer/index', { title: 'Rapoartele mele', reports, roMonths });
@@ -125,9 +152,25 @@ router.post('/reports/:id/seminars', async (req, res) => {
 
   const startTime = String(req.body.startTime || '').trim();
   const endTime = String(req.body.endTime || '').trim();
-  const date = req.body.date;
+  const date = String(req.body.date || '').trim();
   const month = date ? date.slice(0, 7) : String(req.body.selectedMonth || '');
   const seminarId = String(req.body.seminarId || '');
+  const validationErrors = validateSeminarPayload(req.body, month);
+  if (validationErrors.length) {
+    const message = validationErrors.join(' ');
+    if (wantsJson(req)) return res.status(422).json({ ok: false, message });
+    req.session.flash = { type: 'error', message };
+    return res.redirect(`/trainer/reports/${report._id}?month=${month}#calendar-section`);
+  }
+
+  const duplicate = report.seminars.find((s) => seminarDayKey(s.date) === date && String(s._id) !== seminarId);
+  if (duplicate) {
+    const message = 'Există deja un seminar salvat în această zi. Deschide ziua verde ca să îl modifici.';
+    if (wantsJson(req)) return res.status(409).json({ ok: false, message });
+    req.session.flash = { type: 'error', message };
+    return res.redirect(`/trainer/reports/${report._id}?month=${month}&seminar=${duplicate._id}#calendar-section`);
+  }
+
   const payload = {
     date,
     startTime,
@@ -175,16 +218,25 @@ router.post('/reports/:id/seminars/:seminarId/delete', async (req, res) => {
     trainer: req.session.user.id 
   });
 
-  if (!report) {
-    req.session.flash = { type: 'error', message: 'Raport negăsit.' };
+  if (!report || report.status !== 'active') {
+    if (wantsJson(req)) return res.status(404).json({ ok: false, message: 'Seminarul nu poate fi șters.' });
+    req.session.flash = { type: 'error', message: 'Seminarul nu poate fi șters.' };
     return res.redirect('/trainer');
   }
 
-  report.seminars.id(req.params.seminarId)?.deleteOne();
+  const seminar = report.seminars.id(req.params.seminarId);
+  if (!seminar) {
+    if (wantsJson(req)) return res.status(404).json({ ok: false, message: 'Seminarul nu a fost găsit.' });
+    req.session.flash = { type: 'error', message: 'Seminarul nu a fost găsit.' };
+    return res.redirect(`/trainer/reports/${report._id}?month=${req.query.month || ''}`);
+  }
+
+  seminar.deleteOne();
   await report.save();
 
-  req.session.flash = { type: 'success', message: 'Seminar șters.' };
+  if (wantsJson(req)) return res.json({ ok: true, message: 'Seminar șters.', month: req.query.month || '' });
 
+  req.session.flash = { type: 'success', message: 'Seminar șters.' };
   res.redirect(`/trainer/reports/${report._id}?month=${req.query.month || ''}`);
 });
 module.exports = router;
