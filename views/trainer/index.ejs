@@ -28,10 +28,10 @@
     <h1>Rapoartele mele</h1>
     <p class="hero-text">Alege seria, apoi luna în care vrei să adaugi ziua de seminar.</p>
   </div>
-  <div class="hero-stats compact">
+<div class="hero-stats compact">
+  <div><strong><%= reports.filter(r => r.status === 'active').length %></strong><span>serii active</span></div>
   <div><strong><%= reports.reduce((sum, r) => sum + countUniqueSeminarDays(r), 0) %></strong><span>seminarii salvate</span></div>
-    <div><strong><%= reports.reduce((sum, r) => sum + countUniqueSeminarDays(r.seminars), 0) %></strong><span>seminarii salvate</span></div>
-  </div>
+</div>
 </section>
 
 <section class="card luxe-card">
