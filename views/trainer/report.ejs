@@ -1,8 +1,13 @@
 <%- include('../partials/header') %>
 
 <%
-  const seminarDayKey = (date) => dateInputValue(date);
-  const countUniqueSeminarDays = (seminars = []) => new Set(seminars.map(s => seminarDayKey(s.date))).size;
+const seminarDayKey = (date) => new Date(date).toISOString().slice(0, 10);
+
+const countUniqueSeminarDays = (seminars = []) => {
+  const valid = seminars.filter(s => s && s.date);
+  const unique = new Set(valid.map(s => new Date(s.date).toISOString().slice(0, 10)));
+  return unique.size;
+};
 %>
 
 <style>
@@ -174,12 +179,12 @@
     const firstDay = new Date(calendarYear, calendarMonth - 1, 1);
     const daysInMonth = new Date(calendarYear, calendarMonth, 0).getDate();
     const startOffset = (firstDay.getDay() + 6) % 7;
-    const seminarsByDate = {};
+const seminarsByDate = {};
 
-    seminarsInMonth.forEach(s => {
-      const key = dateInputValue(s.date);
-      seminarsByDate[key] = s;
-    });
+seminarsInMonth.forEach(s => {
+  const key = new Date(s.date).toISOString().slice(0, 10);
+  seminarsByDate[key] = s;
+});
 
     const selectedDateKey = selectedSeminar ? dateInputValue(selectedSeminar.date) : '';
     const weekdayLabels = ['Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm', 'Dum'];
