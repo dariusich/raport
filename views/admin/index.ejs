@@ -130,18 +130,50 @@
 </section>
 
 <section class="tab-panel" id="contabilitate">
-  <section class="card">
-    <div class="section-title row-title">
+  <section class="card luxe-card accounting-dashboard">
+    <div class="section-title row-title accounting-title">
       <div>
-        <span class="pill green">Contabilitate</span>
-        <h2>Evidență lunară și calcul plată</h2>
-        <p>Selectezi trainerul, vezi totalul de seminarii și poți calcula plata: seminarii × comision.</p>
+        <span class="pill red">Contabilitate</span>
+        <h2>Evidență lunară, anuală și calcul plată</h2>
+        <p>Filtrează după trainer, filială, an și lună. Contabila vede rapid seminariile efectuate și calculează plata trainerului.</p>
       </div>
-      <label class="compact-select">Selectează trainer
-        <select id="accountingFilter">
+      <div class="accounting-total-box">
+        <span>Total filtrat</span>
+        <strong id="filteredTotal"><%= accounting.reduce((sum, item) => sum + item.total, 0) %></strong>
+        <small>seminarii</small>
+      </div>
+    </div>
+
+    <div class="accounting-filters">
+      <label>Trainer
+        <select id="accountingTrainerFilter">
           <option value="all">Toți trainerii</option>
           <% accounting.forEach(item => { %>
             <option value="<%= item.trainer._id %>"><%= item.trainer.name %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label>Filială
+        <select id="accountingLocationFilter">
+          <option value="all">Toate filialele</option>
+          <% [...new Set(accounting.flatMap(item => item.locations.length ? item.locations : [item.trainer.location]).filter(Boolean))].sort().forEach(location => { %>
+            <option value="<%= location %>"><%= location %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label>An
+        <select id="accountingYearFilter">
+          <option value="all">Toți anii</option>
+          <% [...new Set(accounting.flatMap(item => item.years))].sort((a,b)=>b-a).forEach(year => { %>
+            <option value="<%= year %>"><%= year %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label>Lună
+        <select id="accountingMonthFilter">
+          <option value="all">Toate lunile</option>
+          <% ['Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'].forEach((month, idx) => { %>
+            <option value="<%= idx %>"><%= month %></option>
           <% }) %>
         </select>
       </label>
@@ -149,7 +181,12 @@
 
     <div class="accounting-list">
       <% accounting.forEach(item => { %>
-        <article class="accounting-card" data-trainer-card="<%= item.trainer._id %>">
+        <% const dataPoints = []; item.reports.forEach(report => { (report.seminars || []).forEach(seminar => { if (seminar.date) { const d = new Date(seminar.date); if (!Number.isNaN(d.getTime())) dataPoints.push(d.getFullYear() + '-' + d.getMonth()); } }); }); %>
+        <article class="accounting-card luxe-mini-card"
+          data-trainer-card="<%= item.trainer._id %>"
+          data-location="<%= item.trainer.location || item.locations.join(',') || '' %>"
+          data-total="<%= item.total %>"
+          data-points="<%= dataPoints.join('|') %>">
           <div class="accounting-head">
             <div>
               <h3><%= item.trainer.name %></h3>
@@ -157,12 +194,24 @@
             </div>
             <strong><%= item.total %> seminarii</strong>
           </div>
-          <div class="months-grid">
-            <% item.monthly.forEach(m => { %>
-              <span class="month-chip <%= m.count ? 'has-count' : '' %>"><%= m.name.slice(0,3) %>: <b><%= m.count %></b></span>
+
+          <div class="year-strip">
+            <% if (item.byYear.length) { %>
+              <% item.byYear.forEach(y => { %>
+                <span><b><%= y.year %></b> · <%= y.count %></span>
+              <% }) %>
+            <% } else { %>
+              <span><b>Fără seminarii</b></span>
+            <% } %>
+          </div>
+
+          <div class="months-grid big">
+            <% item.selectedYearMonthly.forEach(m => { %>
+              <span class="month-chip <%= m.count ? 'has-count' : '' %>" data-month-index="<%= m.index %>"><%= m.name.slice(0,3) %>: <b><%= m.count %></b></span>
             <% }) %>
           </div>
-          <form class="pay-calc" oninput="this.querySelector('[data-total]').textContent = ((Number(this.commission.value)||0) * <%= item.total %>).toFixed(2) + ' lei'">
+
+          <form class="pay-calc" oninput="this.querySelector('[data-total]').textContent = ((Number(this.commission.value)||0) * Number(this.closest('[data-trainer-card]').dataset.visibleTotal || this.closest('[data-trainer-card]').dataset.total || 0)).toFixed(2) + ' lei'">
             <label>Comision/seminar <input name="commission" type="number" step="0.01" min="0" placeholder="lei"></label>
             <span>Total plată: <strong data-total>0.00 lei</strong></span>
           </form>

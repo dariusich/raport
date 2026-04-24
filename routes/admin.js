@@ -86,21 +86,51 @@ function parseNominalText(rawText) {
 }
 
 function accountingByTrainer(trainers, reports) {
+  const currentYear = new Date().getFullYear();
+
   return trainers.map((trainer) => {
     const trainerReports = reports.filter((report) => String(report.trainer?._id || report.trainer) === String(trainer._id));
     const monthly = roMonths.map((name, index) => ({ name, index, count: 0 }));
+    const byYear = new Map();
+    const byYearMonth = new Map();
+    const locations = new Set();
     let total = 0;
 
     for (const report of trainerReports) {
+      if (report.location) locations.add(report.location);
       for (const seminar of report.seminars || []) {
         if (!seminar.date) continue;
-        const monthIndex = new Date(seminar.date).getMonth();
+        const date = new Date(seminar.date);
+        if (Number.isNaN(date.getTime())) continue;
+        const year = date.getFullYear();
+        const monthIndex = date.getMonth();
+        const key = year + '-' + monthIndex;
+
         if (monthly[monthIndex]) monthly[monthIndex].count += 1;
+        byYear.set(year, (byYear.get(year) || 0) + 1);
+        byYearMonth.set(key, (byYearMonth.get(key) || 0) + 1);
         total += 1;
       }
     }
 
-    return { trainer, reports: trainerReports, monthly, total };
+    const years = Array.from(byYear.keys()).sort((a, b) => b - a);
+    const selectedYear = years.includes(currentYear) ? currentYear : years[0] || currentYear;
+    const selectedYearMonthly = roMonths.map((name, index) => ({
+      name,
+      index,
+      count: byYearMonth.get(selectedYear + '-' + index) || 0,
+    }));
+
+    return {
+      trainer,
+      reports: trainerReports,
+      monthly,
+      selectedYearMonthly,
+      byYear: Array.from(byYear.entries()).map(([year, count]) => ({ year, count })).sort((a, b) => b.year - a.year),
+      years,
+      locations: Array.from(locations),
+      total,
+    };
   });
 }
 
@@ -141,7 +171,7 @@ router.post('/trainers', async (req, res) => {
     req.session.flash = { type: 'error', message: 'Nu am putut crea trainerul. Verifică userul să fie unic.' };
   }
 
-  res.redirect('/admin#trainers');
+  res.redirect('/admin#traineri');
 });
 
 router.post('/trainers/:id/toggle', async (req, res) => {
@@ -150,7 +180,7 @@ router.post('/trainers/:id/toggle', async (req, res) => {
     trainer.active = !trainer.active;
     await trainer.save();
   }
-  res.redirect('/admin#trainers');
+  res.redirect('/admin#traineri');
 });
 
 router.post('/trainers/:id/password', async (req, res) => {
@@ -160,7 +190,7 @@ router.post('/trainers/:id/password', async (req, res) => {
     await trainer.save();
     req.session.flash = { type: 'success', message: 'Parola a fost schimbată.' };
   }
-  res.redirect('/admin#trainers');
+  res.redirect('/admin#traineri');
 });
 
 router.post('/reports', upload.single('nominalDoc'), async (req, res) => {
@@ -174,7 +204,7 @@ router.post('/reports', upload.single('nominalDoc'), async (req, res) => {
       imported = parseNominalText(result.value);
     } catch (error) {
       req.session.flash = { type: 'error', message: 'Nu am putut citi tabelul nominal din Word. Poți lipi cursanții manual.' };
-      return res.redirect('/admin#reports');
+      return res.redirect('/admin#rapoarte');
     }
   }
 
@@ -197,7 +227,7 @@ router.post('/reports', upload.single('nominalDoc'), async (req, res) => {
       ? `Raport alocat. Am importat ${imported.trainees.length} cursanți din tabelul nominal.`
       : 'Raport alocat trainerului.',
   };
-  res.redirect('/admin#reports');
+  res.redirect('/admin#rapoarte');
 });
 
 router.get('/reports/:id', async (req, res) => {
@@ -226,7 +256,7 @@ router.post('/reports/:id/status', async (req, res) => {
 router.delete('/reports/:id', async (req, res) => {
   await Report.findByIdAndDelete(req.params.id);
   req.session.flash = { type: 'success', message: 'Raport șters.' };
-  res.redirect('/admin#reports');
+  res.redirect('/admin#rapoarte');
 });
 
 router.get('/reports/:id/export.xlsx', async (req, res) => {
@@ -239,7 +269,6 @@ router.get('/reports/:id/export.xlsx', async (req, res) => {
     { header: 'Data', key: 'date', width: 14 },
     { header: 'Ore început-final', key: 'interval', width: 18 },
     { header: 'Activitate conform programei', key: 'activity', width: 34 },
-    { header: 'Conform', key: 'activityConform', width: 12 },
     { header: 'Absenți', key: 'absents', width: 32 },
     { header: 'Cursanți cu probleme', key: 'issues', width: 36 },
     { header: 'Detalii probleme', key: 'issuesDetails', width: 42 },
@@ -258,7 +287,6 @@ router.get('/reports/:id/export.xlsx', async (req, res) => {
       date: seminar.date ? new Date(seminar.date).toLocaleDateString('ro-RO') : '',
       interval: `${seminar.startTime || ''}${seminar.endTime ? ' - ' + seminar.endTime : ''}`,
       activity: seminar.activity,
-      activityConform: seminar.activityConform,
       absents: seminar.absents.join(', '),
       issues: seminar.issues.join(', '),
       issuesDetails: seminar.issuesDetails,

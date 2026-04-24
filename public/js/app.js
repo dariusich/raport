@@ -1,13 +1,59 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const accountingFilter = document.querySelector('#accountingFilter');
-  if (accountingFilter) {
-    accountingFilter.addEventListener('change', () => {
-      const value = accountingFilter.value;
-      document.querySelectorAll('[data-trainer-card]').forEach((card) => {
-        card.style.display = value === 'all' || card.dataset.trainerCard === value ? '' : 'none';
-      });
+  const accountingFilters = {
+    trainer: document.querySelector('#accountingTrainerFilter') || document.querySelector('#accountingFilter'),
+    location: document.querySelector('#accountingLocationFilter'),
+    year: document.querySelector('#accountingYearFilter'),
+    month: document.querySelector('#accountingMonthFilter'),
+  };
+
+  const updateAccounting = () => {
+    const trainerValue = accountingFilters.trainer?.value || 'all';
+    const locationValue = accountingFilters.location?.value || 'all';
+    const yearValue = accountingFilters.year?.value || 'all';
+    const monthValue = accountingFilters.month?.value || 'all';
+    let filteredTotal = 0;
+
+    document.querySelectorAll('[data-trainer-card]').forEach((card) => {
+      const points = (card.dataset.points || '').split('|').filter(Boolean);
+      const location = card.dataset.location || '';
+      const trainerMatch = trainerValue === 'all' || card.dataset.trainerCard === trainerValue;
+      const locationMatch = locationValue === 'all' || location.includes(locationValue);
+      const dateMatch = points.length === 0
+        ? yearValue === 'all' && monthValue === 'all'
+        : points.some((point) => {
+          const [year, month] = point.split('-');
+          return (yearValue === 'all' || year === yearValue) && (monthValue === 'all' || month === monthValue);
+        });
+
+      const visible = trainerMatch && locationMatch && dateMatch;
+      card.style.display = visible ? '' : 'none';
+
+      let visibleCount = Number(card.dataset.total || 0);
+      if (visible && (yearValue !== 'all' || monthValue !== 'all')) {
+        visibleCount = points.filter((point) => {
+          const [year, month] = point.split('-');
+          return (yearValue === 'all' || year === yearValue) && (monthValue === 'all' || month === monthValue);
+        }).length;
+      }
+      card.dataset.visibleTotal = visibleCount;
+      if (visible) filteredTotal += visibleCount;
+
+      const strong = card.querySelector('.accounting-head strong');
+      if (strong) strong.textContent = `${visibleCount} seminarii`;
+
+      const commission = card.querySelector('input[name="commission"]');
+      const total = card.querySelector('[data-total]');
+      if (commission && total) total.textContent = ((Number(commission.value) || 0) * visibleCount).toFixed(2) + ' lei';
     });
-  }
+
+    const totalBox = document.querySelector('#filteredTotal');
+    if (totalBox) totalBox.textContent = filteredTotal;
+  };
+
+  Object.values(accountingFilters).forEach((filter) => {
+    if (filter) filter.addEventListener('change', updateAccounting);
+  });
+  updateAccounting();
 
   const tabButtons = document.querySelectorAll('[data-tab-target]');
   const tabPanels = document.querySelectorAll('.tab-panel');
@@ -51,5 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
     boxes.forEach((box) => box.addEventListener('change', update));
+    update();
   });
 });
