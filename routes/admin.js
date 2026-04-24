@@ -1,34 +1,132 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const ExcelJS = require('exceljs');
+const multer = require('multer');
+const mammoth = require('mammoth');
 const User = require('../models/User');
 const Report = require('../models/Report');
 const { requireAdmin } = require('../utils/auth');
-const { reportStats } = require('../utils/stats');
+const { reportStats, roMonths } = require('../utils/stats');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } });
+
 router.use(requireAdmin);
 
+function normalizeText(value) {
+  return String(value || '')
+    .replace(/\r/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{2,}/g, '\n')
+    .trim();
+}
+
+function parseDateRo(value) {
+  const match = String(value || '').match(/(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})/);
+  if (!match) return undefined;
+  const [, dd, mm, yyyy] = match;
+  return `${yyyy}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+}
+
+function cleanName(name) {
+  return String(name || '')
+    .replace(/\s+/g, ' ')
+    .replace(/[0-9]/g, '')
+    .replace(/\b(CNP|ADRESA|INITIAL|PAREN|CRT|NR)\b/gi, '')
+    .trim();
+}
+
 function parseTrainees(text) {
-  return String(text || '')
+  return normalizeText(text)
     .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
+    .map((line) => cleanName(line))
+    .filter((line) => line.length >= 5)
     .map((line) => ({ name: line }));
+}
+
+function parseNominalText(rawText) {
+  const text = normalizeText(rawText);
+  const lines = text.split('\n').map((line) => line.trim()).filter(Boolean);
+
+  const titleLine = lines.find((line) => /ocupația|ocupatia|programul/i.test(line)) || '';
+  const seriaLine = lines.find((line) => /seria/i.test(line)) || '';
+  const periodMatch = seriaLine.match(/(\d{1,2}[.\-/]\d{1,2}[.\-/]\d{4})\s*[-–]\s*(\d{1,2}[.\-/]\d{1,2}[.\-/]\d{4})/);
+
+  let title = '';
+  if (titleLine) {
+    title = titleLine
+      .replace(/^.*?(ocupația|ocupatia)\s+de\s+/i, '')
+      .replace(/^.*?pentru\s+/i, '')
+      .trim();
+  }
+  if (!title && lines[0]) title = lines[0].slice(0, 120);
+
+  const trainees = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (/^\d{1,3}$/.test(line)) {
+      const candidate = cleanName(lines[i + 1]);
+      if (
+        candidate &&
+        candidate.length >= 5 &&
+        !/^(Nr|Numele|Inițialele|Initialele|CNP|Adres)/i.test(candidate) &&
+        !trainees.some((t) => t.name === candidate)
+      ) {
+        trainees.push({ name: candidate });
+      }
+    }
+  }
+
+  return {
+    title: title || '',
+    startDate: periodMatch ? parseDateRo(periodMatch[1]) : undefined,
+    endDate: periodMatch ? parseDateRo(periodMatch[2]) : undefined,
+    trainees,
+  };
+}
+
+function accountingByTrainer(trainers, reports) {
+  return trainers.map((trainer) => {
+    const trainerReports = reports.filter((report) => String(report.trainer?._id || report.trainer) === String(trainer._id));
+    const monthly = roMonths.map((name, index) => ({ name, index, count: 0 }));
+    let total = 0;
+
+    for (const report of trainerReports) {
+      for (const seminar of report.seminars || []) {
+        if (!seminar.date) continue;
+        const monthIndex = new Date(seminar.date).getMonth();
+        if (monthly[monthIndex]) monthly[monthIndex].count += 1;
+        total += 1;
+      }
+    }
+
+    return { trainer, reports: trainerReports, monthly, total };
+  });
 }
 
 router.get('/', async (req, res) => {
   const trainers = await User.find({ role: 'trainer' }).sort({ active: -1, name: 1 });
-  const reports = await Report.find().populate('trainer').sort({ updatedAt: -1 }).limit(80);
+  const reports = await Report.find().populate('trainer').sort({ updatedAt: -1 }).limit(200);
   const totalSeminars = reports.reduce((sum, r) => sum + (r.seminars?.length || 0), 0);
   const activeReports = reports.filter((r) => r.status === 'active').length;
   const finalizedReports = reports.filter((r) => r.status === 'finalized').length;
-  res.render('admin/index', { title: 'Admin', trainers, reports, totalSeminars, activeReports, finalizedReports });
+  const accounting = accountingByTrainer(trainers, reports);
+
+  res.render('admin/index', {
+    title: 'Admin',
+    trainers,
+    reports,
+    totalSeminars,
+    activeReports,
+    finalizedReports,
+    accounting,
+  });
 });
 
 router.post('/trainers', async (req, res) => {
-  const { name, username, password, location, commissionPerSeminar } = req.body;
+  const { name, username, password, location } = req.body;
   const passwordHash = await bcrypt.hash(password, 10);
+
   try {
     await User.create({
       name,
@@ -36,12 +134,13 @@ router.post('/trainers', async (req, res) => {
       passwordHash,
       role: 'trainer',
       location,
-      commissionPerSeminar: Number(commissionPerSeminar || 0),
+      commissionPerSeminar: 0,
     });
     req.session.flash = { type: 'success', message: 'Trainer creat.' };
   } catch (error) {
     req.session.flash = { type: 'error', message: 'Nu am putut crea trainerul. Verifică userul să fie unic.' };
   }
+
   res.redirect('/admin#trainers');
 });
 
@@ -64,19 +163,40 @@ router.post('/trainers/:id/password', async (req, res) => {
   res.redirect('/admin#trainers');
 });
 
-router.post('/reports', async (req, res) => {
+router.post('/reports', upload.single('nominalDoc'), async (req, res) => {
   const trainer = await User.findById(req.body.trainerId);
   if (!trainer) return res.redirect('/admin');
+
+  let imported = { title: '', trainees: [], startDate: undefined, endDate: undefined };
+  if (req.file?.buffer) {
+    try {
+      const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+      imported = parseNominalText(result.value);
+    } catch (error) {
+      req.session.flash = { type: 'error', message: 'Nu am putut citi tabelul nominal din Word. Poți lipi cursanții manual.' };
+      return res.redirect('/admin#reports');
+    }
+  }
+
+  const manualTrainees = parseTrainees(req.body.traineesText);
+  const trainees = imported.trainees.length ? imported.trainees : manualTrainees;
+
   await Report.create({
-    title: req.body.title,
+    title: req.body.title || imported.title || 'Raport curs',
     trainer: trainer._id,
     location: req.body.location || trainer.location,
-    startDate: req.body.startDate || undefined,
-    endDate: req.body.endDate || undefined,
-    trainees: parseTrainees(req.body.traineesText),
+    startDate: req.body.startDate || imported.startDate || undefined,
+    endDate: req.body.endDate || imported.endDate || undefined,
+    trainees,
     adminNotes: req.body.adminNotes,
   });
-  req.session.flash = { type: 'success', message: 'Raport alocat trainerului.' };
+
+  req.session.flash = {
+    type: 'success',
+    message: imported.trainees.length
+      ? `Raport alocat. Am importat ${imported.trainees.length} cursanți din tabelul nominal.`
+      : 'Raport alocat trainerului.',
+  };
   res.redirect('/admin#reports');
 });
 
@@ -117,23 +237,35 @@ router.get('/reports/:id/export.xlsx', async (req, res) => {
   const sheet = workbook.addWorksheet('Raport');
   sheet.columns = [
     { header: 'Data', key: 'date', width: 14 },
-    { header: 'Tema', key: 'topic', width: 28 },
-    { header: 'Ore', key: 'hours', width: 8 },
+    { header: 'Ore început-final', key: 'interval', width: 18 },
+    { header: 'Activitate conform programei', key: 'activity', width: 34 },
+    { header: 'Conform', key: 'activityConform', width: 12 },
     { header: 'Absenți', key: 'absents', width: 32 },
-    { header: 'Probleme', key: 'issues', width: 32 },
+    { header: 'Cursanți cu probleme', key: 'issues', width: 36 },
+    { header: 'Detalii probleme', key: 'issuesDetails', width: 42 },
+    { header: 'Starea sălii', key: 'roomState', width: 30 },
+    { header: 'Obiecte defecte / lipsă', key: 'brokenObjects', width: 34 },
+    { header: 'Produse', key: 'productsQuantity', width: 16 },
+    { header: 'Poze/filmulețe', key: 'mediaSent', width: 16 },
     { header: 'Talentați', key: 'talents', width: 32 },
     { header: 'Observații', key: 'notes', width: 45 },
   ];
-  sheet.getRow(1).font = { bold: true, size: 12 };
-  sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEAF2FF' } };
+  sheet.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+  sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF143D2B' } };
 
   for (const seminar of report.seminars) {
     sheet.addRow({
       date: seminar.date ? new Date(seminar.date).toLocaleDateString('ro-RO') : '',
-      topic: seminar.topic,
-      hours: seminar.hours,
+      interval: `${seminar.startTime || ''}${seminar.endTime ? ' - ' + seminar.endTime : ''}`,
+      activity: seminar.activity,
+      activityConform: seminar.activityConform,
       absents: seminar.absents.join(', '),
       issues: seminar.issues.join(', '),
+      issuesDetails: seminar.issuesDetails,
+      roomState: seminar.roomState,
+      brokenObjects: seminar.brokenObjects,
+      productsQuantity: seminar.productsQuantity,
+      mediaSent: seminar.mediaSent,
       talents: seminar.talents.join(', '),
       notes: seminar.notes,
     });

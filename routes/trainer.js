@@ -24,15 +24,38 @@ router.post('/reports/:id/seminars', async (req, res) => {
   }
 
   const toArray = (value) => Array.isArray(value) ? value.filter(Boolean) : value ? [value] : [];
+  const startTime = String(req.body.startTime || '').trim();
+  const endTime = String(req.body.endTime || '').trim();
+  let hours = Number(req.body.hours || 0);
+
+  if (!hours && startTime && endTime) {
+    const [sh, sm] = startTime.split(':').map(Number);
+    const [eh, em] = endTime.split(':').map(Number);
+    if (!Number.isNaN(sh) && !Number.isNaN(eh)) {
+      const start = sh * 60 + (sm || 0);
+      const end = eh * 60 + (em || 0);
+      if (end > start) hours = Math.round(((end - start) / 60) * 100) / 100;
+    }
+  }
+
   report.seminars.push({
     date: req.body.date,
-    topic: req.body.topic,
-    hours: Number(req.body.hours || 0),
+    startTime,
+    endTime,
+    hours,
+    activity: req.body.activity,
+    activityConform: req.body.activityConform,
     absents: toArray(req.body.absents),
     issues: toArray(req.body.issues),
+    issuesDetails: req.body.issuesDetails,
+    roomState: req.body.roomState,
+    brokenObjects: req.body.brokenObjects,
+    productsQuantity: req.body.productsQuantity,
+    mediaSent: req.body.mediaSent,
     talents: toArray(req.body.talents),
     notes: req.body.notes,
   });
+
   await report.save();
   req.session.flash = { type: 'success', message: 'Seminar salvat.' };
   res.redirect(`/trainer/reports/${report._id}`);

@@ -3,18 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= title %> · Rapoarte Traineri</title>
+  <title><%= title %> · Academia Reflexovital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/"><span>RT</span> Rapoarte Traineri</a>
+    <a class="brand" href="/">
+      <span class="brand-mark">RV</span>
+      <span>
+        <strong>Reflexovital</strong>
+        <small>Academia de Cursuri</small>
+      </span>
+    </a>
     <% if (currentUser) { %>
-      <nav>
+      <nav class="topnav">
         <a href="<%= currentUser.role === 'admin' ? '/admin' : '/trainer' %>">Dashboard</a>
-        <form action="/logout" method="post"><button class="link-btn">Ieșire</button></form>
+        <% if (currentUser.role === 'admin') { %>
+          <a href="/admin#contabilitate">Contabilitate</a>
+          <a href="/admin#reports">Rapoarte</a>
+        <% } %>
+        <form action="/logout" method="post"><button class="link-button">Ieșire</button></form>
       </nav>
     <% } %>
   </header>
-  <main class="shell">
-    <% if (flash) { %><div class="flash <%= flash.type %>"><%= flash.message %></div><% } %>
+
+  <main class="page-shell">
+    <% if (flash) { %>
+      <div class="flash flash-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
