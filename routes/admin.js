@@ -240,6 +240,30 @@ router.post('/trainers/:id/password', async (req, res) => {
   res.redirect('/admin#traineri');
 });
 
+router.post('/trainers/:id/delete', async (req, res) => {
+  const trainer = await User.findById(req.params.id);
+
+  if (!trainer || trainer.role !== 'trainer') {
+    if (req.accepts('json')) {
+      return res.status(404).json({ ok: false, message: 'Trainerul nu a fost găsit.' });
+    }
+    req.session.flash = { type: 'error', message: 'Trainerul nu a fost găsit.' };
+    return res.redirect('/admin#traineri');
+  }
+
+  const deletedReports = await Report.deleteMany({ trainer: trainer._id });
+  await User.findByIdAndDelete(trainer._id);
+
+  const message = `Trainer șters. Au fost șterse și ${deletedReports.deletedCount || 0} cursuri asociate.`;
+
+  if (req.accepts('json')) {
+    return res.json({ ok: true, message });
+  }
+
+  req.session.flash = { type: 'success', message };
+  return res.redirect('/admin#traineri');
+});
+
 router.post('/reports', upload.single('nominalDoc'), async (req, res) => {
   const trainer = await User.findById(req.body.trainerId);
   if (!trainer) return res.redirect('/admin');

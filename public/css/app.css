@@ -1205,3 +1205,168 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
     flex-direction: column;
   }
 }
+
+
+/* =================== ADMIN MODAL + TOAST + MOBILE FIXES =================== */
+.is-hidden { display: none !important; }
+
+.btn.danger {
+  background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+  color: #fff;
+  border-color: transparent;
+}
+
+.btn.danger:hover {
+  filter: brightness(1.04);
+  box-shadow: 0 10px 22px rgba(127, 29, 29, 0.18);
+}
+
+.confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(23, 18, 21, 0.48);
+  backdrop-filter: blur(8px);
+}
+
+.confirm-modal.open { display: flex; }
+
+.confirm-modal-panel {
+  width: min(440px, 100%);
+  border-radius: 28px;
+  padding: 24px;
+  background: #fffaf8;
+  border: 1px solid var(--line);
+  box-shadow: 0 28px 80px rgba(60, 20, 28, 0.28);
+}
+
+.confirm-modal-panel h2 {
+  margin: 12px 0 8px;
+  font-size: 30px;
+}
+
+.confirm-modal-panel p {
+  margin: 0 0 18px;
+  color: var(--muted);
+}
+
+.confirm-actions { justify-content: flex-end; }
+
+.toast-stack {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 11000;
+  display: grid;
+  gap: 10px;
+  width: min(360px, calc(100vw - 36px));
+}
+
+.toast {
+  transform: translateY(10px);
+  opacity: 0;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(196, 31, 45, 0.16);
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(60, 20, 28, 0.18);
+  color: var(--ink);
+  font-weight: 700;
+  transition: 0.22s ease;
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.toast-success { border-color: rgba(19, 201, 120, 0.32); }
+.toast-error { border-color: rgba(185, 28, 28, 0.32); color: #7f1d1d; }
+
+@media (max-width: 720px) {
+  .trainer-inline-actions {
+    align-items: stretch;
+  }
+
+  .trainer-inline-actions > form,
+  .trainer-inline-actions > button,
+  .password-form {
+    width: 100%;
+  }
+
+  .password-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  .password-form .password-input.is-hidden + .password-toggle {
+    grid-column: 1 / -1;
+  }
+
+  .report-panel,
+  .trainer-layout,
+  .card,
+  .seminar-modal-panel,
+  .seminar-modal .seminar-form {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .seminar-calendar {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .calendar-head { display: none; }
+
+  .calendar-day {
+    width: 100%;
+    min-width: 0;
+    min-height: 68px;
+    padding: 8px 6px;
+    border-radius: 14px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .calendar-day span {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    line-height: 1.2;
+  }
+
+  .calendar-day.empty { display: none; }
+
+  .seminar-modal {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .seminar-modal-panel {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 26px 26px 0 0;
+  }
+
+  .seminar-modal .seminar-form {
+    width: 100%;
+    border-radius: 26px 26px 0 0;
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+@media (max-width: 420px) {
+  .page-shell { padding-left: 10px; padding-right: 10px; }
+  .card { padding-left: 14px; padding-right: 14px; }
+  .seminar-calendar { gap: 7px; }
+  .calendar-day { min-height: 64px; padding: 7px 5px; }
+  .calendar-day strong { font-size: 16px; }
+  .calendar-day span { font-size: 10px; }
+  .toast-stack { right: 10px; bottom: 10px; width: calc(100vw - 20px); }
+}

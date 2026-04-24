@@ -136,9 +136,17 @@
                 <form action="/admin/trainers/<%= t._id %>/toggle" method="post">
                   <button class="btn small" type="submit"><%= t.active ? 'Dezactivează' : 'Activează' %></button>
                 </form>
-                <form action="/admin/trainers/<%= t._id %>/password" method="post" class="inline-form">
-                  <input name="password" type="password" placeholder="Parolă nouă">
-                  <button class="btn small" type="submit">Schimbă</button>
+
+                <button
+                  class="btn small danger js-delete-trainer"
+                  type="button"
+                  data-delete-url="/admin/trainers/<%= t._id %>/delete"
+                  data-trainer-name="<%= t.name %>"
+                >Șterge trainer</button>
+
+                <form action="/admin/trainers/<%= t._id %>/password" method="post" class="inline-form password-form">
+                  <input name="password" type="password" placeholder="Parolă nouă" class="password-input is-hidden" autocomplete="new-password">
+                  <button class="btn small password-toggle" type="button">Schimbă</button>
                 </form>
               </div>
             </div>
@@ -148,6 +156,18 @@
     </div>
   </section>
 </section>
+
+<div class="confirm-modal" id="deleteTrainerModal" aria-hidden="true">
+  <div class="confirm-modal-panel" role="dialog" aria-modal="true" aria-labelledby="deleteTrainerTitle">
+    <span class="pill red">Confirmare</span>
+    <h2 id="deleteTrainerTitle">Ștergi trainerul?</h2>
+    <p id="deleteTrainerText">Această acțiune va șterge trainerul și toate cursurile asociate lui.</p>
+    <div class="actions confirm-actions">
+      <button class="btn ghost" type="button" data-modal-cancel>Anulează</button>
+      <button class="btn danger" type="button" data-modal-confirm>Șterge definitiv</button>
+    </div>
+  </div>
+</div>
 
 <section class="tab-panel" id="contabilitate">
   <section class="card luxe-card accounting-dashboard">

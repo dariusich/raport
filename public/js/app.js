@@ -160,4 +160,108 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', () => {
     document.querySelectorAll('[data-user-menu]').forEach((menu) => menu.classList.remove('open'));
   });
+
+  const showToast = (message, type = 'success') => {
+    if (!message) return;
+    let stack = document.querySelector('.toast-stack');
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.className = 'toast-stack';
+      document.body.appendChild(stack);
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    stack.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 20);
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 220);
+    }, 3200);
+  };
+
+  const flash = document.querySelector('.flash');
+  if (flash) {
+    showToast(flash.textContent.trim(), flash.classList.contains('flash-error') ? 'error' : 'success');
+    setTimeout(() => flash.remove(), 250);
+  }
+
+  document.querySelectorAll('.password-form').forEach((form) => {
+    const input = form.querySelector('.password-input');
+    const button = form.querySelector('.password-toggle');
+    if (!input || !button) return;
+
+    button.addEventListener('click', () => {
+      if (input.classList.contains('is-hidden')) {
+        input.classList.remove('is-hidden');
+        input.focus();
+        return;
+      }
+
+      if (!input.value.trim()) {
+        showToast('Introdu parola nouă.', 'error');
+        input.focus();
+        return;
+      }
+
+      form.submit();
+    });
+  });
+
+  const deleteTrainerModal = document.getElementById('deleteTrainerModal');
+  const deleteTrainerText = document.getElementById('deleteTrainerText');
+  const deleteTrainerConfirm = deleteTrainerModal?.querySelector('[data-modal-confirm]');
+  const deleteTrainerCancel = deleteTrainerModal?.querySelector('[data-modal-cancel]');
+  let pendingDeleteButton = null;
+
+  const closeDeleteTrainerModal = () => {
+    if (!deleteTrainerModal) return;
+    deleteTrainerModal.classList.remove('open');
+    deleteTrainerModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    pendingDeleteButton = null;
+  };
+
+  document.querySelectorAll('.js-delete-trainer').forEach((button) => {
+    button.addEventListener('click', () => {
+      pendingDeleteButton = button;
+      const name = button.dataset.trainerName || 'acest trainer';
+      if (deleteTrainerText) {
+        deleteTrainerText.textContent = `Sigur vrei să ștergi trainerul ${name}? Se vor șterge și toate cursurile asociate lui.`;
+      }
+      deleteTrainerModal?.classList.add('open');
+      deleteTrainerModal?.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+    });
+  });
+
+  deleteTrainerCancel?.addEventListener('click', closeDeleteTrainerModal);
+  deleteTrainerModal?.addEventListener('click', (event) => {
+    if (event.target === deleteTrainerModal) closeDeleteTrainerModal();
+  });
+
+  deleteTrainerConfirm?.addEventListener('click', async () => {
+    if (!pendingDeleteButton) return;
+    const button = pendingDeleteButton;
+    const url = button.dataset.deleteUrl;
+    deleteTrainerConfirm.disabled = true;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) throw new Error(result.message || 'Nu am putut șterge trainerul.');
+
+      button.closest('.trainer-accordion-item')?.remove();
+      closeDeleteTrainerModal();
+      showToast(result.message || 'Trainer șters.');
+    } catch (error) {
+      showToast(error.message || 'A apărut o eroare la ștergere.', 'error');
+    } finally {
+      deleteTrainerConfirm.disabled = false;
+    }
+  });
+
 });

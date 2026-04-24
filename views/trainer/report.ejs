@@ -239,13 +239,28 @@ const countUniqueSeminarDays = (seminars = []) => {
 
   @media (max-width: 720px) {
     .seminar-calendar {
-      gap: 5px;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      width: 100%;
     }
 
+    .calendar-head { display: none; }
+
     .calendar-day {
-      min-height: 54px;
-      border-radius: 12px;
-      padding: 7px;
+      min-height: 68px;
+      border-radius: 14px;
+      padding: 8px 6px;
+      align-items: center;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .calendar-day.empty { display: none; }
+
+    .calendar-day span {
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      line-height: 1.2;
     }
 
     .calendar-day strong {
@@ -265,13 +280,16 @@ const countUniqueSeminarDays = (seminars = []) => {
 
     .seminar-modal-panel {
       width: 100%;
+      max-width: 100%;
       max-height: 92vh;
       border-radius: 26px 26px 0 0;
     }
 
     .seminar-modal .seminar-form {
+      width: 100%;
+      max-width: 100%;
       border-radius: 26px 26px 0 0;
-      padding-bottom: 28px;
+      padding: 22px 18px 28px;
     }
 
     .multi-menu {
