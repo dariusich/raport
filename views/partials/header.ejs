@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> · Rapoarte Traineri</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span>RT</span> Rapoarte Traineri</a>
+    <% if (currentUser) { %>
+      <nav>
+        <a href="<%= currentUser.role === 'admin' ? '/admin' : '/trainer' %>">Dashboard</a>
+        <form action="/logout" method="post"><button class="link-btn">Ieșire</button></form>
+      </nav>
+    <% } %>
+  </header>
+  <main class="shell">
+    <% if (flash) { %><div class="flash <%= flash.type %>"><%= flash.message %></div><% } %>

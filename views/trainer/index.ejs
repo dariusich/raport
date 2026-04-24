@@ -1,0 +1,4 @@
+<%- include('../partials/header') %>
+<section class="hero"><div><p class="eyebrow">trainer</p><h1>Rapoartele mele</h1><p class="muted">Completează rapoartele active. Cele finalizate rămân în arhivă.</p></div></section>
+<section class="report-grid"><% reports.forEach(r => { %><a class="report-card" href="/trainer/reports/<%= r._id %>"><span class="pill <%= r.status === 'active' ? 'warn' : 'ok' %>"><%= r.status === 'active' ? 'activ' : 'finalizat' %></span><h2><%= r.title %></h2><p><%= r.location || 'fără filială' %></p><strong><%= r.seminars.length %> seminarii completate</strong></a><% }) %></section>
+<%- include('../partials/footer') %>

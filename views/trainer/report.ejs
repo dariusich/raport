@@ -1,0 +1,20 @@
+<%- include('../partials/header') %>
+<section class="hero"><div><p class="eyebrow">formular raport</p><h1><%= report.title %></h1><p class="muted"><%= report.location %> · <%= report.status === 'active' ? 'Raport activ' : 'Raport finalizat' %></p></div><div class="stats"><div><b><%= report.trainees.length %></b><span>cursanți</span></div><div><b><%= report.seminars.length %></b><span>seminarii</span></div></div></section>
+<div class="workspace">
+  <aside class="sticky-list card"><h2>Lista cursanți</h2><input class="search" data-trainee-filter placeholder="Caută cursant..."><div class="trainee-list"><% report.trainees.forEach(t => { %><div data-trainee-name="<%= t.name.toLowerCase() %>"><%= t.name %></div><% }) %></div></aside>
+  <section class="card"><h2>Adaugă seminar</h2>
+    <% if (report.status === 'active') { %>
+    <form method="post" action="/trainer/reports/<%= report._id %>/seminars" class="stack report-form">
+      <div class="grid three compact"><label>Data<input type="date" name="date" required></label><label>Tema seminarului<input name="topic" placeholder="Tema pe scurt"></label><label>Ore<input name="hours" type="number" step="0.5" value="0"></label></div>
+      <label>Absenți <span class="hint">poți selecta mai mulți</span><select name="absents" multiple size="5"><% report.trainees.forEach(t => { %><option value="<%= t.name %>"><%= t.name %></option><% }) %></select></label>
+      <label>Cursanți cu probleme <span class="hint">poți selecta mai mulți</span><select name="issues" multiple size="5"><% report.trainees.forEach(t => { %><option value="<%= t.name %>"><%= t.name %></option><% }) %></select></label>
+      <label>Persoane talentate <span class="hint">poți selecta mai mulți</span><select name="talents" multiple size="5"><% report.trainees.forEach(t => { %><option value="<%= t.name %>"><%= t.name %></option><% }) %></select></label>
+      <label>Observații<textarea name="notes" rows="4" placeholder="Scrie pe scurt ce merită reținut..."></textarea></label>
+      <button class="primary">Salvează seminar</button>
+    </form>
+    <form method="post" action="/trainer/reports/<%= report._id %>/finalize" onsubmit="return confirm('Finalizezi raportul? După finalizare nu îl mai poți edita fără admin.')"><button class="ghost danger">Finalizează raport</button></form>
+    <% } else { %><p class="muted">Raportul este finalizat și nu mai poate fi modificat.</p><% } %>
+  </section>
+</div>
+<section class="card"><h2>Seminarii salvate</h2><div class="table-wrap"><table><thead><tr><th>Data</th><th>Tema</th><th>Absenți</th><th>Probleme</th><th>Talentați</th><th>Observații</th></tr></thead><tbody><% report.seminars.forEach(s => { %><tr><td><%= new Date(s.date).toLocaleDateString('ro-RO') %></td><td><%= s.topic %></td><td><%= s.absents.join(', ') %></td><td><%= s.issues.join(', ') %></td><td><%= s.talents.join(', ') %></td><td><%= s.notes %></td></tr><% }) %></tbody></table></div></section>
+<%- include('../partials/footer') %>
