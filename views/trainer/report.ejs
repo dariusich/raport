@@ -1,5 +1,125 @@
 <%- include('../partials/header') %>
 
+<style>
+  .seminar-calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .calendar-head {
+    font-size: 12px;
+    font-weight: 800;
+    color: #7a2030;
+    text-align: center;
+    padding: 8px 0;
+    text-transform: uppercase;
+  }
+
+  .calendar-day {
+    min-height: 76px;
+    border: 1px solid rgba(196, 31, 45, 0.18);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.75);
+    padding: 10px;
+    text-decoration: none;
+    color: #24242f;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: 0.2s ease;
+    cursor: pointer;
+  }
+
+  .calendar-day:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(178, 24, 34, 0.12);
+    border-color: rgba(196, 31, 45, 0.45);
+  }
+
+  .calendar-day.empty {
+    opacity: 0.25;
+    pointer-events: none;
+  }
+
+  .calendar-day.saved {
+    background: linear-gradient(135deg, #0f9f5a, #13c978);
+    color: #fff;
+    border-color: #0f9f5a;
+  }
+
+  .calendar-day.selected {
+    outline: 3px solid rgba(196, 31, 45, 0.22);
+  }
+
+  .calendar-day strong {
+    font-size: 18px;
+  }
+
+  .calendar-day span {
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .calendar-info {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    color: #6b6878;
+    font-size: 14px;
+  }
+
+  .calendar-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    display: inline-block;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .calendar-dot.green {
+    background: #13c978;
+  }
+
+  .calendar-dot.empty {
+    background: #fff;
+    border: 1px solid rgba(196, 31, 45, 0.35);
+  }
+
+  .selected-date-box {
+    margin: 0 0 18px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(196, 31, 45, 0.09), rgba(242, 92, 66, 0.08));
+    border: 1px solid rgba(196, 31, 45, 0.16);
+    font-weight: 800;
+    color: #7a2030;
+  }
+
+  @media (max-width: 720px) {
+    .seminar-calendar {
+      gap: 5px;
+    }
+
+    .calendar-day {
+      min-height: 54px;
+      border-radius: 12px;
+      padding: 7px;
+    }
+
+    .calendar-day strong {
+      font-size: 15px;
+    }
+
+    .calendar-day span {
+      font-size: 10px;
+    }
+  }
+</style>
+
 <div class="back-row">
   <a class="btn ghost" href="/trainer">← Înapoi la toate cursurile alocate</a>
 </div>
@@ -28,6 +148,7 @@
     <h2>Alege luna pentru completare</h2>
     <p>Se afișează doar lunile din perioada seriei.</p>
   </div>
+
   <div class="month-list-trainer">
     <% months.forEach(m => { %>
       <% const count = report.seminars.filter(s => { const d = new Date(s.date); const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); return key === m.key; }).length; %>
@@ -43,145 +164,267 @@
 </section>
 
 <% if (selectedMonth) { %>
-<section class="trainer-layout">
-  <aside class="trainee-panel">
-    <div class="sticky-card">
-      <h2>Lista cursanți</h2>
-      <p>Mereu la vedere pentru completare rapidă.</p>
-      <div class="trainee-list">
-        <% report.trainees.forEach((t, index) => { %>
-          <span><b><%= index + 1 %>.</b> <%= t.name %></span>
-        <% }) %>
+  <%
+    const [calendarYear, calendarMonth] = selectedMonth.split('-').map(Number);
+    const firstDay = new Date(calendarYear, calendarMonth - 1, 1);
+    const daysInMonth = new Date(calendarYear, calendarMonth, 0).getDate();
+    const startOffset = (firstDay.getDay() + 6) % 7;
+    const seminarsByDate = {};
+
+    seminarsInMonth.forEach(s => {
+      const key = dateInputValue(s.date);
+      seminarsByDate[key] = s;
+    });
+
+    const selectedDateKey = selectedSeminar ? dateInputValue(selectedSeminar.date) : '';
+    const weekdayLabels = ['Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm', 'Dum'];
+  %>
+
+  <section class="trainer-layout">
+    <aside class="trainee-panel">
+      <div class="sticky-card">
+        <h2>Lista cursanți</h2>
+        <p>Mereu la vedere pentru completare rapidă.</p>
+        <div class="trainee-list">
+          <% report.trainees.forEach((t, index) => { %>
+            <span><b><%= index + 1 %>.</b> <%= t.name %></span>
+          <% }) %>
+        </div>
       </div>
-    </div>
-  </aside>
+    </aside>
 
-  <div class="report-panel">
-    <section class="card history-card">
-      <details class="saved-seminars" <%= selectedSeminar ? 'open' : '' %>>
-        <summary>
-          <span><b>Istoric</b> · seminarii salvate în luna selectată</span>
-          <strong><%= seminarsInMonth.length %></strong>
-        </summary>
-        <% if (!seminarsInMonth.length) { %>
-          <p class="muted">Nu există seminarii salvate pentru această lună.</p>
-        <% } else { %>
-          <div class="seminar-day-list">
-            <% seminarsInMonth.forEach(s => { %>
-              <a class="seminar-day <%= selectedSeminar && String(selectedSeminar._id) === String(s._id) ? 'active' : '' %>" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= s._id %>">
-                <strong><%= new Date(s.date).toLocaleDateString('ro-RO') %></strong>
-                <span><%= s.startTime || '' %><%= s.endTime ? ' - ' + s.endTime : '' %></span>
-              </a>
-            <% }) %>
-          </div>
-        <% } %>
-      </details>
-    </section>
-
-    <% if (selectedSeminar && !editMode) { %>
-      <section class="card seminar-detail">
+    <div class="report-panel">
+      <section class="card history-card">
         <div class="section-title row-title">
           <div>
-            <span class="pill red">Detalii seminar</span>
-            <h2><%= new Date(selectedSeminar.date).toLocaleDateString('ro-RO') %></h2>
+            <span class="pill green">Calendar seminar</span>
+            <h2>Calendarul lunii selectate</h2>
+            <p>Alege ziua seminarului. Zilele completate apar cu verde.</p>
           </div>
-          <a class="btn primary" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= selectedSeminar._id %>&edit=1">Modifică</a>
+          <strong class="pill red"><%= seminarsInMonth.length %> salvate</strong>
         </div>
-        <div class="detail-grid">
-          <p><b>Program:</b> <%= selectedSeminar.startTime || '-' %><%= selectedSeminar.endTime ? ' - ' + selectedSeminar.endTime : '' %></p>
-          <p><b>Activitate:</b> <%= selectedSeminar.activity || '-' %></p>
-          <p><b>Absenți:</b> <%= selectedSeminar.absents.join(', ') || '-' %></p>
-          <p><b>Cursanți cu probleme:</b> <%= selectedSeminar.issues.join(', ') || '-' %></p>
-          <p><b>Detalii probleme:</b> <%= selectedSeminar.issuesDetails || '-' %></p>
-          <p><b>Starea sălii:</b> <%= selectedSeminar.roomState || '-' %></p>
-          <p><b>Obiecte defecte/lipsă:</b> <%= selectedSeminar.brokenObjects || '-' %></p>
-          <p><b>Produse:</b> <%= selectedSeminar.productsQuantity || '-' %></p>
-          <p><b>Poze/filmulețe:</b> <%= selectedSeminar.mediaSent || '-' %></p>
-          <p><b>Talentați:</b> <%= selectedSeminar.talents.join(', ') || '-' %></p>
-          <p><b>Observații:</b> <%= selectedSeminar.notes || '-' %></p>
+
+        <div class="calendar-info">
+          <span><i class="calendar-dot green"></i> Seminar completat</span>
+          <span><i class="calendar-dot empty"></i> Zi disponibilă</span>
+        </div>
+
+        <div class="seminar-calendar">
+          <% weekdayLabels.forEach(day => { %>
+            <div class="calendar-head"><%= day %></div>
+          <% }) %>
+
+          <% for (let i = 0; i < startOffset; i++) { %>
+            <div class="calendar-day empty"></div>
+          <% } %>
+
+          <% for (let day = 1; day <= daysInMonth; day++) { %>
+            <%
+              const dateKey = `${calendarYear}-${String(calendarMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+              const savedSeminar = seminarsByDate[dateKey];
+            %>
+
+            <% if (savedSeminar) { %>
+              <a
+                class="calendar-day saved <%= selectedDateKey === dateKey ? 'selected' : '' %>"
+                href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= savedSeminar._id %>"
+                title="Vezi detalii seminar"
+              >
+                <strong><%= day %></strong>
+                <span><%= savedSeminar.startTime || 'salvat' %><%= savedSeminar.endTime ? ' - ' + savedSeminar.endTime : '' %></span>
+              </a>
+            <% } else { %>
+              <button
+                type="button"
+                class="calendar-day js-pick-day"
+                data-date="<%= dateKey %>"
+                title="Adaugă seminar în această zi"
+              >
+                <strong><%= day %></strong>
+                <span>Adaugă</span>
+              </button>
+            <% } %>
+          <% } %>
         </div>
       </section>
-    <% } else if (report.status === 'active') { %>
-      <% const formSeminar = editMode && selectedSeminar ? selectedSeminar : null; %>
-      <form action="/trainer/reports/<%= report._id %>/seminars" method="post" class="card form-grid seminar-form">
-        <input type="hidden" name="selectedMonth" value="<%= selectedMonth %>">
-        <% if (formSeminar) { %><input type="hidden" name="seminarId" value="<%= formSeminar._id %>"><% } %>
-        <div class="section-title"><span class="pill green"><%= formSeminar ? 'Modificare' : 'Seminar' %></span><h2><%= formSeminar ? 'Modifică ziua de curs' : 'Adaugă zi de curs' %></h2></div>
-        <div class="inline-3">
-          <label>Data <input name="date" type="date" required value="<%= formSeminar ? dateInputValue(formSeminar.date) : selectedMonth + '-01' %>"></label>
-          <label>Ora început <input name="startTime" type="time" value="<%= formSeminar ? formSeminar.startTime : '' %>"></label>
-          <label>Ora final <input name="endTime" type="time" value="<%= formSeminar ? formSeminar.endTime : '' %>"></label>
-        </div>
-        <label>Activitate desfășurată
-          <textarea name="activity" rows="3" placeholder="Ex: Masaj relaxare - tehnici practice, recapitulare, demonstrație..."><%= formSeminar ? formSeminar.activity : '' %></textarea>
-        </label>
 
-        <label>Absenți / nume prenume
-          <details class="multi-select" data-multi-select>
-            <summary data-default="Selectează absenții">Selectează absenții</summary>
-            <div class="multi-menu">
-              <% report.trainees.forEach(t => { %>
-                <label><input type="checkbox" name="absents" value="<%= t.name %>" <%= formSeminar && formSeminar.absents.includes(t.name) ? 'checked' : '' %>> <%= t.name %></label>
-              <% }) %>
+      <% if (selectedSeminar && !editMode) { %>
+        <section class="card seminar-detail">
+          <div class="section-title row-title">
+            <div>
+              <span class="pill red">Detalii seminar</span>
+              <h2><%= new Date(selectedSeminar.date).toLocaleDateString('ro-RO') %></h2>
             </div>
-          </details>
-        </label>
+            <a class="btn primary" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= selectedSeminar._id %>&edit=1">Modifică</a>
+          </div>
 
-        <label>Cursanți cu probleme
-          <small>Persoane care deranjează cursul, absentează, sunt restante la plată dar frecventează cursul sau au dificultăți mari.</small>
-          <details class="multi-select" data-multi-select>
-            <summary data-default="Selectează cursanții cu probleme">Selectează cursanții cu probleme</summary>
-            <div class="multi-menu">
-              <% report.trainees.forEach(t => { %>
-                <label><input type="checkbox" name="issues" value="<%= t.name %>" <%= formSeminar && formSeminar.issues.includes(t.name) ? 'checked' : '' %>> <%= t.name %></label>
-              <% }) %>
-            </div>
-          </details>
-        </label>
-        <label>Exemplificați problemele
-          <textarea name="issuesDetails" rows="3" placeholder="Detalii scurte și clare: ce s-a întâmplat, când, ce trebuie urmărit."><%= formSeminar ? formSeminar.issuesDetails : '' %></textarea>
-        </label>
-        <label>Starea sălii la venire / plecare
-          <textarea name="roomState" rows="2" placeholder="Ex: sala curată la venire, lăsată în ordine la plecare."><%= formSeminar ? formSeminar.roomState : '' %></textarea>
-        </label>
-        <label>Obiecte defecte / lipsă
-          <textarea name="brokenObjects" rows="2" placeholder="Scrie 'Nu este cazul' dacă nu sunt probleme."><%= formSeminar ? formSeminar.brokenObjects : '' %></textarea>
-        </label>
-        <div class="inline-2">
-          <label>Cantitatea de produse
-            <select name="productsQuantity">
-              <option value="suficienta" <%= formSeminar && formSeminar.productsQuantity === 'suficienta' ? 'selected' : '' %>>Suficientă</option>
-              <option value="insuficienta" <%= formSeminar && formSeminar.productsQuantity === 'insuficienta' ? 'selected' : '' %>>Insuficientă</option>
-            </select>
+          <div class="detail-grid">
+            <p><b>Program:</b> <%= selectedSeminar.startTime || '-' %><%= selectedSeminar.endTime ? ' - ' + selectedSeminar.endTime : '' %></p>
+            <p><b>Activitate:</b> <%= selectedSeminar.activity || '-' %></p>
+            <p><b>Absenți:</b> <%= selectedSeminar.absents.join(', ') || '-' %></p>
+            <p><b>Cursanți cu probleme:</b> <%= selectedSeminar.issues.join(', ') || '-' %></p>
+            <p><b>Detalii probleme:</b> <%= selectedSeminar.issuesDetails || '-' %></p>
+            <p><b>Starea sălii:</b> <%= selectedSeminar.roomState || '-' %></p>
+            <p><b>Obiecte defecte/lipsă:</b> <%= selectedSeminar.brokenObjects || '-' %></p>
+            <p><b>Produse:</b> <%= selectedSeminar.productsQuantity || '-' %></p>
+            <p><b>Poze/filmulețe:</b> <%= selectedSeminar.mediaSent || '-' %></p>
+            <p><b>Talentați:</b> <%= selectedSeminar.talents.join(', ') || '-' %></p>
+            <p><b>Observații:</b> <%= selectedSeminar.notes || '-' %></p>
+          </div>
+        </section>
+      <% } else if (report.status === 'active') { %>
+        <% const formSeminar = editMode && selectedSeminar ? selectedSeminar : null; %>
+
+        <form action="/trainer/reports/<%= report._id %>/seminars" method="post" class="card form-grid seminar-form" id="seminarForm">
+          <input type="hidden" name="selectedMonth" value="<%= selectedMonth %>">
+          <% if (formSeminar) { %>
+            <input type="hidden" name="seminarId" value="<%= formSeminar._id %>">
+          <% } %>
+
+          <div class="section-title">
+            <span class="pill green"><%= formSeminar ? 'Modificare' : 'Seminar' %></span>
+            <h2><%= formSeminar ? 'Modifică ziua de curs' : 'Adaugă zi de curs' %></h2>
+            <p><%= formSeminar ? 'Actualizează informațiile pentru seminarul selectat.' : 'Selectează ziua din calendar, apoi completează detaliile seminarului.' %></p>
+          </div>
+
+          <div class="selected-date-box" id="selectedDateBox">
+            Zi selectată:
+            <span id="selectedDateText">
+              <%= formSeminar ? new Date(formSeminar.date).toLocaleDateString('ro-RO') : 'alege o zi din calendar' %>
+            </span>
+          </div>
+
+          <div class="inline-3">
+            <label>Data
+              <input
+                id="seminarDateInput"
+                name="date"
+                type="date"
+                required
+                value="<%= formSeminar ? dateInputValue(formSeminar.date) : '' %>"
+                min="<%= selectedMonth %>-01"
+                max="<%= selectedMonth %>-<%= String(daysInMonth).padStart(2, '0') %>"
+              >
+            </label>
+            <label>Ora început <input name="startTime" type="time" value="<%= formSeminar ? formSeminar.startTime : '' %>"></label>
+            <label>Ora final <input name="endTime" type="time" value="<%= formSeminar ? formSeminar.endTime : '' %>"></label>
+          </div>
+
+          <label>Activitate desfășurată
+            <textarea name="activity" rows="3" placeholder="Ex: Masaj relaxare - tehnici practice, recapitulare, demonstrație..."><%= formSeminar ? formSeminar.activity : '' %></textarea>
           </label>
-          <label>Poze/filmulețe trimise din cadrul cursului
-            <select name="mediaSent">
-              <option value="da" <%= formSeminar && formSeminar.mediaSent === 'da' ? 'selected' : '' %>>Da</option>
-              <option value="nu" <%= formSeminar && formSeminar.mediaSent === 'nu' ? 'selected' : '' %>>Nu</option>
-            </select>
+
+          <label>Absenți / nume prenume
+            <details class="multi-select" data-multi-select>
+              <summary data-default="Selectează absenții">Selectează absenții</summary>
+              <div class="multi-menu">
+                <% report.trainees.forEach(t => { %>
+                  <label><input type="checkbox" name="absents" value="<%= t.name %>" <%= formSeminar && formSeminar.absents.includes(t.name) ? 'checked' : '' %>> <%= t.name %></label>
+                <% }) %>
+              </div>
+            </details>
           </label>
-        </div>
-        <label>Persoana/persoanele talentate din serie
-          <details class="multi-select" data-multi-select>
-            <summary data-default="Selectează persoanele talentate">Selectează persoanele talentate</summary>
-            <div class="multi-menu">
-              <% report.trainees.forEach(t => { %>
-                <label><input type="checkbox" name="talents" value="<%= t.name %>" <%= formSeminar && formSeminar.talents.includes(t.name) ? 'checked' : '' %>> <%= t.name %></label>
-              <% }) %>
-            </div>
-          </details>
-        </label>
-        <label>Observații finale
-          <textarea name="notes" rows="3" placeholder="Orice informație utilă pentru manager / contabilitate."><%= formSeminar ? formSeminar.notes : '' %></textarea>
-        </label>
-        <div class="actions">
-          <button class="btn primary" type="submit"><%= formSeminar ? 'Salvează modificările' : 'Salvează seminar' %></button>
-          <% if (formSeminar) { %><a class="btn ghost" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= formSeminar._id %>">Renunță</a><% } %>
-        </div>
-      </form>
-    <% } %>
-  </div>
-</section>
+
+          <label>Cursanți cu probleme
+            <small>Persoane care deranjează cursul, absentează, sunt restante la plată dar frecventează cursul sau au dificultăți mari.</small>
+            <details class="multi-select" data-multi-select>
+              <summary data-default="Selectează cursanții cu probleme">Selectează cursanții cu probleme</summary>
+              <div class="multi-menu">
+                <% report.trainees.forEach(t => { %>
+                  <label><input type="checkbox" name="issues" value="<%= t.name %>" <%= formSeminar && formSeminar.issues.includes(t.name) ? 'checked' : '' %>> <%= t.name %></label>
+                <% }) %>
+              </div>
+            </details>
+          </label>
+
+          <label>Exemplificați problemele
+            <textarea name="issuesDetails" rows="3" placeholder="Detalii scurte și clare: ce s-a întâmplat, când, ce trebuie urmărit."><%= formSeminar ? formSeminar.issuesDetails : '' %></textarea>
+          </label>
+
+          <label>Starea sălii la venire / plecare
+            <textarea name="roomState" rows="2" placeholder="Ex: sala curată la venire, lăsată în ordine la plecare."><%= formSeminar ? formSeminar.roomState : '' %></textarea>
+          </label>
+
+          <label>Obiecte defecte / lipsă
+            <textarea name="brokenObjects" rows="2" placeholder="Scrie 'Nu este cazul' dacă nu sunt probleme."><%= formSeminar ? formSeminar.brokenObjects : '' %></textarea>
+          </label>
+
+          <div class="inline-2">
+            <label>Cantitatea de produse
+              <select name="productsQuantity">
+                <option value="suficienta" <%= formSeminar && formSeminar.productsQuantity === 'suficienta' ? 'selected' : '' %>>Suficientă</option>
+                <option value="insuficienta" <%= formSeminar && formSeminar.productsQuantity === 'insuficienta' ? 'selected' : '' %>>Insuficientă</option>
+              </select>
+            </label>
+
+            <label>Poze/filmulețe trimise din cadrul cursului
+              <select name="mediaSent">
+                <option value="da" <%= formSeminar && formSeminar.mediaSent === 'da' ? 'selected' : '' %>>Da</option>
+                <option value="nu" <%= formSeminar && formSeminar.mediaSent === 'nu' ? 'selected' : '' %>>Nu</option>
+              </select>
+            </label>
+          </div>
+
+          <label>Persoana/persoanele talentate din serie
+            <details class="multi-select" data-multi-select>
+              <summary data-default="Selectează persoanele talentate">Selectează persoanele talentate</summary>
+              <div class="multi-menu">
+                <% report.trainees.forEach(t => { %>
+                  <label><input type="checkbox" name="talents" value="<%= t.name %>" <%= formSeminar && formSeminar.talents.includes(t.name) ? 'checked' : '' %>> <%= t.name %></label>
+                <% }) %>
+              </div>
+            </details>
+          </label>
+
+          <label>Observații finale
+            <textarea name="notes" rows="3" placeholder="Orice informație utilă pentru manager / contabilitate."><%= formSeminar ? formSeminar.notes : '' %></textarea>
+          </label>
+
+          <div class="actions">
+            <button class="btn primary" type="submit"><%= formSeminar ? 'Salvează modificările' : 'Salvează seminar' %></button>
+            <% if (formSeminar) { %>
+              <a class="btn ghost" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= formSeminar._id %>">Renunță</a>
+            <% } %>
+          </div>
+        </form>
+      <% } %>
+    </div>
+  </section>
 <% } %>
+
+<script>
+  document.querySelectorAll('.js-pick-day').forEach((button) => {
+    button.addEventListener('click', () => {
+      const date = button.dataset.date;
+      const input = document.getElementById('seminarDateInput');
+      const text = document.getElementById('selectedDateText');
+
+      if (!input || !text) return;
+
+      input.value = date;
+
+      const parts = date.split('-');
+      text.textContent = `${parts[2]}.${parts[1]}.${parts[0]}`;
+
+      document.querySelectorAll('.calendar-day').forEach((day) => day.classList.remove('selected'));
+      button.classList.add('selected');
+
+      document.getElementById('seminarForm')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    });
+  });
+
+  document.getElementById('seminarForm')?.addEventListener('submit', (event) => {
+    const input = document.getElementById('seminarDateInput');
+
+    if (!input || !input.value) {
+      event.preventDefault();
+      alert('Selectează mai întâi ziua seminarului din calendar.');
+      return;
+    }
+  });
+</script>
 
 <%- include('../partials/footer') %>
