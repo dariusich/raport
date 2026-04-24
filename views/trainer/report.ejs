@@ -1,12 +1,20 @@
 <%- include('../partials/header') %>
 
 <%
-const seminarDayKey = (date) => new Date(date).toISOString().slice(0, 10);
+const seminarDayKey = (date) => {
+  if (!date) return '';
+  return new Date(date).toISOString().slice(0, 10);
+};
+
+const courseMonthKeys = new Set(months.map(m => m.key));
 
 const countUniqueSeminarDays = (seminars = []) => {
-  const valid = seminars.filter(s => s && s.date);
-  const unique = new Set(valid.map(s => new Date(s.date).toISOString().slice(0, 10)));
-  return unique.size;
+  const validDays = seminars
+    .filter(s => s && s.date)
+    .map(s => seminarDayKey(s.date))
+    .filter(dateKey => dateKey && courseMonthKeys.has(dateKey.slice(0, 7)));
+
+  return new Set(validDays).size;
 };
 %>
 
