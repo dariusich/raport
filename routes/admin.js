@@ -85,6 +85,13 @@ function parseNominalText(rawText) {
   };
 }
 
+function seminarDayKey(dateValue) {
+  if (!dateValue) return '';
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+}
+
 function accountingByTrainer(trainers, reports) {
   const currentYear = new Date().getFullYear();
 
@@ -94,22 +101,46 @@ function accountingByTrainer(trainers, reports) {
     const byYear = new Map();
     const byYearMonth = new Map();
     const locations = new Set();
-    let total = 0;
+    const courseMap = new Map();
 
     for (const report of trainerReports) {
       if (report.location) locations.add(report.location);
+      const courseTitle = report.title || 'Curs fără titlu';
+
+      if (!courseMap.has(courseTitle)) {
+        courseMap.set(courseTitle, {
+          name: courseTitle,
+          reportIds: new Set(),
+          points: new Set(),
+          byYear: new Map(),
+          byYearMonth: new Map(),
+        });
+      }
+
+      const course = courseMap.get(courseTitle);
+      course.reportIds.add(String(report._id));
+
       for (const seminar of report.seminars || []) {
-        if (!seminar.date) continue;
-        const date = new Date(seminar.date);
-        if (Number.isNaN(date.getTime())) continue;
-        const year = date.getFullYear();
-        const monthIndex = date.getMonth();
-        const key = year + '-' + monthIndex;
+        const dayKey = seminarDayKey(seminar.date);
+        if (!dayKey) continue;
+
+        const date = new Date(dayKey + 'T00:00:00.000Z');
+        const year = date.getUTCFullYear();
+        const monthIndex = date.getUTCMonth();
+        const yearMonthKey = year + '-' + monthIndex;
+        const courseDayKey = courseTitle + '|' + dayKey;
+
+        course.points.add(dayKey);
+        course.byYear.set(year, course.byYear.get(year) || new Set());
+        course.byYear.get(year).add(dayKey);
+        course.byYearMonth.set(yearMonthKey, course.byYearMonth.get(yearMonthKey) || new Set());
+        course.byYearMonth.get(yearMonthKey).add(dayKey);
 
         if (monthly[monthIndex]) monthly[monthIndex].count += 1;
-        byYear.set(year, (byYear.get(year) || 0) + 1);
-        byYearMonth.set(key, (byYearMonth.get(key) || 0) + 1);
-        total += 1;
+        byYear.set(year, byYear.get(year) || new Set());
+        byYear.get(year).add(courseDayKey);
+        byYearMonth.set(yearMonthKey, byYearMonth.get(yearMonthKey) || new Set());
+        byYearMonth.get(yearMonthKey).add(courseDayKey);
       }
     }
 
@@ -118,15 +149,31 @@ function accountingByTrainer(trainers, reports) {
     const selectedYearMonthly = roMonths.map((name, index) => ({
       name,
       index,
-      count: byYearMonth.get(selectedYear + '-' + index) || 0,
+      count: byYearMonth.get(selectedYear + '-' + index)?.size || 0,
     }));
+
+    const courses = Array.from(courseMap.values()).map((course) => ({
+      name: course.name,
+      reportCount: course.reportIds.size,
+      total: course.points.size,
+      points: Array.from(course.points).sort(),
+      byYear: Array.from(course.byYear.entries()).map(([year, days]) => ({ year, count: days.size })).sort((a, b) => b.year - a.year),
+      selectedYearMonthly: roMonths.map((name, index) => ({
+        name,
+        index,
+        count: course.byYearMonth.get(selectedYear + '-' + index)?.size || 0,
+      })),
+    })).sort((a, b) => a.name.localeCompare(b.name, 'ro'));
+
+    const total = courses.reduce((sum, course) => sum + course.total, 0);
 
     return {
       trainer,
       reports: trainerReports,
+      courses,
       monthly,
       selectedYearMonthly,
-      byYear: Array.from(byYear.entries()).map(([year, count]) => ({ year, count })).sort((a, b) => b.year - a.year),
+      byYear: Array.from(byYear.entries()).map(([year, days]) => ({ year, count: days.size })).sort((a, b) => b.year - a.year),
       years,
       locations: Array.from(locations),
       total,

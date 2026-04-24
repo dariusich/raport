@@ -1,5 +1,9 @@
 <%- include('../partials/header') %>
 
+<%
+  const accountingCourses = [...new Set(accounting.flatMap(item => item.courses.map(course => course.name)))].sort((a, b) => a.localeCompare(b, 'ro'));
+%>
+
 <section class="hero hero-admin">
   <div>
     <p class="eyebrow">Dashboard manageri</p>
@@ -109,21 +113,37 @@
 
     <div class="card">
       <div class="section-title"><span class="pill">Listă</span><h2>Traineri existenți</h2></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Nume</th><th>User</th><th>Filială</th><th>Status</th><th>Acțiuni</th></tr></thead>
-          <tbody>
-            <% trainers.forEach(t => { %>
-              <tr>
-                <td><strong><%= t.name %></strong></td><td><%= t.username %></td><td><%= t.location %></td><td><%= t.active ? 'activ' : 'inactiv' %></td>
-                <td class="actions">
-                  <form action="/admin/trainers/<%= t._id %>/toggle" method="post"><button class="btn small" type="submit"><%= t.active ? 'Dezactivează' : 'Activează' %></button></form>
-                  <form action="/admin/trainers/<%= t._id %>/password" method="post" class="inline-form"><input name="password" type="password" placeholder="Parolă nouă"><button class="btn small" type="submit">Schimbă</button></form>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
+      <div class="trainer-accordion">
+        <% trainers.forEach(t => { %>
+          <article class="trainer-accordion-item">
+            <button class="trainer-accordion-head" type="button" data-trainer-toggle="<%= t._id %>">
+              <span>
+                <strong><%= t.name %></strong>
+                <small><%= t.location || 'Fără filială' %> · user: <%= t.username %></small>
+              </span>
+              <span class="status <%= t.active ? 'active' : 'inactive' %>"><%= t.active ? 'activ' : 'inactiv' %></span>
+            </button>
+
+            <div class="trainer-accordion-body" id="trainer-actions-<%= t._id %>">
+              <div class="trainer-detail-grid">
+                <p><b>Nume:</b> <%= t.name %></p>
+                <p><b>User:</b> <%= t.username %></p>
+                <p><b>Filială:</b> <%= t.location || '-' %></p>
+                <p><b>Status:</b> <%= t.active ? 'activ' : 'inactiv' %></p>
+              </div>
+
+              <div class="actions trainer-inline-actions">
+                <form action="/admin/trainers/<%= t._id %>/toggle" method="post">
+                  <button class="btn small" type="submit"><%= t.active ? 'Dezactivează' : 'Activează' %></button>
+                </form>
+                <form action="/admin/trainers/<%= t._id %>/password" method="post" class="inline-form">
+                  <input name="password" type="password" placeholder="Parolă nouă">
+                  <button class="btn small" type="submit">Schimbă</button>
+                </form>
+              </div>
+            </div>
+          </article>
+        <% }) %>
       </div>
     </div>
   </section>
@@ -161,6 +181,14 @@
           <% }) %>
         </select>
       </label>
+      <label>Curs
+        <select id="accountingCourseFilter">
+          <option value="all">Toate cursurile</option>
+          <% accountingCourses.forEach(course => { %>
+            <option value="<%= course %>"><%= course %></option>
+          <% }) %>
+        </select>
+      </label>
       <label>An
         <select id="accountingYearFilter">
           <option value="all">Toți anii</option>
@@ -181,7 +209,7 @@
 
     <div class="accounting-list">
       <% accounting.forEach(item => { %>
-        <% const dataPoints = []; item.reports.forEach(report => { (report.seminars || []).forEach(seminar => { if (seminar.date) { const d = new Date(seminar.date); if (!Number.isNaN(d.getTime())) dataPoints.push(d.getFullYear() + '-' + d.getMonth()); } }); }); %>
+        <% const dataPoints = item.courses.flatMap(course => course.points.map(point => course.name + '::' + point)); %>
         <article class="accounting-card luxe-mini-card"
           data-trainer-card="<%= item.trainer._id %>"
           data-location="<%= item.trainer.location || item.locations.join(',') || '' %>"
@@ -190,9 +218,22 @@
           <div class="accounting-head">
             <div>
               <h3><%= item.trainer.name %></h3>
-              <p><%= item.trainer.location || 'Fără filială' %> · <%= item.reports.length %> rapoarte</p>
+              <p><%= item.trainer.location || 'Fără filială' %> · <%= item.reports.length %> rapoarte · <%= item.courses.length %> cursuri</p>
             </div>
             <strong><%= item.total %> seminarii</strong>
+          </div>
+
+          <div class="course-breakdown">
+            <% if (item.courses.length) { %>
+              <% item.courses.forEach(course => { %>
+                <div class="course-line" data-course-name="<%= course.name %>" data-course-points="<%= course.points.join('|') %>" data-course-total="<%= course.total %>">
+                  <span><%= course.name %></span>
+                  <strong><%= course.total %> seminarii</strong>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <div class="course-line empty"><span>Fără cursuri cu seminarii salvate</span><strong>0 seminarii</strong></div>
+            <% } %>
           </div>
 
           <div class="year-strip">

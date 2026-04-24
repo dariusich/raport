@@ -2,48 +2,83 @@ document.addEventListener('DOMContentLoaded', () => {
   const accountingFilters = {
     trainer: document.querySelector('#accountingTrainerFilter') || document.querySelector('#accountingFilter'),
     location: document.querySelector('#accountingLocationFilter'),
+    course: document.querySelector('#accountingCourseFilter'),
     year: document.querySelector('#accountingYearFilter'),
     month: document.querySelector('#accountingMonthFilter'),
+  };
+
+  const monthIndexFromDateKey = (dateKey) => {
+    const [, monthNumber] = String(dateKey || '').split('-');
+    return String(Number(monthNumber) - 1);
+  };
+
+  const dayMatchesFilters = (dayKey, yearValue, monthValue) => {
+    const [year] = String(dayKey || '').split('-');
+    const monthIndex = monthIndexFromDateKey(dayKey);
+    return (yearValue === 'all' || year === yearValue) && (monthValue === 'all' || monthIndex === monthValue);
   };
 
   const updateAccounting = () => {
     const trainerValue = accountingFilters.trainer?.value || 'all';
     const locationValue = accountingFilters.location?.value || 'all';
+    const courseValue = accountingFilters.course?.value || 'all';
     const yearValue = accountingFilters.year?.value || 'all';
     const monthValue = accountingFilters.month?.value || 'all';
     let filteredTotal = 0;
 
     document.querySelectorAll('[data-trainer-card]').forEach((card) => {
-      const points = (card.dataset.points || '').split('|').filter(Boolean);
       const location = card.dataset.location || '';
       const trainerMatch = trainerValue === 'all' || card.dataset.trainerCard === trainerValue;
       const locationMatch = locationValue === 'all' || location.includes(locationValue);
-      const dateMatch = points.length === 0
-        ? yearValue === 'all' && monthValue === 'all'
-        : points.some((point) => {
-          const [year, month] = point.split('-');
-          return (yearValue === 'all' || year === yearValue) && (monthValue === 'all' || month === monthValue);
-        });
+      let cardVisibleTotal = 0;
+      let hasVisibleCourse = false;
 
-      const visible = trainerMatch && locationMatch && dateMatch;
+      const courseRows = Array.from(card.querySelectorAll('[data-course-name]'));
+
+      courseRows.forEach((row) => {
+        const courseName = row.dataset.courseName || '';
+        const courseMatch = courseValue === 'all' || courseName === courseValue;
+        const dayPoints = (row.dataset.coursePoints || '').split('|').filter(Boolean);
+        const count = courseMatch ? dayPoints.filter((day) => dayMatchesFilters(day, yearValue, monthValue)).length : 0;
+
+        const rowVisible = courseMatch && count > 0;
+        row.style.display = rowVisible ? '' : 'none';
+        row.dataset.visibleTotal = count;
+
+        const strong = row.querySelector('strong');
+        if (strong) strong.textContent = `${count} seminarii`;
+
+        if (rowVisible) hasVisibleCourse = true;
+        cardVisibleTotal += count;
+      });
+
+      const visible = trainerMatch && locationMatch && hasVisibleCourse;
       card.style.display = visible ? '' : 'none';
-
-      let visibleCount = Number(card.dataset.total || 0);
-      if (visible && (yearValue !== 'all' || monthValue !== 'all')) {
-        visibleCount = points.filter((point) => {
-          const [year, month] = point.split('-');
-          return (yearValue === 'all' || year === yearValue) && (monthValue === 'all' || month === monthValue);
-        }).length;
-      }
-      card.dataset.visibleTotal = visibleCount;
-      if (visible) filteredTotal += visibleCount;
+      card.dataset.visibleTotal = cardVisibleTotal;
+      if (visible) filteredTotal += cardVisibleTotal;
 
       const strong = card.querySelector('.accounting-head strong');
-      if (strong) strong.textContent = `${visibleCount} seminarii`;
+      if (strong) strong.textContent = `${cardVisibleTotal} seminarii`;
+
+      card.querySelectorAll('.month-chip').forEach((chip) => {
+        const idx = chip.dataset.monthIndex;
+        const monthCount = courseRows.reduce((sum, row) => {
+          const courseName = row.dataset.courseName || '';
+          if (courseValue !== 'all' && courseName !== courseValue) return sum;
+          const dayPoints = (row.dataset.coursePoints || '').split('|').filter(Boolean);
+          return sum + dayPoints.filter((day) => {
+            const [year] = day.split('-');
+            return (yearValue === 'all' || year === yearValue) && monthIndexFromDateKey(day) === idx;
+          }).length;
+        }, 0);
+        const label = chip.textContent.split(':')[0];
+        chip.innerHTML = `${label}: <b>${monthCount}</b>`;
+        chip.classList.toggle('has-count', monthCount > 0);
+      });
 
       const commission = card.querySelector('input[name="commission"]');
       const total = card.querySelector('[data-total]');
-      if (commission && total) total.textContent = ((Number(commission.value) || 0) * visibleCount).toFixed(2) + ' lei';
+      if (commission && total) total.textContent = ((Number(commission.value) || 0) * cardVisibleTotal).toFixed(2) + ' lei';
     });
 
     const totalBox = document.querySelector('#filteredTotal');
@@ -54,6 +89,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filter) filter.addEventListener('change', updateAccounting);
   });
   updateAccounting();
+
+  document.querySelectorAll('[data-trainer-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const id = button.dataset.trainerToggle;
+      const body = document.getElementById('trainer-actions-' + id);
+      if (!body) return;
+      const isOpen = body.classList.toggle('open');
+      button.classList.toggle('open', isOpen);
+    });
+  });
 
   const tabButtons = document.querySelectorAll('[data-tab-target]');
   const tabPanels = document.querySelectorAll('.tab-panel');
@@ -115,5 +160,4 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', () => {
     document.querySelectorAll('[data-user-menu]').forEach((menu) => menu.classList.remove('open'));
   });
-
 });
