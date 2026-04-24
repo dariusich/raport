@@ -142,5 +142,22 @@ router.post('/reports/:id/seminars', async (req, res) => {
   req.session.flash = { type: 'success', message: 'Seminar salvat.' };
   res.redirect(`/trainer/reports/${report._id}?month=${month}`);
 });
+router.post('/reports/:id/seminars/:seminarId/delete', async (req, res) => {
+  const report = await Report.findOne({ 
+    _id: req.params.id, 
+    trainer: req.session.user.id 
+  });
 
+  if (!report) {
+    req.session.flash = { type: 'error', message: 'Raport negăsit.' };
+    return res.redirect('/trainer');
+  }
+
+  report.seminars.id(req.params.seminarId)?.deleteOne();
+  await report.save();
+
+  req.session.flash = { type: 'success', message: 'Seminar șters.' };
+
+  res.redirect(`/trainer/reports/${report._id}?month=${req.query.month || ''}`);
+});
 module.exports = router;
