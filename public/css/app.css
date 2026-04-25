@@ -1545,6 +1545,105 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   gap: 12px;
   margin: 2px 0 18px;
 }
+.series-request-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 18px;
+  padding: 18px;
+  border: 1px solid rgba(196, 31, 45, 0.16);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,245,247,0.72));
+}
+.series-request-card h3 {
+  margin: 8px 0 4px;
+  font-size: 22px;
+  font-family: var(--font-serif);
+  color: var(--ink);
+}
+.series-request-card p {
+  max-width: 760px;
+  color: var(--muted);
+}
+.series-request-open-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.series-request-open-list span {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--ruby-700);
+  font-size: 12px;
+  font-weight: 600;
+}
+.series-request-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10020;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(26, 16, 18, 0.42);
+  backdrop-filter: blur(8px);
+}
+.series-request-modal.open { display: flex; }
+.series-request-modal-panel {
+  width: min(560px, 100%);
+  position: relative;
+}
+.modal-x {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ruby-700);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+.series-requests-admin {
+  padding: 22px;
+  border: 1px solid rgba(196, 31, 45, 0.14);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.72);
+}
+.series-request-admin-list {
+  display: grid;
+  gap: 10px;
+}
+.series-request-admin-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+.series-request-admin-row.open {
+  border-color: rgba(196, 31, 45, 0.24);
+  box-shadow: var(--shadow-xs);
+}
+.series-request-admin-row h3 {
+  margin: 6px 0 2px;
+  font-size: 18px;
+}
+.series-request-admin-row small {
+  display: block;
+  margin-top: 6px;
+}
 .trainer-edit-box {
   border: 1px solid rgba(196,31,45,.13);
   border-radius: 18px;
@@ -1567,6 +1666,16 @@ button[disabled], .btn[disabled] {
 @media (max-width: 720px) {
   .trainer-list-tools { grid-template-columns: 1fr; }
   .report-table-filters { grid-template-columns: 1fr; }
+  .series-request-card,
+  .series-request-admin-row {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .series-request-card .btn,
+  .series-request-admin-row .btn {
+    width: 100%;
+  }
   .save-success-card .actions, .seminar-delete-card .actions { flex-direction: column; align-items: stretch; }
   .save-success-card .actions .btn, .seminar-delete-card .actions .btn { width: 100%; text-align: center; }
 }

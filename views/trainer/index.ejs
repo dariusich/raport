@@ -50,6 +50,22 @@
     </select>
   </div>
 
+  <div class="series-request-card">
+    <div>
+      <span class="pill red">Solicitare</span>
+      <h3>Nu vezi seria ta?</h3>
+      <p>Dacă urmează să susții un curs sau ai început deja unul, dar seria nu apare în listă, trimite o solicitare către administrator.</p>
+      <% if (seriesRequests.length) { %>
+        <div class="series-request-open-list">
+          <% seriesRequests.forEach(request => { %>
+            <span><%= request.courseName %> · trimisă în <%= request.createdAt.toLocaleDateString('ro-RO') %></span>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+    <button class="btn primary" type="button" id="openSeriesRequestModal">Solicită serie de încărcat</button>
+  </div>
+
   <div class="course-list" id="seriesList">
     <% reports.forEach(r => { %>
       <% const start = r.startDate ? new Date(r.startDate).toLocaleDateString('ro-RO') : ''; %>
@@ -69,6 +85,27 @@
   </div>
 </section>
 
+<div class="series-request-modal" id="seriesRequestModal" aria-hidden="true">
+  <section class="card series-request-modal-panel" role="dialog" aria-modal="true" aria-labelledby="seriesRequestTitle">
+    <button class="modal-x" type="button" id="closeSeriesRequestModal" aria-label="Închide">×</button>
+    <span class="pill red">Solicitare serie</span>
+    <h2 id="seriesRequestTitle">Trimite solicitare către administrator</h2>
+    <p>Completează ce știi acum. Datele ajută administratorul să identifice rapid seria care lipsește.</p>
+    <form action="/trainer/series-requests" method="post" class="form-grid">
+      <label>Nume curs <input name="courseName" required placeholder="Ex: Cosmetician, Frizer, Masaj, Coafor..."></label>
+      <div class="inline-2">
+        <label>Data început <input name="startDate" type="date"></label>
+        <label>Data final <input name="endDate" type="date"></label>
+      </div>
+      <label>Filială <input name="location" value="<%= currentUser.location || '' %>" placeholder="Ex: Iași, Sibiu, Bacău"></label>
+      <label>Observații
+        <textarea name="notes" rows="3" placeholder="Ex: cursul a început deja / urmează să înceapă / nu apare în lista mea."></textarea>
+      </label>
+      <button class="btn primary full" type="submit">Trimite solicitarea</button>
+    </form>
+  </section>
+</div>
+
 
 <script>
   const seriesSearch = document.getElementById('seriesSearch');
@@ -86,6 +123,24 @@
   seriesSearch?.addEventListener('input', updateSeriesList);
   seriesStatusFilter?.addEventListener('change', updateSeriesList);
   updateSeriesList();
+
+  const seriesRequestModal = document.getElementById('seriesRequestModal');
+  const openSeriesRequestModal = document.getElementById('openSeriesRequestModal');
+  const closeSeriesRequestModal = document.getElementById('closeSeriesRequestModal');
+  const closeRequestModal = () => {
+    seriesRequestModal?.classList.remove('open');
+    seriesRequestModal?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  };
+  openSeriesRequestModal?.addEventListener('click', () => {
+    seriesRequestModal?.classList.add('open');
+    seriesRequestModal?.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  });
+  closeSeriesRequestModal?.addEventListener('click', closeRequestModal);
+  seriesRequestModal?.addEventListener('click', (event) => {
+    if (event.target === seriesRequestModal) closeRequestModal();
+  });
 </script>
 
 <%- include('../partials/footer') %>

@@ -185,6 +185,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const isReportsSubtab = ['genereaza-raport', 'rapoarte-generate'].includes(hashId);
     const targetId = isReportsSubtab ? 'rapoarte' : hashId;
+    const targetPanel = Array.from(tabPanels).find((panel) => panel.id === targetId);
+    if (!targetPanel) {
+      tabPanels.forEach((panel) => panel.classList.remove('active'));
+      tabButtons.forEach((button) => button.classList.remove('active'));
+      if (adminHome) adminHome.classList.remove('is-hidden');
+      setActiveTopNav('');
+      document.getElementById(hashId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     tabPanels.forEach((panel) => panel.classList.toggle('active', panel.id === targetId));
     tabButtons.forEach((button) => button.classList.toggle('active', button.dataset.tabTarget === targetId));
     if (adminHome) adminHome.classList.add('is-hidden');

@@ -5,6 +5,7 @@ const multer = require('multer');
 const mammoth = require('mammoth');
 const User = require('../models/User');
 const Report = require('../models/Report');
+const SeriesRequest = require('../models/SeriesRequest');
 const { requireAdmin } = require('../utils/auth');
 const { reportStats, roMonths } = require('../utils/stats');
 
@@ -211,10 +212,12 @@ function accountingByTrainer(trainers, reports) {
 router.get('/', async (req, res) => {
   const trainers = await User.find({ role: 'trainer' }).sort({ active: -1, name: 1 });
   const reports = await Report.find().populate('trainer').sort({ startDate: 1, title: 1 });
+  const seriesRequests = await SeriesRequest.find().populate('trainer').sort({ status: 1, createdAt: -1 });
   const totalSeminars = reports.reduce((sum, r) => sum + (r.seminars?.length || 0), 0);
   const activeReports = reports.filter((r) => r.status === 'active').length;
   const finalizedReports = reports.filter((r) => r.status === 'finalized').length;
   const accounting = accountingByTrainer(trainers, reports);
+  const openSeriesRequests = seriesRequests.filter((request) => request.status === 'open').length;
 
   res.render('admin/index', {
     title: 'Admin',
@@ -224,7 +227,39 @@ router.get('/', async (req, res) => {
     activeReports,
     finalizedReports,
     accounting,
+    seriesRequests,
+    openSeriesRequests,
   });
+});
+
+router.post('/series-requests/:id/status', async (req, res) => {
+  const request = await SeriesRequest.findById(req.params.id);
+  if (!request) {
+    req.session.flash = { type: 'error', message: 'Solicitarea nu a fost găsită.' };
+    return res.redirect('/admin#solicitari-serii');
+  }
+
+  request.status = req.body.status === 'rejected' ? 'rejected' : 'resolved';
+  request.adminNote = req.body.adminNote || '';
+  request.resolvedAt = new Date();
+  if (/^[a-f\d]{24}$/i.test(String(req.session.user.id || ''))) {
+    request.resolvedBy = req.session.user.id;
+  }
+  await request.save();
+
+  req.session.flash = {
+    type: 'success',
+    message: request.status === 'resolved' ? 'Solicitarea a fost marcată ca rezolvată.' : 'Solicitarea a fost respinsă.',
+  };
+  res.redirect('/admin#solicitari-serii');
+});
+
+router.post('/series-requests/:id/delete', async (req, res) => {
+  const deleted = await SeriesRequest.findByIdAndDelete(req.params.id);
+  req.session.flash = deleted
+    ? { type: 'success', message: 'Solicitarea a fost ștearsă definitiv.' }
+    : { type: 'error', message: 'Solicitarea nu a fost găsită.' };
+  res.redirect('/admin#solicitari-serii');
 });
 
 router.post('/trainers', async (req, res) => {

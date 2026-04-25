@@ -1,5 +1,6 @@
 const express = require('express');
 const Report = require('../models/Report');
+const SeriesRequest = require('../models/SeriesRequest');
 const { requireTrainer } = require('../utils/auth');
 
 const router = express.Router();
@@ -105,7 +106,28 @@ const validateSeminarPayload = (body, selectedMonth) => {
 
 router.get('/', async (req, res) => {
   const reports = await Report.find({ trainer: req.session.user.id }).sort({ status: 1, startDate: 1, createdAt: -1 });
-  res.render('trainer/index', { title: 'Rapoartele mele', reports, roMonths });
+  const seriesRequests = await SeriesRequest.find({ trainer: req.session.user.id, status: 'open' }).sort({ createdAt: -1 });
+  res.render('trainer/index', { title: 'Rapoartele mele', reports, roMonths, seriesRequests });
+});
+
+router.post('/series-requests', async (req, res) => {
+  const courseName = String(req.body.courseName || '').trim();
+  if (!courseName) {
+    req.session.flash = { type: 'error', message: 'Completează numele cursului pentru solicitare.' };
+    return res.redirect('/trainer');
+  }
+
+  await SeriesRequest.create({
+    trainer: req.session.user.id,
+    courseName,
+    startDate: req.body.startDate || undefined,
+    endDate: req.body.endDate || undefined,
+    location: String(req.body.location || req.session.user.location || '').trim(),
+    notes: req.body.notes,
+  });
+
+  req.session.flash = { type: 'success', message: 'Solicitarea a fost trimisă către administrator.' };
+  res.redirect('/trainer');
 });
 
 router.get('/reports/:id', async (req, res) => {
