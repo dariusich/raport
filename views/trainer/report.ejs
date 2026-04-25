@@ -816,20 +816,33 @@ seminarsInMonth.forEach(s => {
 <script>
   const seminarModal = document.getElementById('seminarModal');
   const seminarModalClose = document.getElementById('seminarModalClose');
+  const isMobileViewport = () => window.matchMedia('(max-width: 720px)').matches;
+
+  function resetSeminarModalScroll() {
+    const panel = seminarModal?.querySelector('.seminar-modal-panel');
+    const form = seminarModal?.querySelector('.seminar-form');
+    [seminarModal, panel, form].forEach((element) => {
+      if (!element) return;
+      element.scrollTop = 0;
+      element.scrollLeft = 0;
+      element.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
+    });
+  }
 
   function openSeminarModal() {
     if (!seminarModal) return;
+    resetSeminarModalScroll();
     seminarModal.classList.add('open');
     seminarModal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
-    const panel = seminarModal.querySelector('.seminar-modal-panel');
-    const form = seminarModal.querySelector('.seminar-form');
-    panel?.scrollTo({ top: 0, behavior: 'auto' });
-    form?.scrollTo?.({ top: 0, behavior: 'auto' });
+    resetSeminarModalScroll();
+    requestAnimationFrame(resetSeminarModalScroll);
+    setTimeout(resetSeminarModalScroll, 80);
   }
 
   function closeSeminarModal() {
     if (!seminarModal) return;
+    resetSeminarModalScroll();
     seminarModal.classList.remove('open');
     seminarModal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('modal-open');
@@ -865,7 +878,9 @@ seminarsInMonth.forEach(s => {
       document.querySelectorAll('.calendar-day').forEach((day) => day.classList.remove('selected'));
       button.classList.add('selected');
       openSeminarModal();
-      setTimeout(() => { document.querySelector('[name="startTime"]')?.focus({ preventScroll: true }); }, 150);
+      if (!isMobileViewport()) {
+        setTimeout(() => { document.querySelector('[name="startTime"]')?.focus({ preventScroll: true }); }, 150);
+      }
     });
   });
 
