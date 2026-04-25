@@ -610,14 +610,110 @@ small, .muted { color: var(--muted); font-size: 13px; }
 }
 .password-help-modal.open { display: flex; }
 .password-help-panel {
-  width: min(440px, 100%);
+  width: min(760px, 100%);
+  min-height: 360px;
   position: relative;
+  padding: 58px 66px 66px;
+  border-radius: 34px;
+}
+.password-help-panel .modal-x {
+  top: 38px;
+  right: 38px;
+  width: 58px;
+  height: 58px;
+  font-size: 36px;
+}
+.password-help-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 26px;
+  border: 1px solid var(--ruby-200);
+  border-radius: 999px;
+  background: var(--ruby-50);
+  color: var(--ruby-700);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
 }
 .password-help-panel h2 {
-  margin-top: 12px;
+  margin: 34px 0 18px;
+  font-size: clamp(42px, 6vw, 72px);
+  line-height: 0.95;
 }
 .password-help-panel p {
-  margin-bottom: 18px;
+  margin-bottom: 58px;
+  color: var(--ink-2);
+  font-size: clamp(22px, 3vw, 34px);
+  line-height: 1.2;
+}
+.whatsapp-reset-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  width: 100%;
+  min-height: 76px;
+  padding: 18px 28px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--ruby-500), var(--ruby-700));
+  color: #fff;
+  font-size: clamp(18px, 3vw, 30px);
+  font-weight: 700;
+  box-shadow: 0 18px 38px rgba(164, 22, 48, 0.34);
+}
+.whatsapp-reset-button:hover {
+  color: #fff;
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+.whatsapp-mark {
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  border: 3px solid currentColor;
+  border-radius: 999px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+@media (max-width: 720px) {
+  .password-help-panel {
+    min-height: 0;
+    padding: 38px 24px 32px;
+    border-radius: 28px;
+  }
+  .password-help-panel .modal-x {
+    top: 18px;
+    right: 18px;
+    width: 46px;
+    height: 46px;
+    font-size: 28px;
+  }
+  .password-help-pill {
+    max-width: calc(100% - 58px);
+    padding: 9px 16px;
+    font-size: 11px;
+  }
+  .password-help-panel h2 {
+    margin-top: 28px;
+  }
+  .password-help-panel p {
+    margin-bottom: 30px;
+  }
+  .whatsapp-reset-button {
+    min-height: 60px;
+    gap: 12px;
+    padding: 15px 18px;
+    font-size: 17px;
+  }
+  .whatsapp-mark {
+    width: 32px;
+    height: 32px;
+    font-size: 17px;
+  }
 }
 
 /* =================== FORMS =================== */
