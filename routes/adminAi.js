@@ -255,24 +255,23 @@ router.post('/', async (req, res) => {
     const context = buildContext(trainers, reports);
 
     let result = null;
-    let fallbackReason = '';
     try {
       result = await askOpenAi({ mode, prompt, context });
     } catch (error) {
-      console.error('Admin AI fallback:', error.message);
-      fallbackReason = publicOpenAiError(error);
+      console.error('Admin AI unavailable:', error.message);
+      return res.status(503).json({ ok: false, message: publicOpenAiError(error) });
     }
 
     if (!result) {
-      result = localAssistant({ mode, prompt, context, trainers });
-      if (!fallbackReason && !String(process.env.OPENAI_API_KEY || '').trim()) {
-        fallbackReason = 'OPENAI_API_KEY lipseste din runtime-ul Render sau serviciul nu a fost redeploy-at dupa salvare.';
-      }
+      return res.status(503).json({
+        ok: false,
+        message: 'AI-ul avansat nu este activ. Lipseste OPENAI_API_KEY din Render sau serviciul nu a fost redeploy-at dupa salvare.',
+      });
     }
 
     res.json({
       ok: true,
-      ...normalizeAiPayload(result, { fallbackReason }),
+      ...normalizeAiPayload(result),
       model: result.provider === 'openai' ? DEFAULT_MODEL : null,
     });
   } catch (error) {

@@ -45,9 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const detectMode = (prompt) => {
     const text = String(prompt || '').toLowerCase();
-    if (/raport|curs|trainer|cursant|serie/.test(text)) return 'report-draft';
     if (/contabil|plata|lei|comision|excel|luna|seminarii/.test(text)) return 'accounting';
     if (/verifica|probleme|lips|gres|corect/.test(text)) return 'quality';
+    if (/raport|curs|trainer|cursant|serie/.test(text)) return 'report-draft';
     return 'general';
   };
 
@@ -156,7 +156,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!response.ok || !result.ok) throw new Error(result.message || 'AI-ul nu a raspuns.');
       renderResult(result);
     } catch (error) {
-      output.innerHTML = `<div class="admin-ai-error">${escapeHtml(error.message || 'A aparut o eroare.')}</div>`;
+      output.innerHTML = `
+        <div class="admin-ai-error">
+          <strong>AI-ul avansat nu este activ.</strong>
+          <p>${escapeHtml(error.message || 'A aparut o eroare.')}</p>
+          <small>Nu am completat si nu am modificat nimic in pagina.</small>
+        </div>
+      `;
     } finally {
       setLoading(false);
     }
