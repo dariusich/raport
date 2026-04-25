@@ -24,14 +24,24 @@
 </section>
 
 <section class="grid-2">
-  <div class="card">
-    <div class="section-title"><span class="pill green">Lunar</span><h2>Seminarii pe luni</h2></div>
-    <div class="months-grid big">
-      <% stats.monthly.forEach(m => { %>
-        <span class="month-chip <%= m.count ? 'has-count' : '' %>"><%= m.name %>: <b><%= m.count %></b></span>
-      <% }) %>
+  <div class="report-side-stack">
+    <div class="card">
+      <div class="section-title"><span class="pill green">Lunar</span><h2>Seminarii pe luni</h2></div>
+      <div class="months-grid big">
+        <% stats.monthly.forEach(m => { %>
+          <span class="month-chip <%= m.count ? 'has-count' : '' %>"><%= m.name %>: <b><%= m.count %></b></span>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span class="pill">Cursanți</span><h2>Lista cursanți</h2></div>
+      <div class="trainee-list horizontal">
+        <% report.trainees.forEach(t => { %><span><%= t.name %></span><% }) %>
+      </div>
     </div>
   </div>
+
   <div class="card">
     <div class="section-title"><span class="pill gold">Plată</span><h2>Calcul plată</h2></div>
     <form action="/admin/reports/<%= report._id %>/commission" method="post" class="inline-form large">
@@ -143,13 +153,6 @@
         <% } %>
       </tbody>
     </table>
-  </div>
-</section>
-
-<section class="card">
-  <div class="section-title"><span class="pill">Cursanți</span><h2>Lista cursanți</h2></div>
-  <div class="trainee-list horizontal">
-    <% report.trainees.forEach(t => { %><span><%= t.name %></span><% }) %>
   </div>
 </section>
 

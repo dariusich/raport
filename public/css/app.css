@@ -681,6 +681,15 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   margin-bottom: 22px;
 }
 
+.report-side-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.report-side-stack .card {
+  margin-bottom: 0;
+}
+
 /* =================== TRAINER LAYOUT =================== */
 .trainer-layout {
   display: grid;
