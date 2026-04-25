@@ -769,7 +769,12 @@ seminarsInMonth.forEach(s => {
       document.querySelectorAll('.calendar-day').forEach((day) => day.classList.remove('selected'));
       button.classList.add('selected');
       openSeminarModal();
-      setTimeout(() => { document.getElementById('seminarDateInput')?.focus({ preventScroll: true }); }, 150);
+      setTimeout(() => {
+        const panel = seminarModal?.querySelector('.seminar-modal-panel');
+        panel?.scrollTo({ top: 0, behavior: 'auto' });
+        const firstTimeInput = document.querySelector('[name="startTime"]');
+        firstTimeInput?.focus({ preventScroll: true });
+      }, 180);
     });
   });
 
@@ -830,7 +835,7 @@ seminarsInMonth.forEach(s => {
     if (!startInput?.value || !endInput?.value) {
       event.preventDefault();
       [startInput, endInput].forEach((el) => { if (el && !el.value.trim()) el.classList.add('field-error'); });
-      alert('Completează ora de început și ora finală.');
+      alert('Completează orele seminarului.');
       return;
     }
 
@@ -878,7 +883,11 @@ seminarsInMonth.forEach(s => {
       form.querySelectorAll('[data-multi-select]').forEach(refreshMultiSelectSummary);
       openSaveSuccessModal(result.savedDateDisplay || 'selectată');
     } catch (error) {
-      alert(error.message || 'A apărut o eroare la salvare.');
+      const rawMessage = error.message || 'A apărut o eroare la salvare.';
+      const friendlyMessage = /ora|ore|start|end|început|final/i.test(rawMessage)
+        ? 'Completează orele seminarului.'
+        : rawMessage;
+      alert(friendlyMessage);
     } finally {
       if (submitButton) {
         submitButton.disabled = false;
