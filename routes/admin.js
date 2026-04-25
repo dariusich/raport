@@ -92,6 +92,33 @@ function seminarDayKey(dateValue) {
   return date.toISOString().slice(0, 10);
 }
 
+function toArray(value) {
+  return Array.isArray(value) ? value.filter(Boolean) : value ? [value] : [];
+}
+
+function calculateHours(startTime, endTime) {
+  if (!startTime || !endTime) return 0;
+  const [sh, sm] = String(startTime).split(':').map(Number);
+  const [eh, em] = String(endTime).split(':').map(Number);
+  if (Number.isNaN(sh) || Number.isNaN(eh)) return 0;
+  const start = sh * 60 + (sm || 0);
+  const end = eh * 60 + (em || 0);
+  if (end <= start) return 0;
+  return Math.round(((end - start) / 60) * 100) / 100;
+}
+
+function validateSeminarPayload(body) {
+  const errors = [];
+  const date = String(body.date || '').trim();
+  const startTime = String(body.startTime || '').trim();
+  const endTime = String(body.endTime || '').trim();
+  if (!date) errors.push('Data seminarului este obligatorie.');
+  if (!startTime) errors.push('Ora de început este obligatorie.');
+  if (!endTime) errors.push('Ora finală este obligatorie.');
+  if (startTime && endTime && endTime <= startTime) errors.push('Ora finală trebuie să fie după ora de început.');
+  return errors;
+}
+
 function accountingByTrainer(trainers, reports) {
   const currentYear = new Date().getFullYear();
 
@@ -327,7 +354,66 @@ router.get('/reports/:id', async (req, res) => {
   const report = await Report.findById(req.params.id).populate('trainer');
   if (!report) return res.status(404).render('404', { title: 'Raport negăsit' });
   const stats = reportStats(report);
-  res.render('admin/report', { title: report.title, report, stats });
+  res.render('admin/report', { title: report.title, report, stats, customCommission: '' });
+});
+
+
+router.post('/reports/:id/seminars/:seminarId/update', async (req, res) => {
+  const report = await Report.findById(req.params.id).populate('trainer');
+  if (!report) {
+    req.session.flash = { type: 'error', message: 'Raportul nu a fost găsit.' };
+    return res.redirect('/admin#rapoarte-generate');
+  }
+
+  const seminar = report.seminars.id(req.params.seminarId);
+  if (!seminar) {
+    req.session.flash = { type: 'error', message: 'Seminarul nu a fost găsit.' };
+    return res.redirect(`/admin/reports/${report._id}`);
+  }
+
+  const validationErrors = validateSeminarPayload(req.body);
+  if (validationErrors.length) {
+    req.session.flash = { type: 'error', message: validationErrors.join(' ') };
+    return res.redirect(`/admin/reports/${report._id}`);
+  }
+
+  seminar.date = req.body.date;
+  seminar.startTime = String(req.body.startTime || '').trim();
+  seminar.endTime = String(req.body.endTime || '').trim();
+  seminar.hours = calculateHours(seminar.startTime, seminar.endTime);
+  seminar.activity = req.body.activity || '';
+  seminar.absents = toArray(req.body.absents);
+  seminar.issues = toArray(req.body.issues);
+  seminar.issuesDetails = req.body.issuesDetails || '';
+  seminar.roomState = req.body.roomState || '';
+  seminar.brokenObjects = req.body.brokenObjects || '';
+  seminar.productsQuantity = req.body.productsQuantity || '';
+  seminar.mediaSent = req.body.mediaSent || '';
+  seminar.talents = toArray(req.body.talents);
+  seminar.notes = req.body.notes || '';
+
+  await report.save();
+  req.session.flash = { type: 'success', message: 'Seminar modificat.' };
+  res.redirect(`/admin/reports/${report._id}`);
+});
+
+router.post('/reports/:id/seminars/:seminarId/delete', async (req, res) => {
+  const report = await Report.findById(req.params.id);
+  if (!report) {
+    req.session.flash = { type: 'error', message: 'Raportul nu a fost găsit.' };
+    return res.redirect('/admin#rapoarte-generate');
+  }
+
+  const seminar = report.seminars.id(req.params.seminarId);
+  if (!seminar) {
+    req.session.flash = { type: 'error', message: 'Seminarul nu a fost găsit.' };
+    return res.redirect(`/admin/reports/${report._id}`);
+  }
+
+  seminar.deleteOne();
+  await report.save();
+  req.session.flash = { type: 'success', message: 'Seminar șters.' };
+  res.redirect(`/admin/reports/${report._id}`);
 });
 
 router.post('/reports/:id/commission', async (req, res) => {
@@ -342,8 +428,33 @@ router.post('/reports/:id/status', async (req, res) => {
   if (report) {
     report.status = req.body.status === 'active' ? 'active' : 'finalized';
     await report.save();
+    req.session.flash = { type: 'success', message: report.status === 'finalized' ? 'Seria a fost marcată ca finalizată.' : 'Seria a fost redeschisă.' };
   }
-  res.redirect(`/admin/reports/${req.params.id}`);
+  const returnTo = req.body.returnTo || `/admin/reports/${req.params.id}`;
+  res.redirect(returnTo);
+});
+
+router.post('/reports/:id/finalize', async (req, res) => {
+  const report = await Report.findById(req.params.id);
+  if (!report) {
+    req.session.flash = { type: 'error', message: 'Seria nu a fost găsită.' };
+    return res.redirect(req.body.returnTo || '/admin#rapoarte');
+  }
+  report.status = 'finalized';
+  await report.save();
+  req.session.flash = { type: 'success', message: `Seria „${report.title}” a fost marcată ca finalizată.` };
+  res.redirect(req.body.returnTo || '/admin#rapoarte');
+});
+
+router.post('/reports/:id/delete', async (req, res) => {
+  const report = await Report.findById(req.params.id);
+  if (!report) {
+    req.session.flash = { type: 'error', message: 'Seria nu a fost găsită.' };
+    return res.redirect(req.body.returnTo || '/admin#rapoarte');
+  }
+  await Report.findByIdAndDelete(req.params.id);
+  req.session.flash = { type: 'success', message: `Seria „${report.title}” a fost ștearsă.` };
+  res.redirect(req.body.returnTo || '/admin#rapoarte');
 });
 
 router.delete('/reports/:id', async (req, res) => {

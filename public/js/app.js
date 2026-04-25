@@ -102,11 +102,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const tabButtons = document.querySelectorAll('[data-tab-target]');
   const tabPanels = document.querySelectorAll('.tab-panel');
+  const subButtons = document.querySelectorAll('[data-subtab-target]');
+  const subPanels = document.querySelectorAll('.subpanel');
+
+  const setActiveSubtab = (id) => {
+    if (!id || !document.getElementById(id)) return;
+    subPanels.forEach((panel) => panel.classList.toggle('active', panel.id === id));
+    subButtons.forEach((button) => button.classList.toggle('active', button.dataset.subtabTarget === id));
+  };
+
   const setActiveTab = (id) => {
-    const targetId = id || 'rapoarte';
+    const hashId = id || 'rapoarte';
+    const isReportsSubtab = ['genereaza-raport', 'rapoarte-generate'].includes(hashId);
+    const targetId = isReportsSubtab ? 'rapoarte' : hashId;
     tabPanels.forEach((panel) => panel.classList.toggle('active', panel.id === targetId));
     tabButtons.forEach((button) => button.classList.toggle('active', button.dataset.tabTarget === targetId));
+    if (isReportsSubtab) setActiveSubtab(hashId);
   };
+
   if (tabButtons.length) {
     setActiveTab((window.location.hash || '#rapoarte').replace('#', ''));
     tabButtons.forEach((button) => {
@@ -118,13 +131,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('hashchange', () => setActiveTab((window.location.hash || '#rapoarte').replace('#', '')));
   }
 
-  const subButtons = document.querySelectorAll('[data-subtab-target]');
-  const subPanels = document.querySelectorAll('.subpanel');
   subButtons.forEach((button) => {
     button.addEventListener('click', () => {
       const id = button.dataset.subtabTarget;
-      subPanels.forEach((panel) => panel.classList.toggle('active', panel.id === id));
-      subButtons.forEach((btn) => btn.classList.toggle('active', btn === button));
+      window.location.hash = id;
+      setActiveTab(id);
     });
   });
 
@@ -143,6 +154,21 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     boxes.forEach((box) => box.addEventListener('change', update));
     update();
+  });
+
+  
+  document.querySelectorAll('textarea[name="activity"], [name="activityConform"], [name="absents"], [name="issues"], [name="issuesDetails"], [name="roomState"], [name="brokenObjects"], [name="productsQuantity"], [name="mediaSent"], [name="talents"], [name="notes"]').forEach((el) => {
+    el.required = false;
+    el.removeAttribute('required');
+  });
+
+  document.querySelectorAll('.js-toggle-admin-seminar').forEach((button) => {
+    button.addEventListener('click', () => {
+      const row = document.getElementById(button.dataset.target);
+      if (!row) return;
+      row.classList.toggle('open');
+      button.textContent = row.classList.contains('open') ? 'Închide' : 'Modifică';
+    });
   });
 
   document.querySelectorAll('[data-user-menu]').forEach((menu) => {

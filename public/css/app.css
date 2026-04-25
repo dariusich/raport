@@ -1439,3 +1439,90 @@ button[disabled], .btn[disabled] {
   .save-success-card .actions, .seminar-delete-card .actions { flex-direction: column; align-items: stretch; }
   .save-success-card .actions .btn, .seminar-delete-card .actions .btn { width: 100%; text-align: center; }
 }
+
+/* Admin report actions */
+.btn.success {
+  background: #fff;
+  border-color: #C9E7D6;
+  color: var(--success);
+}
+.btn.success:hover {
+  background: var(--success);
+  color: #fff;
+  border-color: var(--success);
+  box-shadow: 0 8px 20px rgba(47, 125, 92, 0.22);
+}
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.table-actions form { margin: 0; }
+.accounting-series-list {
+  margin: 16px 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,.7);
+  overflow: hidden;
+}
+.accounting-series-list summary {
+  cursor: pointer;
+  padding: 12px 14px;
+  font-weight: 800;
+  color: var(--ruby-700);
+  list-style: none;
+}
+.accounting-series-list summary::-webkit-details-marker { display: none; }
+.accounting-series-actions {
+  display: grid;
+  gap: 10px;
+  padding: 0 14px 14px;
+}
+.accounting-series-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+.accounting-series-row small {
+  display: block;
+  margin-top: 2px;
+}
+@media (max-width: 720px) {
+  .table-actions,
+  .accounting-series-row,
+  .accounting-series-row .table-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+  .table-actions .btn,
+  .table-actions form,
+  .table-actions button {
+    width: 100%;
+  }
+}
+
+/* Admin seminar edit panel */
+.admin-seminar-edit-row { display: none; }
+.admin-seminar-edit-row.open { display: table-row; }
+.admin-seminar-edit {
+  margin: 12px 0;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(196, 31, 45, 0.16);
+  background: rgba(255, 250, 248, 0.92);
+}
+.admin-seminar-edit select[multiple] {
+  min-height: 120px;
+  padding: 10px;
+}
+@media (max-width: 720px) {
+  .admin-seminar-edit-row.open { display: block; }
+  .admin-seminar-edit-row td { display: block; width: 100%; }
+}

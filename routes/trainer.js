@@ -81,7 +81,6 @@ const validateSeminarPayload = (body, selectedMonth) => {
   const date = String(body.date || '').trim();
   const startTime = String(body.startTime || '').trim();
   const endTime = String(body.endTime || '').trim();
-  const activity = String(body.activity || '').trim();
 
   if (!date) errors.push('Selectează data seminarului.');
   if (selectedMonth && date && !date.startsWith(selectedMonth)) errors.push('Data aleasă nu aparține lunii selectate.');
@@ -93,7 +92,6 @@ const validateSeminarPayload = (body, selectedMonth) => {
     if (start === null || end === null) errors.push('Orele introduse nu sunt valide.');
     else if (end <= start) errors.push('Ora finală trebuie să fie după ora de început.');
   }
-  if (!activity) errors.push('Completează activitatea desfășurată.');
   return errors;
 };
 

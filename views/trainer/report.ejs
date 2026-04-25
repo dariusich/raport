@@ -581,7 +581,7 @@ seminarsInMonth.forEach(s => {
           <div class="seminar-modal-panel" role="dialog" aria-modal="true" aria-labelledby="seminarFormTitle">
             <button type="button" class="seminar-modal-close" id="seminarModalClose" aria-label="Închide formularul">×</button>
 
-            <form action="/trainer/reports/<%= report._id %>/seminars" method="post" class="card form-grid seminar-form" id="seminarForm" data-ajax-save="1" data-report-id="<%= report._id %>" data-selected-month="<%= selectedMonth %>">
+            <form action="/trainer/reports/<%= report._id %>/seminars" method="post" class="card form-grid seminar-form" id="seminarForm" novalidate data-ajax-save="1" data-report-id="<%= report._id %>" data-selected-month="<%= selectedMonth %>">
           <input type="hidden" name="selectedMonth" value="<%= selectedMonth %>">
           <% if (formSeminar) { %>
             <input type="hidden" name="seminarId" value="<%= formSeminar._id %>">
@@ -626,7 +626,8 @@ seminarsInMonth.forEach(s => {
           </div>
 
           <label>Activitate desfășurată
-            <textarea name="activity" rows="3" required placeholder="Ex: Masaj relaxare - tehnici practice, recapitulare, demonstrație..."><%= formSeminar ? formSeminar.activity : '' %></textarea>
+            <textarea name="activity" rows="3" placeholder="Opțional: Ex: Masaj relaxare - tehnici practice, recapitulare, demonstrație..."><%= formSeminar ? formSeminar.activity : '' %></textarea>
+            <small>Opțional. Pentru salvare sunt obligatorii doar data, ora de început și ora finală.</small>
           </label>
 
           <label>Absenți / nume prenume
@@ -667,6 +668,7 @@ seminarsInMonth.forEach(s => {
           <div class="inline-2">
             <label>Cantitatea de produse
               <select name="productsQuantity">
+                <option value="" <%= !formSeminar || !formSeminar.productsQuantity ? 'selected' : '' %>>Opțional</option>
                 <option value="suficienta" <%= formSeminar && formSeminar.productsQuantity === 'suficienta' ? 'selected' : '' %>>Suficientă</option>
                 <option value="insuficienta" <%= formSeminar && formSeminar.productsQuantity === 'insuficienta' ? 'selected' : '' %>>Insuficientă</option>
               </select>
@@ -674,6 +676,7 @@ seminarsInMonth.forEach(s => {
 
             <label>Poze/filmulețe trimise din cadrul cursului
               <select name="mediaSent">
+                <option value="" <%= !formSeminar || !formSeminar.mediaSent ? 'selected' : '' %>>Opțional</option>
                 <option value="da" <%= formSeminar && formSeminar.mediaSent === 'da' ? 'selected' : '' %>>Da</option>
                 <option value="nu" <%= formSeminar && formSeminar.mediaSent === 'nu' ? 'selected' : '' %>>Nu</option>
               </select>
@@ -822,13 +825,12 @@ seminarsInMonth.forEach(s => {
 
     const startInput = form.querySelector('[name="startTime"]');
     const endInput = form.querySelector('[name="endTime"]');
-    const activityInput = form.querySelector('[name="activity"]');
     form.querySelectorAll('.field-error').forEach((el) => el.classList.remove('field-error'));
 
-    if (!startInput?.value || !endInput?.value || !activityInput?.value.trim()) {
+    if (!startInput?.value || !endInput?.value) {
       event.preventDefault();
-      [startInput, endInput, activityInput].forEach((el) => { if (el && !el.value.trim()) el.classList.add('field-error'); });
-      alert('Completează data, ora de început, ora finală și activitatea.');
+      [startInput, endInput].forEach((el) => { if (el && !el.value.trim()) el.classList.add('field-error'); });
+      alert('Completează ora de început și ora finală.');
       return;
     }
 

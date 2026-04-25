@@ -1,10 +1,20 @@
 <%- include('../partials/header') %>
 
+<%
+  const formatDateInput = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    if (Number.isNaN(d.getTime())) return '';
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const traineeNames = (report.trainees || []).map(t => t.name).filter(Boolean);
+%>
+
 <section class="report-hero">
   <div>
     <p class="eyebrow">Raport trainer</p>
     <h1><%= report.title %></h1>
-    <p><%= report.trainer.name %> · <%= report.location || report.trainer.location %></p>
+    <p><%= report.trainer?.name || 'Trainer șters' %> · <%= report.location || report.trainer?.location || 'Fără filială' %></p>
   </div>
   <div class="hero-stats compact">
     <div><strong><%= stats.total %></strong><span>seminarii</span></div>
@@ -34,6 +44,10 @@
         <input type="hidden" name="status" value="<%= report.status === 'active' ? 'finalized' : 'active' %>">
         <button class="btn" type="submit"><%= report.status === 'active' ? 'Marchează finalizat' : 'Redeschide raport' %></button>
       </form>
+      <form action="/admin/reports/<%= report._id %>/delete" method="post" onsubmit="return confirm('Sigur vrei să ștergi seria «<%= String(report.title || '').replace(/'/g, '&#39;') %>»? Se vor șterge și seminariile completate.');">
+        <input type="hidden" name="returnTo" value="/admin#rapoarte-generate">
+        <button class="btn danger" type="submit">Șterge serie</button>
+      </form>
     </div>
   </div>
 </section>
@@ -42,9 +56,9 @@
   <div class="section-title"><span class="pill">Seminarii</span><h2>Seminarii completate</h2></div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Data</th><th>Ore</th><th>Activitate</th><th>Absenți</th><th>Probleme</th><th>Talentați</th><th>Produse</th><th>Media</th></tr></thead>
+      <thead><tr><th>Data</th><th>Ore</th><th>Activitate</th><th>Absenți</th><th>Probleme</th><th>Talentați</th><th>Produse</th><th>Media</th><th>Acțiuni</th></tr></thead>
       <tbody>
-        <% report.seminars.forEach(s => { %>
+        <% report.seminars.forEach((s, idx) => { %>
           <tr>
             <td><%= new Date(s.date).toLocaleDateString('ro-RO') %></td>
             <td><%= s.startTime || '' %><%= s.endTime ? ' - ' + s.endTime : '' %></td>
@@ -54,8 +68,79 @@
             <td><%= s.talents.join(', ') || '-' %></td>
             <td><%= s.productsQuantity || '-' %></td>
             <td><%= s.mediaSent || '-' %></td>
+            <td>
+              <div class="table-actions">
+                <button class="btn small ghost js-toggle-admin-seminar" type="button" data-target="admin-seminar-<%= s._id %>">Modifică</button>
+                <form action="/admin/reports/<%= report._id %>/seminars/<%= s._id %>/delete" method="post" onsubmit="return confirm('Sigur vrei să ștergi seminarul din <%= new Date(s.date).toLocaleDateString('ro-RO') %>?');">
+                  <button class="btn small danger" type="submit">Șterge</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <tr class="admin-seminar-edit-row" id="admin-seminar-<%= s._id %>">
+            <td colspan="9">
+              <form action="/admin/reports/<%= report._id %>/seminars/<%= s._id %>/update" method="post" class="admin-seminar-edit form-grid">
+                <div class="inline-3">
+                  <label>Data <input name="date" type="date" required value="<%= formatDateInput(s.date) %>"></label>
+                  <label>Ora început <input name="startTime" type="time" required value="<%= s.startTime || '' %>"></label>
+                  <label>Ora final <input name="endTime" type="time" required value="<%= s.endTime || '' %>"></label>
+                </div>
+                <label>Activitate desfășurată
+                  <textarea name="activity" rows="3" placeholder="Opțional"><%= s.activity || '' %></textarea>
+                </label>
+                <div class="inline-2">
+                  <label>Absenți
+                    <select name="absents" multiple size="5">
+                      <% traineeNames.forEach(name => { %>
+                        <option value="<%= name %>" <%= s.absents.includes(name) ? 'selected' : '' %>><%= name %></option>
+                      <% }) %>
+                    </select>
+                  </label>
+                  <label>Cursanți cu probleme
+                    <select name="issues" multiple size="5">
+                      <% traineeNames.forEach(name => { %>
+                        <option value="<%= name %>" <%= s.issues.includes(name) ? 'selected' : '' %>><%= name %></option>
+                      <% }) %>
+                    </select>
+                  </label>
+                </div>
+                <label>Detalii probleme <textarea name="issuesDetails" rows="2"><%= s.issuesDetails || '' %></textarea></label>
+                <div class="inline-2">
+                  <label>Starea sălii <textarea name="roomState" rows="2"><%= s.roomState || '' %></textarea></label>
+                  <label>Obiecte defecte / lipsă <textarea name="brokenObjects" rows="2"><%= s.brokenObjects || '' %></textarea></label>
+                </div>
+                <div class="inline-3">
+                  <label>Cantitatea de produse
+                    <select name="productsQuantity">
+                      <option value="" <%= !s.productsQuantity ? 'selected' : '' %>>-</option>
+                      <option value="suficienta" <%= s.productsQuantity === 'suficienta' ? 'selected' : '' %>>Suficientă</option>
+                      <option value="insuficienta" <%= s.productsQuantity === 'insuficienta' ? 'selected' : '' %>>Insuficientă</option>
+                    </select>
+                  </label>
+                  <label>Media trimisă
+                    <select name="mediaSent">
+                      <option value="" <%= !s.mediaSent ? 'selected' : '' %>>-</option>
+                      <option value="da" <%= s.mediaSent === 'da' ? 'selected' : '' %>>Da</option>
+                      <option value="nu" <%= s.mediaSent === 'nu' ? 'selected' : '' %>>Nu</option>
+                    </select>
+                  </label>
+                  <label>Talentați
+                    <select name="talents" multiple size="4">
+                      <% traineeNames.forEach(name => { %>
+                        <option value="<%= name %>" <%= s.talents.includes(name) ? 'selected' : '' %>><%= name %></option>
+                      <% }) %>
+                    </select>
+                  </label>
+                </div>
+                <label>Observații <textarea name="notes" rows="2"><%= s.notes || '' %></textarea></label>
+                <button class="btn primary" type="submit">Salvează modificările</button>
+              </form>
+            </td>
           </tr>
         <% }) %>
+        <% if (!report.seminars.length) { %>
+          <tr><td colspan="9">Nu există seminarii completate încă.</td></tr>
+        <% } %>
       </tbody>
     </table>
   </div>
