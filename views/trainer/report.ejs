@@ -181,9 +181,56 @@ const countUniqueSeminarDays = (seminars = []) => {
     font-weight: 900;
     color: #7a2030;
     list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
   }
 
   .trainee-compact summary::-webkit-details-marker { display: none; }
+
+  .trainee-compact-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: rgba(196, 31, 45, 0.08);
+    color: #9b1632;
+    font-size: 18px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+    flex: 0 0 auto;
+  }
+
+  .trainee-compact[open] .trainee-compact-arrow {
+    transform: rotate(180deg);
+  }
+
+  .seminar-date-time-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .seminar-date-field input {
+    max-width: 260px;
+    text-align: center;
+  }
+
+  .seminar-time-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .seminar-time-pair input[type="time"] {
+    min-width: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+    text-align: center;
+  }
 
   .trainee-compact-list {
     display: grid;
@@ -388,6 +435,19 @@ const countUniqueSeminarDays = (seminars = []) => {
     .multi-menu {
       grid-template-columns: 1fr;
       max-height: 190px;
+    }
+
+    .seminar-date-field input {
+      max-width: 210px;
+    }
+
+    .seminar-time-pair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .seminar-time-pair input[type="time"] {
+      font-size: 16px;
     }
   }
 </style>
@@ -601,7 +661,10 @@ seminarsInMonth.forEach(s => {
           </div>
 
           <details class="trainee-compact">
-            <summary>Lista cursanți din serie (<%= report.trainees.length %>)</summary>
+            <summary>
+              <span>Lista cursanți din serie (<%= report.trainees.length %>)</span>
+              <span class="trainee-compact-arrow" aria-hidden="true">⌄</span>
+            </summary>
             <div class="trainee-compact-list">
               <% report.trainees.forEach((t, index) => { %>
                 <span class="trainee-chip"><%= index + 1 %>. <%= t.name %></span>
@@ -609,8 +672,8 @@ seminarsInMonth.forEach(s => {
             </div>
           </details>
 
-          <div class="inline-3">
-            <label>Data
+          <div class="seminar-date-time-grid">
+            <label class="seminar-date-field">Data
               <input
                 id="seminarDateInput"
                 name="date"
@@ -621,8 +684,15 @@ seminarsInMonth.forEach(s => {
                 max="<%= selectedMonth %>-<%= String(daysInMonth).padStart(2, '0') %>"
               >
             </label>
-            <label>Ora început <input name="startTime" type="time" required value="<%= formSeminar ? formSeminar.startTime : '' %>"></label>
-            <label>Ora final <input name="endTime" type="time" required value="<%= formSeminar ? formSeminar.endTime : '' %>"></label>
+
+            <div class="seminar-time-pair">
+              <label>Ora început
+                <input name="startTime" type="time" required value="<%= formSeminar ? formSeminar.startTime : '' %>">
+              </label>
+              <label>Ora final
+                <input name="endTime" type="time" required value="<%= formSeminar ? formSeminar.endTime : '' %>">
+              </label>
+            </div>
           </div>
 
           <label>Activitate desfășurată
@@ -769,12 +839,7 @@ seminarsInMonth.forEach(s => {
       document.querySelectorAll('.calendar-day').forEach((day) => day.classList.remove('selected'));
       button.classList.add('selected');
       openSeminarModal();
-      setTimeout(() => {
-        const panel = seminarModal?.querySelector('.seminar-modal-panel');
-        panel?.scrollTo({ top: 0, behavior: 'auto' });
-        const firstTimeInput = document.querySelector('[name="startTime"]');
-        firstTimeInput?.focus({ preventScroll: true });
-      }, 180);
+      setTimeout(() => { document.getElementById('seminarDateInput')?.focus({ preventScroll: true }); }, 150);
     });
   });
 
@@ -835,7 +900,7 @@ seminarsInMonth.forEach(s => {
     if (!startInput?.value || !endInput?.value) {
       event.preventDefault();
       [startInput, endInput].forEach((el) => { if (el && !el.value.trim()) el.classList.add('field-error'); });
-      alert('Completează orele seminarului.');
+      alert('Completează ora de început și ora finală.');
       return;
     }
 
@@ -883,11 +948,7 @@ seminarsInMonth.forEach(s => {
       form.querySelectorAll('[data-multi-select]').forEach(refreshMultiSelectSummary);
       openSaveSuccessModal(result.savedDateDisplay || 'selectată');
     } catch (error) {
-      const rawMessage = error.message || 'A apărut o eroare la salvare.';
-      const friendlyMessage = /ora|ore|start|end|început|final/i.test(rawMessage)
-        ? 'Completează orele seminarului.'
-        : rawMessage;
-      alert(friendlyMessage);
+      alert(error.message || 'A apărut o eroare la salvare.');
     } finally {
       if (submitButton) {
         submitButton.disabled = false;
