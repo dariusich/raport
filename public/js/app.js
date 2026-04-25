@@ -141,6 +141,32 @@ document.addEventListener('DOMContentLoaded', () => {
   const subButtons = document.querySelectorAll('[data-subtab-target]');
   const subPanels = document.querySelectorAll('.subpanel');
   const adminHome = document.querySelector('[data-admin-home]');
+  const topNavLinks = Array.from(document.querySelectorAll('.topnav a'));
+
+  const setActiveTopNav = (section = '') => {
+    const normalized = ['genereaza-raport', 'rapoarte-generate'].includes(section) ? 'rapoarte' : section;
+    const currentPath = window.location.pathname;
+
+    topNavLinks.forEach((link) => {
+      const href = link.getAttribute('href') || '';
+      let isActive = false;
+
+      if (!normalized) {
+        isActive = href === currentPath
+          || (currentPath.startsWith('/admin') && href === '/admin')
+          || (currentPath.startsWith('/trainer') && href === '/trainer');
+      } else {
+        isActive = href.includes(`#${normalized}`);
+      }
+
+      link.classList.toggle('is-active', isActive);
+      if (isActive) {
+        link.setAttribute('aria-current', 'page');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+  };
 
   const setActiveSubtab = (id) => {
     if (!id || !document.getElementById(id)) return;
@@ -154,6 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tabPanels.forEach((panel) => panel.classList.remove('active'));
       tabButtons.forEach((button) => button.classList.remove('active'));
       if (adminHome) adminHome.classList.remove('is-hidden');
+      setActiveTopNav('');
       return;
     }
     const isReportsSubtab = ['genereaza-raport', 'rapoarte-generate'].includes(hashId);
@@ -162,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tabButtons.forEach((button) => button.classList.toggle('active', button.dataset.tabTarget === targetId));
     if (adminHome) adminHome.classList.add('is-hidden');
     if (isReportsSubtab) setActiveSubtab(hashId);
+    setActiveTopNav(targetId);
     document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
@@ -174,6 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
     window.addEventListener('hashchange', () => setActiveTab((window.location.hash || '').replace('#', '')));
+  } else {
+    setActiveTopNav((window.location.hash || '').replace('#', ''));
   }
 
   subButtons.forEach((button) => {

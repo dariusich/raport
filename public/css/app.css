@@ -219,6 +219,18 @@ small, .muted { color: var(--muted); font-size: 13px; }
   color: var(--ruby-600);
   box-shadow: var(--shadow-xs);
 }
+.topnav a.is-active,
+.topnav a[aria-current="page"] {
+  background: linear-gradient(135deg, var(--ruby-500), var(--ruby-700));
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(164, 22, 48, 0.24), inset 0 1px 0 rgba(255,255,255,0.22);
+}
+.topnav a.is-active:hover,
+.topnav a[aria-current="page"]:hover {
+  background: linear-gradient(135deg, var(--ruby-500), var(--ruby-700));
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(164, 22, 48, 0.3), inset 0 1px 0 rgba(255,255,255,0.24);
+}
 
 /* User menu */
 .user-menu { position: relative; }
