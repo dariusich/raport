@@ -883,11 +883,9 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 /* =================== ADMIN TABS =================== */
 .admin-home {
   display: grid;
-  grid-template-columns: minmax(240px, 0.7fr) minmax(0, 1.3fr);
-  gap: 24px;
-  align-items: stretch;
+  gap: 22px;
   margin: 0 0 26px;
-  padding: 30px;
+  padding: 34px 30px 30px;
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
   background:
@@ -900,31 +898,23 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 }
 
 .admin-home-copy {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 190px;
+  text-align: center;
 }
 
 .admin-home-copy h2 {
-  margin: 10px 0 8px;
+  margin: 0;
   font-size: clamp(28px, 3vw, 42px);
-}
-
-.admin-home-copy p {
-  max-width: 360px;
-  color: var(--muted);
 }
 
 .admin-home-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
 .admin-home-card {
-  min-height: 190px;
-  padding: 22px;
+  min-height: 170px;
+  padding: 24px;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.86);
@@ -946,7 +936,7 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   justify-content: center;
   width: 36px;
   height: 36px;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
   border-radius: 999px;
   background: var(--ruby-50);
   color: var(--ruby-700);
@@ -956,18 +946,14 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .admin-home-card strong {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 0;
   font-family: var(--font-serif);
   font-size: 28px;
   font-weight: 600;
   color: var(--ink);
 }
 
-.admin-home-card small {
-  display: block;
-  color: var(--muted);
-  line-height: 1.45;
-}
+.admin-home-card small { display: none; }
 
 .admin-tabs {
   display: flex;
@@ -1160,9 +1146,6 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   .admin-home {
     grid-template-columns: 1fr;
     padding: 22px;
-  }
-  .admin-home-copy {
-    min-height: auto;
   }
   .admin-home-grid {
     grid-template-columns: 1fr;
