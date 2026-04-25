@@ -16,6 +16,14 @@ const monthKeyFromDate = (date) => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
 };
 
+const seminarDayKey = (date) => {
+  if (!date) return '';
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
 const dateInputValue = (date) => {
   if (!date) return '';
   const d = new Date(date);
