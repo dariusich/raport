@@ -447,6 +447,13 @@ const countUniqueSeminarDays = (seminars = []) => {
       border-radius: 26px 26px 0 0;
     }
 
+    .seminar-modal-close {
+      top: 22px;
+      width: 48px;
+      height: 48px;
+      margin: 22px 18px 0 0;
+    }
+
     .seminar-modal .seminar-form {
       width: 100%;
       max-width: 100%;
@@ -715,7 +722,7 @@ seminarsInMonth.forEach(s => {
           </div>
 
           <label>Activitate desfășurată
-            <textarea name="activity" rows="3" placeholder="Opțional: Ex: Masaj relaxare - tehnici practice, recapitulare, demonstrație..."><%= formSeminar ? formSeminar.activity : '' %></textarea>
+            <textarea name="activity" rows="3" placeholder="Opțional: descrie pe scurt tema zilei, partea practică, recapitularea sau demonstrațiile făcute."><%= formSeminar ? formSeminar.activity : '' %></textarea>
             <small>Opțional. Pentru salvare sunt obligatorii doar data, ora de început și ora finală.</small>
           </label>
 
