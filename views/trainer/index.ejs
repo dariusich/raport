@@ -50,22 +50,6 @@
     </select>
   </div>
 
-  <div class="series-request-card">
-    <div>
-      <span class="pill red">Solicitare</span>
-      <h3>Nu vezi seria ta?</h3>
-      <p>Dacă urmează să susții un curs sau ai început deja unul, dar seria nu apare în listă, trimite o solicitare către administrator.</p>
-      <% if (seriesRequests.length) { %>
-        <div class="series-request-open-list">
-          <% seriesRequests.forEach(request => { %>
-            <span><%= request.courseName %> · trimisă în <%= request.createdAt.toLocaleDateString('ro-RO') %></span>
-          <% }) %>
-        </div>
-      <% } %>
-    </div>
-    <button class="btn primary" type="button" id="openSeriesRequestModal">Solicită serie de încărcat</button>
-  </div>
-
   <div class="course-list" id="seriesList">
     <% reports.forEach(r => { %>
       <% const start = r.startDate ? new Date(r.startDate).toLocaleDateString('ro-RO') : ''; %>
@@ -82,6 +66,23 @@
         </div>
       </a>
     <% }) %>
+  </div>
+
+  <div class="series-request-card">
+    <span class="series-request-icon" aria-hidden="true">✉</span>
+    <div>
+      <span class="series-request-kicker">Solicitare</span>
+      <h3>Nu vezi seria ta?</h3>
+      <p>Dacă urmează să susții un curs sau ai început deja unul, dar seria nu apare în listă, trimite o solicitare către administrator.</p>
+      <% if (seriesRequests.length) { %>
+        <div class="series-request-open-list">
+          <% seriesRequests.forEach(request => { %>
+            <span><%= request.courseName %> · trimisă în <%= request.createdAt.toLocaleDateString('ro-RO') %></span>
+          <% }) %>
+        </div>
+      <% } %>
+      <button class="btn primary small" type="button" id="openSeriesRequestModal">Solicită serie</button>
+    </div>
   </div>
 </section>
 

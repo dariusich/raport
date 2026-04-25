@@ -1624,23 +1624,57 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .series-request-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  margin: 0 0 18px;
-  padding: 18px;
+  justify-content: center;
+  gap: 20px;
+  width: min(520px, 100%);
+  margin: 18px auto 0;
+  padding: 22px 24px;
   border: 1px solid rgba(196, 31, 45, 0.16);
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,245,247,0.72));
+  box-shadow: var(--shadow-sm);
+}
+.series-request-icon {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(196, 30, 58, 0.08);
+  color: var(--ruby-500);
+  font-size: 27px;
+}
+.series-request-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ruby-600);
+}
+.series-request-kicker::after {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: var(--ruby-200);
 }
 .series-request-card h3 {
-  margin: 8px 0 4px;
+  margin: 4px 0 4px;
   font-size: 22px;
   font-family: var(--font-serif);
   color: var(--ink);
 }
 .series-request-card p {
-  max-width: 760px;
+  max-width: 360px;
   color: var(--muted);
+  font-size: 13px;
+}
+.series-request-card .btn {
+  margin-top: 10px;
+  min-width: 170px;
 }
 .series-request-open-list {
   display: flex;
@@ -1747,6 +1781,12 @@ button[disabled], .btn[disabled] {
     grid-template-columns: 1fr;
     flex-direction: column;
     align-items: stretch;
+  }
+  .series-request-card {
+    text-align: center;
+  }
+  .series-request-icon {
+    margin: 0 auto;
   }
   .series-request-card .btn,
   .series-request-admin-row .btn {
