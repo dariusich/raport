@@ -122,7 +122,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const actions = (result.actions || []).map((action, index) => (
       `<button type="button" data-action-index="${index}">${escapeHtml(action.label || 'Aplica actiunea')}</button>`
     )).join('');
-    const provider = result.provider === 'openai' ? `OpenAI ${result.model || ''}` : 'Mod local fara cheie API';
+    const provider = result.provider === 'openai'
+      ? `OpenAI ${result.model || ''}`
+      : `Mod local: ${result.fallbackReason || 'OpenAI nu este disponibil momentan.'}`;
 
     output.innerHTML = `
       <article class="admin-ai-result">

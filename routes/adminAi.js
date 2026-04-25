@@ -7,7 +7,47 @@ const router = express.Router();
 
 router.use(requireAdmin);
 
-const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
+const DEFAULT_MODEL = String(process.env.OPENAI_MODEL || 'gpt-4.1-mini').trim();
+const OPENAI_TIMEOUT_MS = 20000;
+
+const aiResponseSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    answer: { type: 'string' },
+    insights: {
+      type: 'array',
+      items: { type: 'string' },
+    },
+    actions: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          type: {
+            type: 'string',
+            enum: ['go_to_tab', 'fill_report_form', 'open_report', 'set_accounting_filters'],
+          },
+          label: { type: 'string' },
+          payload: {
+            type: 'object',
+            additionalProperties: {
+              anyOf: [
+                { type: 'string' },
+                { type: 'number' },
+                { type: 'boolean' },
+                { type: 'null' },
+              ],
+            },
+          },
+        },
+        required: ['type', 'label', 'payload'],
+      },
+    },
+  },
+  required: ['answer', 'insights', 'actions'],
+};
 
 function asDateKey(value) {
   if (!value) return '';
@@ -154,17 +194,28 @@ function localAssistant({ mode, prompt, context, trainers }) {
   return { answer, insights, actions, provider: 'local' };
 }
 
-function normalizeAiPayload(payload) {
+function publicOpenAiError(error) {
+  const message = String(error?.message || error || '');
+  if (/401|invalid_api_key|Incorrect API key/i.test(message)) return 'Cheia OpenAI nu este valida sau nu a fost salvata corect in Render.';
+  if (/429|quota|billing|insufficient_quota/i.test(message)) return 'OpenAI a refuzat cererea din cauza limitei, creditelor sau billing-ului.';
+  if (/model|does not exist|not have access/i.test(message)) return `Modelul ${DEFAULT_MODEL} nu este disponibil pentru cheia ta OpenAI.`;
+  if (/timeout|aborted/i.test(message)) return 'OpenAI nu a raspuns in timp util.';
+  return 'OpenAI a refuzat cererea. Verifica Logs in Render pentru detalii.';
+}
+
+function normalizeAiPayload(payload, extra = {}) {
   return {
     answer: String(payload.answer || '').slice(0, 1600),
     insights: Array.isArray(payload.insights) ? payload.insights.map(String).slice(0, 8) : [],
     actions: Array.isArray(payload.actions) ? payload.actions.slice(0, 6) : [],
     provider: payload.provider || 'openai',
+    fallbackReason: extra.fallbackReason || payload.fallbackReason || '',
   };
 }
 
 async function askOpenAi({ mode, prompt, context }) {
-  if (!process.env.OPENAI_API_KEY) return null;
+  const apiKey = String(process.env.OPENAI_API_KEY || '').trim();
+  if (!apiKey) return null;
 
   const instructions = [
     'Esti AI operator pentru pagina /admin Reflexovital.',
@@ -175,15 +226,27 @@ async function askOpenAi({ mode, prompt, context }) {
     'Pentru fill_report_form foloseste payload cu trainerId, title, startDate, endDate, location, traineesText, adminNotes.',
   ].join('\n');
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
+    signal: controller.signal,
     headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       model: DEFAULT_MODEL,
       instructions,
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'admin_ai_response',
+          strict: true,
+          schema: aiResponseSchema,
+        },
+      },
       input: [
         {
           role: 'user',
@@ -196,7 +259,7 @@ async function askOpenAi({ mode, prompt, context }) {
         },
       ],
     }),
-  });
+  }).finally(() => clearTimeout(timeout));
 
   if (!response.ok) {
     const message = await response.text();
@@ -208,7 +271,7 @@ async function askOpenAi({ mode, prompt, context }) {
     || data.output?.flatMap((item) => item.content || []).map((item) => item.text || '').join('\n')
     || '';
   const jsonText = text.match(/\{[\s\S]*\}/)?.[0] || text;
-  return normalizeAiPayload(JSON.parse(jsonText));
+  return normalizeAiPayload(JSON.parse(jsonText), { fallbackReason: '' });
 }
 
 router.post('/', async (req, res) => {
@@ -220,17 +283,26 @@ router.post('/', async (req, res) => {
     const context = buildContext(trainers, reports);
 
     let result = null;
+    let fallbackReason = '';
     try {
       result = await askOpenAi({ mode, prompt, context });
     } catch (error) {
       console.error('Admin AI fallback:', error.message);
+      fallbackReason = publicOpenAiError(error);
     }
 
     if (!result) {
       result = localAssistant({ mode, prompt, context, trainers });
+      if (!fallbackReason && !String(process.env.OPENAI_API_KEY || '').trim()) {
+        fallbackReason = 'OPENAI_API_KEY lipseste din runtime-ul Render sau serviciul nu a fost redeploy-at dupa salvare.';
+      }
     }
 
-    res.json({ ok: true, ...normalizeAiPayload(result), model: result.provider === 'openai' ? DEFAULT_MODEL : null });
+    res.json({
+      ok: true,
+      ...normalizeAiPayload(result, { fallbackReason }),
+      model: result.provider === 'openai' ? DEFAULT_MODEL : null,
+    });
   } catch (error) {
     console.error('Admin AI error:', error);
     res.status(500).json({ ok: false, message: 'AI-ul nu a putut procesa cererea acum.' });
