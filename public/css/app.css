@@ -918,9 +918,13 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.86);
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
@@ -936,7 +940,7 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   justify-content: center;
   width: 36px;
   height: 36px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   border-radius: 999px;
   background: var(--ruby-50);
   color: var(--ruby-700);
@@ -948,9 +952,10 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   display: block;
   margin-bottom: 0;
   font-family: var(--font-serif);
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 600;
   color: var(--ink);
+  line-height: 1;
 }
 
 .admin-home-card small { display: none; }
