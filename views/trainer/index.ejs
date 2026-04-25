@@ -44,8 +44,8 @@
   <div class="trainer-list-tools">
     <input id="seriesSearch" type="search" placeholder="Caută după curs sau filială...">
     <select id="seriesStatusFilter">
+      <option value="active" selected>Active</option>
       <option value="all">Toate seriile</option>
-      <option value="active">Active</option>
       <option value="finalized">Finalizate</option>
     </select>
   </div>
@@ -85,6 +85,7 @@
   }
   seriesSearch?.addEventListener('input', updateSeriesList);
   seriesStatusFilter?.addEventListener('change', updateSeriesList);
+  updateSeriesList();
 </script>
 
 <%- include('../partials/footer') %>
