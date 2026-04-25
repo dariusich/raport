@@ -610,56 +610,56 @@ small, .muted { color: var(--muted); font-size: 13px; }
 }
 .password-help-modal.open { display: flex; }
 .password-help-panel {
-  width: min(520px, 100%);
+  width: min(420px, 100%);
   min-height: 0;
   position: relative;
-  padding: 34px 38px 38px;
-  border-radius: 28px;
+  padding: 28px 30px 30px;
+  border-radius: 24px;
 }
 .password-help-panel .modal-x {
-  top: 18px;
-  right: 18px;
-  width: 46px;
-  height: 46px;
-  font-size: 28px;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  font-size: 24px;
 }
 .password-help-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 11px 26px;
+  padding: 8px 16px;
   border: 1px solid var(--ruby-200);
   border-radius: 999px;
   background: var(--ruby-50);
   color: var(--ruby-700);
-  font-size: 13px;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
 }
 .password-help-panel h2 {
-  margin: 26px 0 12px;
-  font-size: clamp(34px, 4vw, 46px);
+  margin: 22px 0 10px;
+  font-size: 32px;
   line-height: 1;
 }
 .password-help-panel p {
-  margin-bottom: 28px;
+  margin-bottom: 22px;
   color: var(--ink-2);
-  font-size: 19px;
+  font-size: 15.5px;
   line-height: 1.2;
 }
 .whatsapp-reset-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: 10px;
   width: 100%;
-  min-height: 58px;
-  padding: 15px 22px;
+  min-height: 48px;
+  padding: 12px 16px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--ruby-500), var(--ruby-700));
   color: #fff;
-  font-size: 18px;
+  font-size: 15.5px;
   font-weight: 700;
   box-shadow: 0 18px 38px rgba(164, 22, 48, 0.34);
 }
@@ -669,52 +669,52 @@ small, .muted { color: var(--muted); font-size: 13px; }
   transform: translateY(-1px);
 }
 .whatsapp-mark {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   display: inline-grid;
   place-items: center;
-  border: 3px solid currentColor;
+  border: 2px solid currentColor;
   border-radius: 999px;
-  font-size: 16px;
+  font-size: 13px;
   line-height: 1;
 }
 
 @media (max-width: 720px) {
   .password-help-panel {
-    width: min(390px, 100%);
-    padding: 30px 20px 24px;
-    border-radius: 24px;
+    width: min(330px, 100%);
+    padding: 26px 18px 22px;
+    border-radius: 22px;
   }
   .password-help-panel .modal-x {
-    top: 18px;
-    right: 18px;
-    width: 46px;
-    height: 46px;
-    font-size: 28px;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
   }
   .password-help-pill {
-    max-width: calc(100% - 58px);
-    padding: 9px 16px;
-    font-size: 11px;
+    max-width: calc(100% - 48px);
+    padding: 7px 12px;
+    font-size: 9.5px;
   }
   .password-help-panel h2 {
-    margin-top: 24px;
-    font-size: 34px;
+    margin-top: 20px;
+    font-size: 29px;
   }
   .password-help-panel p {
-    margin-bottom: 24px;
-    font-size: 17px;
+    margin-bottom: 20px;
+    font-size: 14.5px;
   }
   .whatsapp-reset-button {
-    min-height: 60px;
-    gap: 12px;
-    padding: 15px 18px;
-    font-size: 17px;
+    min-height: 46px;
+    gap: 9px;
+    padding: 11px 14px;
+    font-size: 14px;
   }
   .whatsapp-mark {
-    width: 32px;
-    height: 32px;
-    font-size: 17px;
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
   }
 }
 
