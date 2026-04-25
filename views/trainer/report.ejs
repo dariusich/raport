@@ -219,6 +219,28 @@ const countUniqueSeminarDays = (seminars = []) => {
     text-align: center;
   }
 
+  .locked-date-field {
+    display: grid;
+    gap: 8px;
+  }
+
+  .locked-date-display {
+    width: min(320px, 100%);
+    margin-top: 6px;
+    padding: 14px 16px;
+    border: 1px solid rgba(196, 31, 45, 0.18);
+    border-radius: 16px;
+    background: rgba(196, 31, 45, 0.06);
+    color: #7a2030;
+    font-weight: 900;
+    text-align: center;
+  }
+
+  .locked-date-field small {
+    color: #7d7478;
+    font-weight: 700;
+  }
+
   .seminar-time-pair {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -437,7 +459,7 @@ const countUniqueSeminarDays = (seminars = []) => {
       max-height: 190px;
     }
 
-    .seminar-date-field input {
+    .locked-date-display {
       max-width: 210px;
     }
 
@@ -673,17 +695,14 @@ seminarsInMonth.forEach(s => {
           </details>
 
           <div class="seminar-date-time-grid">
-            <label class="seminar-date-field">Data
-              <input
-                id="seminarDateInput"
-                name="date"
-                type="date"
-                required
-                value="<%= formSeminar ? dateInputValue(formSeminar.date) : '' %>"
-                min="<%= selectedMonth %>-01"
-                max="<%= selectedMonth %>-<%= String(daysInMonth).padStart(2, '0') %>"
-              >
-            </label>
+            <div class="locked-date-field">
+              <label>Data aleasă</label>
+              <input id="seminarDateInput" name="date" type="hidden" required value="<%= formSeminar ? dateInputValue(formSeminar.date) : '' %>">
+              <div class="locked-date-display" id="lockedDateDisplay">
+                <%= formSeminar ? new Date(formSeminar.date).toLocaleDateString('ro-RO') : 'Alege ziua din calendar' %>
+              </div>
+              <small>Data este blocată după alegerea zilei din calendar.</small>
+            </div>
 
             <div class="seminar-time-pair">
               <label>Ora început
@@ -832,14 +851,17 @@ seminarsInMonth.forEach(s => {
       const date = button.dataset.date;
       const input = document.getElementById('seminarDateInput');
       const text = document.getElementById('selectedDateText');
+      const lockedDateDisplay = document.getElementById('lockedDateDisplay');
       if (!input || !text) return;
       input.value = date;
       const parts = date.split('-');
-      text.textContent = `${parts[2]}.${parts[1]}.${parts[0]}`;
+      const displayDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
+      text.textContent = displayDate;
+      if (lockedDateDisplay) lockedDateDisplay.textContent = displayDate;
       document.querySelectorAll('.calendar-day').forEach((day) => day.classList.remove('selected'));
       button.classList.add('selected');
       openSeminarModal();
-      setTimeout(() => { document.getElementById('seminarDateInput')?.focus({ preventScroll: true }); }, 150);
+      setTimeout(() => { document.querySelector('[name="startTime"]')?.focus({ preventScroll: true }); }, 150);
     });
   });
 
