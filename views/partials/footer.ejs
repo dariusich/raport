@@ -1,4 +1,7 @@
   </main>
   <script src="/js/app.js"></script>
+  <% if (currentUser && currentUser.role === 'admin') { %>
+    <script src="/js/admin-ai.js"></script>
+  <% } %>
 </body>
 </html>
