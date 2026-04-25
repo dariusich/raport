@@ -822,6 +822,10 @@ seminarsInMonth.forEach(s => {
     seminarModal.classList.add('open');
     seminarModal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
+    const panel = seminarModal.querySelector('.seminar-modal-panel');
+    const form = seminarModal.querySelector('.seminar-form');
+    panel?.scrollTo({ top: 0, behavior: 'auto' });
+    form?.scrollTo?.({ top: 0, behavior: 'auto' });
   }
 
   function closeSeminarModal() {
