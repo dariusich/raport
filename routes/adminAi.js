@@ -22,18 +22,35 @@ function parseDateFromText(text, label) {
   const labelMatch = label
     ? source.match(new RegExp(`${label}\\s*[:=-]?\\s*(\\d{1,2})[.\\-/](\\d{1,2})[.\\-/](\\d{4})`, 'i'))
     : null;
-  const match = labelMatch || source.match(/(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})/);
+  const match = labelMatch || (!label ? source.match(/(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})/) : null);
   if (!match) return '';
   const [, dd, mm, yyyy] = match;
   return `${yyyy}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
 }
 
+function parseDateRange(text) {
+  const source = String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const matches = Array.from(source.matchAll(/(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})/g));
+  const toDateKey = (match) => {
+    if (!match) return '';
+    const [, dd, mm, yyyy] = match;
+    return `${yyyy}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+  };
+
+  return {
+    startDate: parseDateFromText(source, 'start|inceput') || toDateKey(matches[0]),
+    endDate: parseDateFromText(source, 'final|sfarsit') || toDateKey(matches[1]),
+  };
+}
+
 function parseNamesFromText(text) {
-  const ignored = /^(trainer|titlu|curs|filiala|data|perioada|note|observatii)\b/i;
-  return String(text || '')
+  const listMatch = String(text || '').match(/(?:cursanti|lista|participanti)\s*[:=-]\s*([\s\S]+)/i);
+  if (!listMatch) return [];
+
+  return listMatch[1]
     .split(/\n|,|;/)
     .map((line) => line.replace(/^\s*[-*0-9.)]+\s*/, '').trim())
-    .filter((line) => line.length > 4 && !ignored.test(line))
+    .filter((line) => line.length > 4 && !/^(trainer|titlu|curs|filiala|data|perioada|note|observatii)\b/i.test(line))
     .slice(0, 80);
 }
 
@@ -45,15 +62,16 @@ function buildReportDraft(prompt, trainers) {
     || trainers.find((item) => lower.includes(normalize(item.location)))
     || trainers[0];
 
-  const titleMatch = text.match(/(?:titlu|curs|raport)\s*[:=-]\s*([^\n]+)/i);
+  const titleMatch = text.match(/(?:titlu|curs|raport)\s*[:=-]\s*([^\n.]+)/i);
   const locationMatch = text.match(/(?:filiala|locatie)\s*[:=-]\s*([^\n,;]+)/i);
   const names = parseNamesFromText(text);
+  const dateRange = parseDateRange(text);
 
   return {
     trainerId: trainer?._id ? String(trainer._id) : '',
     title: titleMatch?.[1]?.trim() || '',
-    startDate: parseDateFromText(text, 'start|inceput'),
-    endDate: parseDateFromText(text, 'final|sfarsit'),
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate,
     location: locationMatch?.[1]?.trim() || trainer?.location || '',
     traineesText: names.join('\n'),
     adminNotes: text.length > 20 ? `Generat din cererea AI: ${text.slice(0, 500)}` : '',
@@ -127,8 +145,9 @@ function localAssistant({ mode, prompt, context, trainers }) {
     });
     actions.push({ type: 'go_to_tab', label: 'Deschide tabul Rapoarte', payload: { hash: 'genereaza-raport' } });
     answer = draft.title
-      ? `Am pregatit un draft pentru raportul "${draft.title}". Verifica trainerul, perioada si lista de cursanti inainte de alocare.`
-      : 'Am pregatit formularul de raport cu ce am putut extrage. Completeaza titlul si perioada daca lipsesc.';
+      ? `Am pregatit un draft pentru raportul "${draft.title}". Am completat doar campurile pe care le-am putut identifica sigur.`
+      : 'Am pregatit formularul de raport cu ce am putut extrage sigur. Completeaza manual campurile care lipsesc.';
+    if (!draft.traineesText) insights.push('Nu am completat lista cursantilor fiindca nu ai inclus o lista explicita de nume.');
   } else if (mode === 'accounting') {
     const busiest = [...context.trainers].sort((a, b) => b.seminars - a.seminars).slice(0, 3);
     insights.push(...busiest.map((trainer) => `${trainer.name}: ${trainer.seminars} seminarii in ${trainer.reports} rapoarte.`));
