@@ -543,6 +543,82 @@ small, .muted { color: var(--muted); font-size: 13px; }
 .stack { display: flex; flex-direction: column; gap: 16px; margin-top: 28px; }
 .stack label { font-size: 13px; font-weight: 500; color: var(--ink-2); }
 .stack .primary { margin-top: 8px; padding: 14px; font-size: 15px; }
+.forgot-password-link {
+  align-self: flex-end;
+  margin: -6px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ruby-600);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.forgot-password-link:hover {
+  color: var(--ruby-800);
+  text-decoration: underline;
+}
+.login-secure-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.login-lock {
+  position: relative;
+  display: inline-block;
+  width: 13px;
+  height: 10px;
+  border: 1.7px solid currentColor;
+  border-radius: 3px;
+  color: var(--ruby-600);
+}
+.login-lock::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: -8px;
+  width: 7px;
+  height: 8px;
+  border: 1.7px solid currentColor;
+  border-bottom: 0;
+  border-radius: 7px 7px 0 0;
+}
+.login-copyright {
+  max-width: 720px;
+  margin: 42px auto 0;
+  padding-top: 28px;
+  border-top: 1px solid rgba(196, 30, 58, 0.32);
+  text-align: center;
+  color: var(--muted);
+  font-size: 15px;
+}
+.password-help-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10030;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(26, 16, 18, 0.42);
+  backdrop-filter: blur(8px);
+}
+.password-help-modal.open { display: flex; }
+.password-help-panel {
+  width: min(440px, 100%);
+  position: relative;
+}
+.password-help-panel h2 {
+  margin-top: 12px;
+}
+.password-help-panel p {
+  margin-bottom: 18px;
+}
 
 /* =================== FORMS =================== */
 .form-grid { display: flex; flex-direction: column; gap: 14px; }
