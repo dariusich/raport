@@ -100,6 +100,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  const adminReportSearch = document.querySelector('#adminReportSearch');
+  const adminReportStatusFilter = document.querySelector('#adminReportStatusFilter');
+  const adminReportSort = document.querySelector('#adminReportSort');
+  const adminReportRows = Array.from(document.querySelectorAll('[data-report-row]'));
+
+  const updateAdminReportRows = () => {
+    const query = (adminReportSearch?.value || '').toLowerCase().trim();
+    const status = adminReportStatusFilter?.value || 'all';
+    const tbody = document.querySelector('#adminReportsTable tbody');
+
+    adminReportRows.forEach((row) => {
+      const matchesQuery = !query
+        || row.dataset.title.includes(query)
+        || row.dataset.trainer.includes(query)
+        || row.dataset.location.includes(query);
+      const matchesStatus = status === 'all' || row.dataset.status === status;
+      row.style.display = matchesQuery && matchesStatus ? '' : 'none';
+    });
+
+    if (tbody) {
+      const sortedRows = [...adminReportRows].sort((a, b) => {
+        const sort = adminReportSort?.value || 'updated-desc';
+        if (sort === 'title-asc') return a.dataset.title.localeCompare(b.dataset.title, 'ro');
+        if (sort === 'trainer-asc') return a.dataset.trainer.localeCompare(b.dataset.trainer, 'ro');
+        if (sort === 'seminars-desc') return Number(b.dataset.seminars || 0) - Number(a.dataset.seminars || 0);
+        return Number(b.dataset.updated || 0) - Number(a.dataset.updated || 0);
+      });
+      sortedRows.forEach((row) => tbody.appendChild(row));
+    }
+  };
+
+  [adminReportSearch, adminReportStatusFilter, adminReportSort].forEach((field) => {
+    field?.addEventListener(field.tagName === 'INPUT' ? 'input' : 'change', updateAdminReportRows);
+  });
+  if (adminReportRows.length) updateAdminReportRows();
+
   const tabButtons = document.querySelectorAll('[data-tab-target]');
   const tabPanels = document.querySelectorAll('.tab-panel');
   const subButtons = document.querySelectorAll('[data-subtab-target]');

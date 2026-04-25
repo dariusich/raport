@@ -89,12 +89,34 @@
           <p>Vezi rapid statusul, trainerul și numărul de seminarii completate.</p>
         </div>
       </div>
+      <div class="report-table-filters" data-report-filters>
+        <input id="adminReportSearch" type="search" placeholder="Caută după raport, trainer sau filială...">
+        <select id="adminReportStatusFilter">
+          <option value="all">Toate statusurile</option>
+          <option value="active">Active</option>
+          <option value="finalized">Finalizate</option>
+        </select>
+        <select id="adminReportSort">
+          <option value="updated-desc">Actualizate recent</option>
+          <option value="title-asc">Titlu A-Z</option>
+          <option value="trainer-asc">Trainer A-Z</option>
+          <option value="seminars-desc">Cele mai multe seminarii</option>
+        </select>
+      </div>
       <div class="table-wrap">
-        <table>
+        <table id="adminReportsTable">
           <thead><tr><th>Raport</th><th>Trainer</th><th>Filială</th><th>Status</th><th>Seminarii</th><th>Actualizat</th><th>Acțiuni</th></tr></thead>
           <tbody>
             <% reports.forEach(r => { %>
-              <tr>
+              <tr
+                data-report-row
+                data-title="<%= String(r.title || '').toLowerCase() %>"
+                data-trainer="<%= String(r.trainer?.name || '').toLowerCase() %>"
+                data-location="<%= String(r.location || '').toLowerCase() %>"
+                data-status="<%= r.status %>"
+                data-seminars="<%= r.seminars.length %>"
+                data-updated="<%= r.updatedAt ? new Date(r.updatedAt).getTime() : 0 %>"
+              >
                 <td><strong><%= r.title %></strong></td>
                 <td><%= r.trainer?.name || '-' %></td>
                 <td><%= r.location %></td>

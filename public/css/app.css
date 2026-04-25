@@ -1519,12 +1519,19 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   gap: 12px;
   margin-bottom: 18px;
 }
-.trainer-list-tools input, .trainer-list-tools select {
+.trainer-list-tools input, .trainer-list-tools select,
+.report-table-filters input, .report-table-filters select {
   width: 100%;
   border: 1px solid rgba(196,31,45,.18);
   border-radius: 16px;
   padding: 13px 14px;
   background: #fff;
+}
+.report-table-filters {
+  display: grid;
+  grid-template-columns: 1fr 180px 220px;
+  gap: 12px;
+  margin: 2px 0 18px;
 }
 .trainer-edit-box {
   border: 1px solid rgba(196,31,45,.13);
@@ -1547,6 +1554,7 @@ button[disabled], .btn[disabled] {
 }
 @media (max-width: 720px) {
   .trainer-list-tools { grid-template-columns: 1fr; }
+  .report-table-filters { grid-template-columns: 1fr; }
   .save-success-card .actions, .seminar-delete-card .actions { flex-direction: column; align-items: stretch; }
   .save-success-card .actions .btn, .seminar-delete-card .actions .btn { width: 100%; text-align: center; }
 }
