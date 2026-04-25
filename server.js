@@ -10,7 +10,6 @@ const helmet = require('helmet');
 const path = require('path');
 
 const authRoutes = require('./routes/auth');
-const adminAiRoutes = require('./routes/adminAi');
 const adminRoutes = require('./routes/admin');
 const trainerRoutes = require('./routes/trainer');
 
@@ -77,7 +76,6 @@ app.get('/', (req, res) => {
 });
 
 app.use('/', authRoutes);
-app.use('/admin/ai', adminAiRoutes);
 app.use('/admin', adminRoutes);
 app.use('/trainer', trainerRoutes);
 

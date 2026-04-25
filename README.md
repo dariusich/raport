@@ -37,8 +37,6 @@ Intră pe `http://localhost:3000`.
    - `SESSION_SECRET`
    - `ADMIN_USERNAME`
    - `ADMIN_PASSWORD`
-   - `OPENAI_API_KEY` (optional, activeaza AI-ul avansat din `/admin`)
-   - `OPENAI_MODEL` (optional, implicit `gpt-4.1-mini`)
    - `NODE_ENV=production`
 6. După primul deploy rulezi o dată comanda `npm run seed` din Render Shell, ca să creezi adminul.
 
