@@ -10,45 +10,6 @@ router.use(requireAdmin);
 const DEFAULT_MODEL = String(process.env.OPENAI_MODEL || 'gpt-4.1-mini').trim();
 const OPENAI_TIMEOUT_MS = 20000;
 
-const aiResponseSchema = {
-  type: 'object',
-  additionalProperties: false,
-  properties: {
-    answer: { type: 'string' },
-    insights: {
-      type: 'array',
-      items: { type: 'string' },
-    },
-    actions: {
-      type: 'array',
-      items: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          type: {
-            type: 'string',
-            enum: ['go_to_tab', 'fill_report_form', 'open_report', 'set_accounting_filters'],
-          },
-          label: { type: 'string' },
-          payload: {
-            type: 'object',
-            additionalProperties: {
-              anyOf: [
-                { type: 'string' },
-                { type: 'number' },
-                { type: 'boolean' },
-                { type: 'null' },
-              ],
-            },
-          },
-        },
-        required: ['type', 'label', 'payload'],
-      },
-    },
-  },
-  required: ['answer', 'insights', 'actions'],
-};
-
 function asDateKey(value) {
   if (!value) return '';
   const date = new Date(value);
@@ -239,14 +200,6 @@ async function askOpenAi({ mode, prompt, context }) {
     body: JSON.stringify({
       model: DEFAULT_MODEL,
       instructions,
-      text: {
-        format: {
-          type: 'json_schema',
-          name: 'admin_ai_response',
-          strict: true,
-          schema: aiResponseSchema,
-        },
-      },
       input: [
         {
           role: 'user',

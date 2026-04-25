@@ -881,6 +881,94 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .selected-date-box span { font-weight: 600; color: var(--ruby-600); }
 
 /* =================== ADMIN TABS =================== */
+.admin-home {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.7fr) minmax(0, 1.3fr);
+  gap: 24px;
+  align-items: stretch;
+  margin: 0 0 26px;
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(135deg, #fff 0%, #fff8f6 100%);
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-home.is-hidden {
+  display: none;
+}
+
+.admin-home-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 190px;
+}
+
+.admin-home-copy h2 {
+  margin: 10px 0 8px;
+  font-size: clamp(28px, 3vw, 42px);
+}
+
+.admin-home-copy p {
+  max-width: 360px;
+  color: var(--muted);
+}
+
+.admin-home-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-home-card {
+  min-height: 190px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.86);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-home-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--ruby-200);
+  box-shadow: var(--shadow-md);
+}
+
+.admin-home-card span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 22px;
+  border-radius: 999px;
+  background: var(--ruby-50);
+  color: var(--ruby-700);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.admin-home-card strong {
+  display: block;
+  margin-bottom: 8px;
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.admin-home-card small {
+  display: block;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
 .admin-tabs {
   display: flex;
   gap: 4px;
@@ -1069,6 +1157,22 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   .accounting-list { grid-template-columns: 1fr; }
   .accounting-total-box { width: 100%; }
 
+  .admin-home {
+    grid-template-columns: 1fr;
+    padding: 22px;
+  }
+  .admin-home-copy {
+    min-height: auto;
+  }
+  .admin-home-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-home-card {
+    min-height: 132px;
+  }
+  .admin-home-card span {
+    margin-bottom: 12px;
+  }
   .admin-tabs { width: 100%; overflow-x: auto; justify-content: flex-start; }
   .tab-button { padding: 9px 14px; font-size: 13px; flex-shrink: 0; }
 

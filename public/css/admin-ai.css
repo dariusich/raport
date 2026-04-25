@@ -23,7 +23,7 @@
   position: absolute;
   right: 0;
   bottom: 74px;
-  width: min(420px, calc(100vw - 28px));
+  width: min(460px, calc(100vw - 28px));
   max-height: min(720px, calc(100vh - 110px));
   overflow: auto;
   display: none;
@@ -73,15 +73,13 @@
   line-height: 1;
 }
 
-.admin-ai-modes,
 .admin-ai-suggestions {
   display: flex;
   gap: 6px;
-  padding: 12px 14px 0;
+  padding: 14px 16px 0;
   overflow-x: auto;
 }
 
-.admin-ai-modes button,
 .admin-ai-suggestions button,
 .admin-ai-actions button {
   flex: 0 0 auto;
@@ -93,12 +91,6 @@
   font: inherit;
   font-size: 12px;
   cursor: pointer;
-}
-
-.admin-ai-modes button.active {
-  border-color: transparent;
-  background: linear-gradient(135deg, var(--ruby-500), var(--ruby-700));
-  color: #fff;
 }
 
 .admin-ai-suggestions {
@@ -114,16 +106,17 @@
 .admin-ai-form {
   display: grid;
   gap: 10px;
-  padding: 14px;
+  padding: 16px;
 }
 
 .admin-ai-form textarea {
-  min-height: 116px;
+  min-height: 150px;
   margin: 0;
+  line-height: 1.55;
 }
 
 .admin-ai-output {
-  padding: 0 14px 16px;
+  padding: 0 16px 18px;
 }
 
 .admin-ai-result,

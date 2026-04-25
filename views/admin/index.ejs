@@ -17,11 +17,30 @@
   </div>
 </section>
 
-<nav class="admin-tabs" aria-label="Secțiuni admin">
-  <button class="tab-button" data-tab-target="rapoarte" type="button">Rapoarte</button>
-  <button class="tab-button" data-tab-target="traineri" type="button">Traineri</button>
-  <button class="tab-button" data-tab-target="contabilitate" type="button">Contabilitate</button>
-</nav>
+<section class="admin-home" data-admin-home>
+  <div class="admin-home-copy">
+    <span class="pill red">Mergi la</span>
+    <h2>Alege zona de lucru</h2>
+    <p>Dashboard-ul ramane curat la intrare. Deschide doar sectiunea de care ai nevoie acum.</p>
+  </div>
+  <div class="admin-home-grid" aria-label="Sectiuni admin">
+    <button class="admin-home-card" data-tab-target="rapoarte" type="button">
+      <span>01</span>
+      <strong>Rapoarte</strong>
+      <small>Genereaza serii, aloca traineri si verifica rapoartele create.</small>
+    </button>
+    <button class="admin-home-card" data-tab-target="traineri" type="button">
+      <span>02</span>
+      <strong>Traineri</strong>
+      <small>Administreaza conturi, statusuri, parole si filiale.</small>
+    </button>
+    <button class="admin-home-card" data-tab-target="contabilitate" type="button">
+      <span>03</span>
+      <strong>Contabilitate</strong>
+      <small>Filtreaza seminarii, calculeaza plata si exporta Excel.</small>
+    </button>
+  </div>
+</section>
 
 <section class="tab-panel" id="rapoarte">
   <div class="subtabs">

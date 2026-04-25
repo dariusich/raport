@@ -9,15 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="admin-ai-head">
         <div>
           <span>AI Admin</span>
-          <strong>Operator pentru pagina</strong>
+          <strong>Cu ce lucram acum?</strong>
         </div>
         <button type="button" class="admin-ai-close" aria-label="Inchide AI">x</button>
-      </div>
-      <div class="admin-ai-modes" role="tablist" aria-label="Mod AI">
-        <button type="button" data-ai-mode="general" class="active">Comanda</button>
-        <button type="button" data-ai-mode="report-draft">Raport</button>
-        <button type="button" data-ai-mode="accounting">Contabilitate</button>
-        <button type="button" data-ai-mode="quality">Verificare</button>
       </div>
       <div class="admin-ai-suggestions">
         <button type="button" data-ai-prompt="Verifica rapoartele care au probleme si spune-mi ce trebuie facut.">Verifica rapoarte</button>
@@ -40,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = widget.querySelector('.admin-ai-form');
   const textarea = form.querySelector('textarea');
   const output = widget.querySelector('.admin-ai-output');
-  let activeMode = 'general';
 
   const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({
     '&': '&amp;',
@@ -50,9 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
     "'": '&#39;',
   }[char]));
 
-  const setMode = (mode) => {
-    activeMode = mode;
-    widget.querySelectorAll('[data-ai-mode]').forEach((item) => item.classList.toggle('active', item.dataset.aiMode === mode));
+  const detectMode = (prompt) => {
+    const text = String(prompt || '').toLowerCase();
+    if (/raport|curs|trainer|cursant|serie/.test(text)) return 'report-draft';
+    if (/contabil|plata|lei|comision|excel|luna|seminarii/.test(text)) return 'accounting';
+    if (/verifica|probleme|lips|gres|corect/.test(text)) return 'quality';
+    return 'general';
   };
 
   const openPanel = () => {
@@ -154,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch('/admin/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ mode: activeMode, prompt, page: window.location.hash || '#rapoarte' }),
+        body: JSON.stringify({ mode: detectMode(prompt), prompt, page: window.location.hash || '#dashboard' }),
       });
       const result = await response.json();
       if (!response.ok || !result.ok) throw new Error(result.message || 'AI-ul nu a raspuns.');
@@ -169,16 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
   launcher.addEventListener('click', openPanel);
   close.addEventListener('click', closePanel);
 
-  widget.querySelectorAll('[data-ai-mode]').forEach((button) => {
-    button.addEventListener('click', () => {
-      setMode(button.dataset.aiMode);
-    });
-  });
-
   widget.querySelectorAll('[data-ai-prompt]').forEach((button) => {
     button.addEventListener('click', () => {
       textarea.value = button.dataset.aiPrompt;
-      if (button.textContent.toLowerCase().includes('raport')) setMode('report-draft');
       openPanel();
     });
   });

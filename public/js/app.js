@@ -104,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabPanels = document.querySelectorAll('.tab-panel');
   const subButtons = document.querySelectorAll('[data-subtab-target]');
   const subPanels = document.querySelectorAll('.subpanel');
+  const adminHome = document.querySelector('[data-admin-home]');
 
   const setActiveSubtab = (id) => {
     if (!id || !document.getElementById(id)) return;
@@ -112,23 +113,31 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const setActiveTab = (id) => {
-    const hashId = id || 'rapoarte';
+    const hashId = id || '';
+    if (!hashId) {
+      tabPanels.forEach((panel) => panel.classList.remove('active'));
+      tabButtons.forEach((button) => button.classList.remove('active'));
+      if (adminHome) adminHome.classList.remove('is-hidden');
+      return;
+    }
     const isReportsSubtab = ['genereaza-raport', 'rapoarte-generate'].includes(hashId);
     const targetId = isReportsSubtab ? 'rapoarte' : hashId;
     tabPanels.forEach((panel) => panel.classList.toggle('active', panel.id === targetId));
     tabButtons.forEach((button) => button.classList.toggle('active', button.dataset.tabTarget === targetId));
+    if (adminHome) adminHome.classList.add('is-hidden');
     if (isReportsSubtab) setActiveSubtab(hashId);
+    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   if (tabButtons.length) {
-    setActiveTab((window.location.hash || '#rapoarte').replace('#', ''));
+    setActiveTab((window.location.hash || '').replace('#', ''));
     tabButtons.forEach((button) => {
       button.addEventListener('click', () => {
         window.location.hash = button.dataset.tabTarget;
         setActiveTab(button.dataset.tabTarget);
       });
     });
-    window.addEventListener('hashchange', () => setActiveTab((window.location.hash || '#rapoarte').replace('#', '')));
+    window.addEventListener('hashchange', () => setActiveTab((window.location.hash || '').replace('#', '')));
   }
 
   subButtons.forEach((button) => {
