@@ -484,6 +484,16 @@ small, .muted { color: var(--muted); font-size: 13px; }
 }
 .hero > div:first-child, .report-hero > div:first-child { max-width: 700px; position: relative; z-index: 1; }
 .hero-text { color: var(--muted); font-size: 15px; max-width: 580px; }
+.report-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.report-hero-actions form {
+  margin: 0;
+}
 
 .hero-stats {
   display: flex;
@@ -1409,6 +1419,17 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .accounting-head h3 { font-family: var(--font-serif); font-size: 20px; margin: 0; }
 .accounting-head p { font-size: 12.5px; color: var(--muted); margin: 4px 0 0; }
 .accounting-head strong { color: var(--ruby-600); font-size: 14px; white-space: nowrap; padding: 6px 12px; background: var(--ruby-50); border-radius: 999px; }
+.accounting-trainer-export {
+  width: 100%;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.report-overview {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 18px;
+}
 
 .year-strip { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .year-strip span {
@@ -1518,6 +1539,12 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   .chevron { display: none; }
 
   .hero, .report-hero { padding: 26px 22px; flex-direction: column; align-items: stretch; }
+  .report-hero-actions,
+  .report-hero-actions .btn,
+  .report-hero-actions form,
+  .report-hero-actions button {
+    width: 100%;
+  }
   .hero-stats { justify-content: space-between; }
   .hero-stats > div { min-width: 0; flex: 1; padding: 10px 12px; }
 

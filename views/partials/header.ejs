@@ -28,7 +28,7 @@
         <nav class="topnav premium-nav" aria-label="Navigație principală" data-testid="top-nav">
           <a href="<%= currentUser.role === 'admin' ? '/admin' : '/trainer' %>" data-testid="nav-dashboard">Dashboard</a>
           <% if (currentUser.role === 'admin') { %>
-            <a href="/admin#rapoarte" data-testid="nav-rapoarte">Rapoarte</a>
+            <a href="/admin#rapoarte-generate" data-testid="nav-rapoarte">Rapoarte</a>
             <a href="/admin#traineri" data-testid="nav-traineri">Traineri</a>
             <a href="/admin#contabilitate" data-testid="nav-contabilitate">Contabilitate</a>
           <% } %>

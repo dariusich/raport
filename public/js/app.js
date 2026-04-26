@@ -98,6 +98,20 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       accountingExportLink.href = `/admin/exports/accounting.xlsx${params.toString() ? `?${params.toString()}` : ''}`;
     }
+
+    document.querySelectorAll('[data-trainer-export]').forEach((link) => {
+      const params = new URLSearchParams();
+      params.set('trainer', link.dataset.trainerExport);
+      Object.entries({
+        location: locationValue,
+        course: courseValue,
+        year: yearValue,
+        month: monthValue,
+      }).forEach(([key, value]) => {
+        if (value && value !== 'all') params.set(key, value);
+      });
+      link.href = `/admin/exports/accounting.xlsx?${params.toString()}`;
+    });
   };
 
   Object.values(accountingFilters).forEach((filter) => {
@@ -159,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const topNavLinks = Array.from(document.querySelectorAll('.topnav a'));
 
   const setActiveTopNav = (section = '') => {
-    const normalized = ['genereaza-raport', 'rapoarte-generate'].includes(section) ? 'rapoarte' : section;
+    const normalized = ['genereaza-raport', 'import-raport-vechi', 'rapoarte-generate'].includes(section) ? 'rapoarte' : section;
     const currentPath = window.location.pathname;
 
     topNavLinks.forEach((link) => {
@@ -199,7 +213,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     const isReportsSubtab = ['genereaza-raport', 'import-raport-vechi', 'rapoarte-generate'].includes(hashId);
-    const targetId = isReportsSubtab ? 'rapoarte' : hashId;
+    const effectiveHashId = hashId === 'rapoarte' ? 'rapoarte-generate' : hashId;
+    const targetId = isReportsSubtab || hashId === 'rapoarte' ? 'rapoarte' : hashId;
     const targetPanel = Array.from(tabPanels).find((panel) => panel.id === targetId);
     if (!targetPanel) {
       tabPanels.forEach((panel) => panel.classList.remove('active'));
@@ -212,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tabPanels.forEach((panel) => panel.classList.toggle('active', panel.id === targetId));
     tabButtons.forEach((button) => button.classList.toggle('active', button.dataset.tabTarget === targetId));
     if (adminHome) adminHome.classList.add('is-hidden');
-    if (isReportsSubtab) setActiveSubtab(hashId);
+    if (isReportsSubtab || hashId === 'rapoarte') setActiveSubtab(effectiveHashId);
     setActiveTopNav(targetId);
     document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };

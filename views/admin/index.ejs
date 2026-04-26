@@ -160,12 +160,12 @@
 
 <section class="tab-panel" id="rapoarte">
   <div class="subtabs">
-    <button class="tab-button active" data-subtab-target="genereaza-raport" type="button">Generează raport</button>
+    <button class="tab-button active" data-subtab-target="rapoarte-generate" type="button">Rapoarte generate</button>
+    <button class="tab-button" data-subtab-target="genereaza-raport" type="button">Generează raport</button>
     <button class="tab-button" data-subtab-target="import-raport-vechi" type="button">Import raport vechi</button>
-    <button class="tab-button" data-subtab-target="rapoarte-generate" type="button">Rapoarte generate</button>
   </div>
 
-  <div class="subpanel active" id="genereaza-raport">
+  <div class="subpanel" id="genereaza-raport">
     <div class="card">
       <div class="section-title">
         <span class="pill gold">Rapoarte</span>
@@ -223,7 +223,7 @@
     </div>
   </div>
 
-  <div class="subpanel" id="rapoarte-generate">
+  <div class="subpanel active" id="rapoarte-generate">
     <section class="card">
       <div class="section-title row-title">
         <div>
@@ -513,6 +513,7 @@
             <label>Comision/seminar <input name="commission" type="number" step="0.01" min="0" placeholder="lei"></label>
             <span>Total plată: <strong data-total>0.00 lei</strong></span>
           </form>
+          <a class="btn small ghost accounting-trainer-export" href="/admin/exports/accounting.xlsx?trainer=<%= item.trainer._id %>" data-trainer-export="<%= item.trainer._id %>">Export Excel</a>
         </article>
       <% }) %>
     </div>
