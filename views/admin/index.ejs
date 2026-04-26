@@ -2,6 +2,8 @@
 
 <%
   const accountingCourses = [...new Set(accounting.flatMap(item => item.courses.map(course => course.name)))].sort((a, b) => a.localeCompare(b, 'ro'));
+  const activityRoles = [...new Set(activityLogs.map(item => item.actorRole).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ro'));
+  const activityCategories = [...new Set(activityLogs.map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ro'));
 %>
 
 <section class="hero hero-admin">
@@ -129,10 +131,42 @@
         <p>Vezi ultimele acțiuni din platformă și șterge intrările care nu mai sunt utile.</p>
       </div>
     </div>
+    <% if (activityLogs.length) { %>
+      <div class="history-filters" data-history-filters>
+        <label>
+          Caută
+          <input id="historySearch" type="search" placeholder="Caută după acțiune, persoană sau dată...">
+        </label>
+        <label>
+          Rol
+          <select id="historyRoleFilter">
+            <option value="all">Toate rolurile</option>
+            <% activityRoles.forEach(role => { %>
+              <option value="<%= role %>"><%= role %></option>
+            <% }) %>
+          </select>
+        </label>
+        <label>
+          Categorie
+          <select id="historyCategoryFilter">
+            <option value="all">Toate categoriile</option>
+            <% activityCategories.forEach(category => { %>
+              <option value="<%= category %>"><%= category %></option>
+            <% }) %>
+          </select>
+        </label>
+      </div>
+    <% } %>
     <div class="history-list">
       <% if (activityLogs.length) { %>
         <% activityLogs.forEach(item => { %>
-          <article class="history-row">
+          <article
+            class="history-row"
+            data-history-row
+            data-search="<%= `${item.title || ''} ${item.actorName || ''} ${item.actorRole || ''} ${item.category || ''} ${item.dateLabel || item.time || ''}`.toLowerCase() %>"
+            data-role="<%= item.actorRole || '' %>"
+            data-category="<%= item.category || '' %>"
+          >
             <div class="history-main">
               <span class="activity-avatar"><%= item.icon %></span>
               <div>
@@ -150,6 +184,10 @@
             </div>
           </article>
         <% }) %>
+        <div class="history-empty is-hidden" id="historyNoResults">
+          <strong>Nu am găsit modificări</strong>
+          <small>Schimbă filtrele sau caută alt termen.</small>
+        </div>
       <% } else { %>
         <div class="history-empty">
           <strong>Istoricul este gol</strong>

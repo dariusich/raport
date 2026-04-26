@@ -165,6 +165,35 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   if (adminReportRows.length) updateAdminReportRows();
 
+  const historySearch = document.querySelector('#historySearch');
+  const historyRoleFilter = document.querySelector('#historyRoleFilter');
+  const historyCategoryFilter = document.querySelector('#historyCategoryFilter');
+  const historyRows = Array.from(document.querySelectorAll('[data-history-row]'));
+  const historyNoResults = document.querySelector('#historyNoResults');
+
+  const updateHistoryRows = () => {
+    const query = (historySearch?.value || '').toLowerCase().trim();
+    const role = historyRoleFilter?.value || 'all';
+    const category = historyCategoryFilter?.value || 'all';
+    let visibleCount = 0;
+
+    historyRows.forEach((row) => {
+      const matchesSearch = !query || (row.dataset.search || '').includes(query);
+      const matchesRole = role === 'all' || row.dataset.role === role;
+      const matchesCategory = category === 'all' || row.dataset.category === category;
+      const visible = matchesSearch && matchesRole && matchesCategory;
+      row.style.display = visible ? '' : 'none';
+      if (visible) visibleCount += 1;
+    });
+
+    historyNoResults?.classList.toggle('is-hidden', visibleCount > 0);
+  };
+
+  [historySearch, historyRoleFilter, historyCategoryFilter].forEach((field) => {
+    field?.addEventListener(field.tagName === 'INPUT' ? 'input' : 'change', updateHistoryRows);
+  });
+  if (historyRows.length) updateHistoryRows();
+
   const tabButtons = document.querySelectorAll('[data-tab-target]');
   const tabPanels = document.querySelectorAll('.tab-panel');
   const subButtons = document.querySelectorAll('[data-subtab-target]');

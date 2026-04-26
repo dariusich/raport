@@ -1221,6 +1221,26 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   display: grid;
   gap: 10px;
 }
+.history-filters {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.5fr) minmax(180px, .75fr) minmax(180px, .75fr);
+  gap: 12px;
+  align-items: end;
+  margin: 18px 0 20px;
+  padding: 16px;
+  border: 1px solid rgba(196, 31, 45, 0.12);
+  border-radius: var(--radius);
+  background: rgba(242, 235, 229, 0.62);
+}
+.history-filters label {
+  display: grid;
+  gap: 7px;
+  color: #5d5358;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
 .history-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -1255,6 +1275,9 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   border-radius: var(--radius);
   text-align: center;
   background: rgba(255,255,255,.6);
+}
+.is-hidden {
+  display: none !important;
 }
 
 .admin-home-copy {
@@ -1580,6 +1603,10 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   }
   .history-row {
     grid-template-columns: 1fr;
+  }
+  .history-filters {
+    grid-template-columns: 1fr;
+    padding: 14px;
   }
   .history-row .table-actions {
     justify-content: stretch;
