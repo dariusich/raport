@@ -1,6 +1,7 @@
 const express = require('express');
 const Report = require('../models/Report');
 const SeriesRequest = require('../models/SeriesRequest');
+const ActivityLog = require('../models/ActivityLog');
 const { requireTrainer } = require('../utils/auth');
 
 const router = express.Router();
@@ -39,6 +40,23 @@ const dateDisplayValue = (date) => {
 };
 
 const wantsJson = (req) => req.xhr || String(req.headers.accept || '').includes('application/json');
+
+const logTrainerActivity = async (req, data) => {
+  const user = req.session.user || {};
+  try {
+    await ActivityLog.create({
+      title: data.title,
+      actorName: data.actorName || user.name || user.username || 'Trainer',
+      actorRole: 'trainer',
+      category: data.category || 'rapoarte',
+      href: data.href || '',
+      targetType: data.targetType || '',
+      targetId: data.targetId ? String(data.targetId) : '',
+    });
+  } catch (error) {
+    // Istoricul nu trebuie sa blocheze salvarea raportului.
+  }
+};
 
 const buildCourseMonths = (report) => {
   const start = report.startDate ? new Date(report.startDate) : null;
@@ -117,13 +135,20 @@ router.post('/series-requests', async (req, res) => {
     return res.redirect('/trainer');
   }
 
-  await SeriesRequest.create({
+  const request = await SeriesRequest.create({
     trainer: req.session.user.id,
     courseName,
     startDate: req.body.startDate || undefined,
     endDate: req.body.endDate || undefined,
     location: String(req.body.location || req.session.user.location || '').trim(),
     notes: req.body.notes,
+  });
+  await logTrainerActivity(req, {
+    title: `${req.session.user.name || 'Trainer'} a solicitat seria ${request.courseName}`,
+    category: 'solicitari',
+    href: '/admin#solicitari-serii',
+    targetType: 'SeriesRequest',
+    targetId: request._id,
   });
 
   req.session.flash = { type: 'success', message: 'Solicitarea a fost trimisă către administrator.' };
@@ -221,6 +246,13 @@ router.post('/reports/:id/seminars', async (req, res) => {
     if (seminar) {
       Object.assign(seminar, payload);
       await report.save();
+      await logTrainerActivity(req, {
+        title: `${req.session.user.name || 'Trainer'} a modificat seminar în ${report.title}`,
+        category: 'rapoarte',
+        href: `/admin/reports/${report._id}`,
+        targetType: 'Report',
+        targetId: report._id,
+      });
       const savedDateText = dateDisplayValue(date);
       if (wantsJson(req)) {
         return res.json({ ok: true, message: `Seminarul din data ${savedDateText} a fost salvat cu succes!`, seminarId: String(seminar._id), date, savedDateDisplay: savedDateText, month });
@@ -233,6 +265,13 @@ router.post('/reports/:id/seminars', async (req, res) => {
   const seminar = report.seminars.create(payload);
   report.seminars.push(seminar);
   await report.save();
+  await logTrainerActivity(req, {
+    title: `${req.session.user.name || 'Trainer'} a salvat seminar în ${report.title}`,
+    category: 'rapoarte',
+    href: `/admin/reports/${report._id}`,
+    targetType: 'Report',
+    targetId: report._id,
+  });
   const savedDateText = dateDisplayValue(date);
   if (wantsJson(req)) {
     return res.json({ ok: true, message: `Seminarul din data ${savedDateText} a fost salvat cu succes!`, seminarId: String(seminar._id), date, savedDateDisplay: savedDateText, month });
@@ -261,6 +300,13 @@ router.post('/reports/:id/seminars/:seminarId/delete', async (req, res) => {
 
   seminar.deleteOne();
   await report.save();
+  await logTrainerActivity(req, {
+    title: `${req.session.user.name || 'Trainer'} a șters seminar din ${report.title}`,
+    category: 'rapoarte',
+    href: `/admin/reports/${report._id}`,
+    targetType: 'Report',
+    targetId: report._id,
+  });
 
   if (wantsJson(req)) return res.json({ ok: true, message: 'Seminar șters.', month: req.query.month || '' });
 

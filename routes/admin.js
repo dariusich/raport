@@ -6,6 +6,7 @@ const mammoth = require('mammoth');
 const User = require('../models/User');
 const Report = require('../models/Report');
 const SeriesRequest = require('../models/SeriesRequest');
+const ActivityLog = require('../models/ActivityLog');
 const { requireAdmin } = require('../utils/auth');
 const { reportStats, roMonths } = require('../utils/stats');
 
@@ -373,68 +374,49 @@ function relativeTimeRo(dateValue) {
   return date.toLocaleDateString('ro-RO');
 }
 
-function buildRecentActivity(reports, seriesRequests) {
-  const activities = [];
+function formatActivity(log) {
+  const actor = log.actorName || log.category || 'A';
+  return {
+    id: log._id,
+    icon: actor.slice(0, 1).toUpperCase(),
+    title: log.title,
+    actorName: log.actorName,
+    actorRole: log.actorRole,
+    category: log.category,
+    href: log.href,
+    time: relativeTimeRo(log.createdAt),
+    dateLabel: log.createdAt ? new Date(log.createdAt).toLocaleString('ro-RO') : '',
+  };
+}
 
-  for (const report of reports) {
-    const trainerName = report.trainer?.name || 'Trainer';
-    if (report.createdAt) {
-      activities.push({
-        icon: 'R',
-        title: `${report.title} a fost alocat către ${trainerName}`,
-        time: relativeTimeRo(report.createdAt),
-        date: new Date(report.createdAt),
-        href: `/admin/reports/${report._id}`,
-      });
-    }
-    if (report.updatedAt && String(report.updatedAt) !== String(report.createdAt)) {
-      activities.push({
-        icon: 'A',
-        title: `${report.title} a fost actualizat`,
-        time: relativeTimeRo(report.updatedAt),
-        date: new Date(report.updatedAt),
-        href: `/admin/reports/${report._id}`,
-      });
-    }
-    for (const seminar of report.seminars || []) {
-      const seminarDate = seminar.updatedAt || seminar.createdAt;
-      if (!seminarDate) continue;
-      activities.push({
-        icon: (trainerName || 'T').slice(0, 1).toUpperCase(),
-        title: `${trainerName} a salvat seminar în ${report.title}`,
-        time: relativeTimeRo(seminarDate),
-        date: new Date(seminarDate),
-        href: `/admin/reports/${report._id}`,
-      });
-    }
-  }
-
-  for (const request of seriesRequests) {
-    activities.push({
-      icon: 'S',
-      title: `${request.trainer?.name || 'Trainer'} a solicitat seria ${request.courseName}`,
-      time: relativeTimeRo(request.createdAt),
-      date: new Date(request.createdAt),
-      href: '/admin#solicitari-serii',
+async function logActivity(req, data) {
+  const user = req.session.user || {};
+  try {
+    await ActivityLog.create({
+      title: data.title,
+      actorName: data.actorName || user.name || user.username || 'Administrator',
+      actorRole: data.actorRole || user.role || 'admin',
+      category: data.category || 'rapoarte',
+      href: data.href || '',
+      targetType: data.targetType || '',
+      targetId: data.targetId ? String(data.targetId) : '',
     });
+  } catch (error) {
+    // Istoricul nu trebuie sa blocheze actiunea principala.
   }
-
-  return activities
-    .filter((activity) => !Number.isNaN(activity.date.getTime()))
-    .sort((a, b) => b.date - a.date)
-    .slice(0, 4);
 }
 
 router.get('/', async (req, res) => {
   const trainers = await User.find({ role: 'trainer' }).sort({ active: -1, name: 1 });
   const reports = await Report.find().populate('trainer').sort({ startDate: 1, title: 1 });
   const seriesRequests = await SeriesRequest.find().populate('trainer').sort({ status: 1, createdAt: -1 });
+  const activityLogs = (await ActivityLog.find().sort({ createdAt: -1 }).limit(100)).map(formatActivity);
   const totalSeminars = reports.reduce((sum, r) => sum + (r.seminars?.length || 0), 0);
   const activeReports = reports.filter((r) => r.status === 'active').length;
   const finalizedReports = reports.filter((r) => r.status === 'finalized').length;
   const accounting = accountingByTrainer(trainers, reports);
   const openSeriesRequests = seriesRequests.filter((request) => request.status === 'open').length;
-  const recentActivity = buildRecentActivity(reports, seriesRequests);
+  const recentActivity = activityLogs.slice(0, 4);
 
   res.render('admin/index', {
     title: 'Admin',
@@ -447,7 +429,14 @@ router.get('/', async (req, res) => {
     seriesRequests,
     openSeriesRequests,
     recentActivity,
+    activityLogs,
   });
+});
+
+router.post('/activity/:id/delete', async (req, res) => {
+  await ActivityLog.findByIdAndDelete(req.params.id);
+  req.session.flash = { type: 'success', message: 'Intrarea din istoric a fost ștearsă.' };
+  res.redirect('/admin#istoric');
 });
 
 router.post('/series-requests/:id/status', async (req, res) => {
@@ -464,6 +453,13 @@ router.post('/series-requests/:id/status', async (req, res) => {
     request.resolvedBy = req.session.user.id;
   }
   await request.save();
+  await logActivity(req, {
+    title: `Solicitarea pentru ${request.courseName} a fost ${request.status === 'resolved' ? 'rezolvată' : 'respinsă'}`,
+    category: 'solicitari',
+    href: '/admin#solicitari-serii',
+    targetType: 'SeriesRequest',
+    targetId: request._id,
+  });
 
   req.session.flash = {
     type: 'success',
@@ -474,6 +470,15 @@ router.post('/series-requests/:id/status', async (req, res) => {
 
 router.post('/series-requests/:id/delete', async (req, res) => {
   const deleted = await SeriesRequest.findByIdAndDelete(req.params.id);
+  if (deleted) {
+    await logActivity(req, {
+      title: `Solicitarea pentru ${deleted.courseName} a fost ștearsă definitiv`,
+      category: 'solicitari',
+      href: '/admin#istoric',
+      targetType: 'SeriesRequest',
+      targetId: deleted._id,
+    });
+  }
   req.session.flash = deleted
     ? { type: 'success', message: 'Solicitarea a fost ștearsă definitiv.' }
     : { type: 'error', message: 'Solicitarea nu a fost găsită.' };
@@ -485,12 +490,19 @@ router.post('/trainers', async (req, res) => {
   const passwordHash = await bcrypt.hash(password, 10);
 
   try {
-    await User.create({
+    const trainer = await User.create({
       name,
       username: String(username).toLowerCase().trim(),
       passwordHash,
       role: 'trainer',
       commissionPerSeminar: 0,
+    });
+    await logActivity(req, {
+      title: `Trainerul ${trainer.name} a fost creat`,
+      category: 'traineri',
+      href: '/admin#traineri',
+      targetType: 'User',
+      targetId: trainer._id,
     });
     req.session.flash = { type: 'success', message: 'Trainer creat.' };
   } catch (error) {
@@ -505,6 +517,13 @@ router.post('/trainers/:id/toggle', async (req, res) => {
   if (trainer && trainer.role === 'trainer') {
     trainer.active = !trainer.active;
     await trainer.save();
+    await logActivity(req, {
+      title: `Trainerul ${trainer.name} a fost ${trainer.active ? 'activat' : 'dezactivat'}`,
+      category: 'traineri',
+      href: '/admin#traineri',
+      targetType: 'User',
+      targetId: trainer._id,
+    });
   }
   res.redirect('/admin#traineri');
 });
@@ -522,6 +541,13 @@ router.post('/trainers/:id/update', async (req, res) => {
 
   try {
     await trainer.save();
+    await logActivity(req, {
+      title: `Trainerul ${trainer.name} a fost actualizat`,
+      category: 'traineri',
+      href: '/admin#traineri',
+      targetType: 'User',
+      targetId: trainer._id,
+    });
     req.session.flash = { type: 'success', message: 'Trainer actualizat.' };
   } catch (error) {
     req.session.flash = { type: 'error', message: 'Nu am putut actualiza trainerul. Verifică userul să fie unic.' };
@@ -535,6 +561,13 @@ router.post('/trainers/:id/password', async (req, res) => {
   if (trainer && trainer.role === 'trainer' && req.body.password) {
     trainer.passwordHash = await bcrypt.hash(req.body.password, 10);
     await trainer.save();
+    await logActivity(req, {
+      title: `Parola trainerului ${trainer.name} a fost schimbată`,
+      category: 'traineri',
+      href: '/admin#traineri',
+      targetType: 'User',
+      targetId: trainer._id,
+    });
     req.session.flash = { type: 'success', message: 'Parola a fost schimbată.' };
   }
   res.redirect('/admin#traineri');
@@ -553,6 +586,13 @@ router.post('/trainers/:id/delete', async (req, res) => {
 
   const deletedReports = await Report.deleteMany({ trainer: trainer._id });
   await User.findByIdAndDelete(trainer._id);
+  await logActivity(req, {
+    title: `Trainerul ${trainer.name} a fost șters`,
+    category: 'traineri',
+    href: '/admin#traineri',
+    targetType: 'User',
+    targetId: trainer._id,
+  });
 
   const message = `Trainer șters. Au fost șterse și ${deletedReports.deletedCount || 0} cursuri asociate.`;
 
@@ -587,7 +627,7 @@ router.post('/reports', upload.single('nominalDoc'), async (req, res) => {
     return res.redirect('/admin#rapoarte');
   }
 
-  await Report.create({
+  const report = await Report.create({
     title: req.body.title || imported.title || 'Raport curs',
     trainer: trainer._id,
     location: reportLocation,
@@ -595,6 +635,13 @@ router.post('/reports', upload.single('nominalDoc'), async (req, res) => {
     endDate: req.body.endDate || imported.endDate || undefined,
     trainees,
     adminNotes: req.body.adminNotes,
+  });
+  await logActivity(req, {
+    title: `Raportul ${report.title} a fost alocat către ${trainer.name}`,
+    category: 'rapoarte',
+    href: `/admin/reports/${report._id}`,
+    targetType: 'Report',
+    targetId: report._id,
   });
 
   req.session.flash = {
@@ -668,6 +715,13 @@ router.post('/legacy-import/confirm', async (req, res) => {
     })),
     adminNotes: `Importat din raport Excel vechi. Foi: ${(parsed.sheetNames || []).join(', ')}`,
   });
+  await logActivity(req, {
+    title: `Raportul vechi ${report.title} a fost importat pentru ${trainer.name}`,
+    category: 'rapoarte',
+    href: `/admin/reports/${report._id}`,
+    targetType: 'Report',
+    targetId: report._id,
+  });
 
   delete req.session.legacyImportDraft;
   req.session.flash = { type: 'success', message: `Raport importat: ${report.seminars.length} seminarii și ${report.trainees.length} cursanți.` };
@@ -717,6 +771,13 @@ router.post('/reports/:id/seminars/:seminarId/update', async (req, res) => {
   seminar.notes = req.body.notes || '';
 
   await report.save();
+  await logActivity(req, {
+    title: `Seminar modificat în raportul ${report.title}`,
+    category: 'rapoarte',
+    href: `/admin/reports/${report._id}`,
+    targetType: 'Report',
+    targetId: report._id,
+  });
   req.session.flash = { type: 'success', message: 'Seminar modificat.' };
   res.redirect(`/admin/reports/${report._id}`);
 });
@@ -736,6 +797,13 @@ router.post('/reports/:id/seminars/:seminarId/delete', async (req, res) => {
 
   seminar.deleteOne();
   await report.save();
+  await logActivity(req, {
+    title: `Seminar șters din raportul ${report.title}`,
+    category: 'rapoarte',
+    href: `/admin/reports/${report._id}`,
+    targetType: 'Report',
+    targetId: report._id,
+  });
   req.session.flash = { type: 'success', message: 'Seminar șters.' };
   res.redirect(`/admin/reports/${report._id}`);
 });
@@ -752,6 +820,13 @@ router.post('/reports/:id/status', async (req, res) => {
   if (report) {
     report.status = req.body.status === 'active' ? 'active' : 'finalized';
     await report.save();
+    await logActivity(req, {
+      title: `Seria ${report.title} a fost ${report.status === 'finalized' ? 'finalizată' : 'redeschisă'}`,
+      category: 'rapoarte',
+      href: `/admin/reports/${report._id}`,
+      targetType: 'Report',
+      targetId: report._id,
+    });
     req.session.flash = { type: 'success', message: report.status === 'finalized' ? 'Seria a fost marcată ca finalizată.' : 'Seria a fost redeschisă.' };
   }
   const returnTo = req.body.returnTo || `/admin/reports/${req.params.id}`;
@@ -766,6 +841,13 @@ router.post('/reports/:id/finalize', async (req, res) => {
   }
   report.status = 'finalized';
   await report.save();
+  await logActivity(req, {
+    title: `Seria ${report.title} a fost marcată ca finalizată`,
+    category: 'rapoarte',
+    href: `/admin/reports/${report._id}`,
+    targetType: 'Report',
+    targetId: report._id,
+  });
   req.session.flash = { type: 'success', message: `Seria „${report.title}” a fost marcată ca finalizată.` };
   res.redirect(req.body.returnTo || '/admin#rapoarte');
 });
@@ -777,12 +859,28 @@ router.post('/reports/:id/delete', async (req, res) => {
     return res.redirect(req.body.returnTo || '/admin#rapoarte');
   }
   await Report.findByIdAndDelete(req.params.id);
+  await logActivity(req, {
+    title: `Seria ${report.title} a fost ștearsă`,
+    category: 'rapoarte',
+    href: '/admin#rapoarte-generate',
+    targetType: 'Report',
+    targetId: report._id,
+  });
   req.session.flash = { type: 'success', message: `Seria „${report.title}” a fost ștearsă.` };
   res.redirect(req.body.returnTo || '/admin#rapoarte');
 });
 
 router.delete('/reports/:id', async (req, res) => {
-  await Report.findByIdAndDelete(req.params.id);
+  const report = await Report.findByIdAndDelete(req.params.id);
+  if (report) {
+    await logActivity(req, {
+      title: `Raportul ${report.title} a fost șters`,
+      category: 'rapoarte',
+      href: '/admin#rapoarte-generate',
+      targetType: 'Report',
+      targetId: report._id,
+    });
+  }
   req.session.flash = { type: 'success', message: 'Raport șters.' };
   res.redirect('/admin#rapoarte');
 });

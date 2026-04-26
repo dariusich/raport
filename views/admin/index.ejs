@@ -47,7 +47,7 @@
       </div>
     <% } %>
   </div>
-  <a class="btn small ghost activity-link" href="/admin#rapoarte-generate">Vezi toate modificările</a>
+  <a class="btn small ghost activity-link" href="/admin#istoric">Vezi toate modificările</a>
 </section>
 
 <section class="admin-home" data-admin-home>
@@ -116,6 +116,46 @@
       <small>Filtreaza seminarii, calculeaza plata si exporta Excel.</small>
     </button>
   </div>
+</section>
+
+<section class="tab-panel" id="istoric">
+  <section class="card">
+    <div class="section-title row-title">
+      <div>
+        <span class="pill red">Istoric</span>
+        <h2>Toate modificările</h2>
+        <p>Vezi ultimele acțiuni din platformă și șterge intrările care nu mai sunt utile.</p>
+      </div>
+    </div>
+    <div class="history-list">
+      <% if (activityLogs.length) { %>
+        <% activityLogs.forEach(item => { %>
+          <article class="history-row">
+            <div class="history-main">
+              <span class="activity-avatar"><%= item.icon %></span>
+              <div>
+                <strong><%= item.title %></strong>
+                <small><%= item.actorName || 'Sistem' %><%= item.actorRole ? ' · ' + item.actorRole : '' %> · <%= item.dateLabel || item.time %></small>
+              </div>
+            </div>
+            <div class="table-actions">
+              <% if (item.href) { %>
+                <a class="btn small ghost" href="<%= item.href %>">Vezi</a>
+              <% } %>
+              <form action="/admin/activity/<%= item.id %>/delete" method="post" onsubmit="return confirm('Ștergi această intrare din istoric?');">
+                <button class="btn small danger" type="submit">Șterge</button>
+              </form>
+            </div>
+          </article>
+        <% }) %>
+      <% } else { %>
+        <div class="history-empty">
+          <strong>Istoricul este gol</strong>
+          <small>Acțiunile noi vor apărea aici automat.</small>
+        </div>
+      <% } %>
+    </div>
+  </section>
 </section>
 
 <section class="tab-panel" id="rapoarte">
