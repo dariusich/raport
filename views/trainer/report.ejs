@@ -396,28 +396,6 @@ for (let hour = 0; hour < 24; hour += 1) {
     text-align: center;
   }
 
-  .locked-date-field {
-    display: grid;
-    gap: 8px;
-  }
-
-  .locked-date-display {
-    width: min(320px, 100%);
-    margin-top: 6px;
-    padding: 14px 16px;
-    border: 1px solid rgba(196, 31, 45, 0.18);
-    border-radius: 16px;
-    background: rgba(196, 31, 45, 0.06);
-    color: #7a2030;
-    font-weight: 900;
-    text-align: center;
-  }
-
-  .locked-date-field small {
-    color: #7d7478;
-    font-weight: 700;
-  }
-
   .seminar-time-pair {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -683,10 +661,6 @@ for (let hour = 0; hour < 24; hour += 1) {
       max-height: 190px;
     }
 
-    .locked-date-display {
-      max-width: 210px;
-    }
-
     .seminar-time-pair {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
@@ -930,6 +904,9 @@ seminarsInMonth.forEach(s => {
             </div>
           </details>
 
+          <input id="seminarDateInput" name="date" type="hidden" required value="<%= formSeminar ? dateInputValue(formSeminar.date) : '' %>">
+
+          <div class="seminar-date-time-grid">
             <div class="seminar-time-pair">
               <% const startValue = formSeminar ? formSeminar.startTime : ''; %>
               <% const endValue = formSeminar ? formSeminar.endTime : ''; %>
@@ -1200,13 +1177,11 @@ seminarsInMonth.forEach(s => {
       const date = button.dataset.date;
       const input = document.getElementById('seminarDateInput');
       const text = document.getElementById('selectedDateText');
-      const lockedDateDisplay = document.getElementById('lockedDateDisplay');
       if (!input || !text) return;
       input.value = date;
       const parts = date.split('-');
       const displayDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
       text.textContent = displayDate;
-      if (lockedDateDisplay) lockedDateDisplay.textContent = displayDate;
       document.querySelectorAll('.calendar-day').forEach((day) => day.classList.remove('selected'));
       button.classList.add('selected');
       openSeminarModal();
