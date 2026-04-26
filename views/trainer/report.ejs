@@ -124,6 +124,12 @@ for (let hour = 0; hour < 24; hour += 1) {
     color: #7a2030;
   }
 
+  .seminar-detail-actions {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px dashed rgba(122, 32, 48, 0.16);
+  }
+
 
 
   .seminar-modal {
@@ -624,6 +630,17 @@ for (let hour = 0; hour < 24; hour += 1) {
     .seminar-time-pair select {
       font-size: 16px;
     }
+
+    .seminar-detail-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .seminar-detail-actions .btn {
+      width: 100%;
+      justify-content: center;
+    }
   }
 </style>
 
@@ -752,7 +769,7 @@ seminarsInMonth.forEach(s => {
               <a
                 class="calendar-day saved <%= selectedDateKey === dateKey ? 'selected' : '' %>"
                 data-date="<%= dateKey %>"
-                href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= savedSeminar._id %>#calendar-section"
+                href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= savedSeminar._id %>#seminar-detail"
                 title="Vezi detalii seminar"
               >
                 <strong><%= day %></strong>
@@ -774,26 +791,13 @@ seminarsInMonth.forEach(s => {
       </section>
 
       <% if (selectedSeminar && !editMode) { %>
-        <section class="card seminar-detail">
+        <section class="card seminar-detail" id="seminar-detail" tabindex="-1">
           <div class="section-title row-title">
             <div>
               <span class="pill red">Detalii seminar</span>
               <h2><%= new Date(selectedSeminar.date).toLocaleDateString('ro-RO') %></h2>
             </div>
-<div class="actions" data-testid="seminar-actions">
-  <a class="btn primary" data-testid="seminar-edit-btn"
-     href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= selectedSeminar._id %>&edit=1#calendar-section">
-    Modifică
-  </a>
-
-  <button
-    class="btn danger js-delete-seminar"
-    type="button"
-    data-testid="seminar-delete-btn"
-    data-delete-url="/trainer/reports/<%= report._id %>/seminars/<%= selectedSeminar._id %>/delete?month=<%= selectedMonth %>"
-    data-date="<%= new Date(selectedSeminar.date).toLocaleDateString('ro-RO') %>"
-  >Șterge</button>
-</div>
+          </div>
 
           <div class="detail-grid">
             <p><b>Program:</b> <%= selectedSeminar.startTime || '-' %><%= selectedSeminar.endTime ? ' - ' + selectedSeminar.endTime : '' %></p>
@@ -808,12 +812,27 @@ seminarsInMonth.forEach(s => {
             <p><b>Talentați:</b> <%= selectedSeminar.talents.join(', ') || '-' %></p>
             <p><b>Observații:</b> <%= selectedSeminar.notes || '-' %></p>
           </div>
+
+          <div class="actions seminar-detail-actions" data-testid="seminar-actions">
+            <a class="btn primary" data-testid="seminar-edit-btn"
+               href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= selectedSeminar._id %>&edit=1#seminar-form-panel">
+              Modifică
+            </a>
+
+            <button
+              class="btn danger js-delete-seminar"
+              type="button"
+              data-testid="seminar-delete-btn"
+              data-delete-url="/trainer/reports/<%= report._id %>/seminars/<%= selectedSeminar._id %>/delete?month=<%= selectedMonth %>"
+              data-date="<%= new Date(selectedSeminar.date).toLocaleDateString('ro-RO') %>"
+            >Șterge</button>
+          </div>
         </section>
       <% } else if (report.status === 'active') { %>
         <% const formSeminar = editMode && selectedSeminar ? selectedSeminar : null; %>
 
         <div class="seminar-modal <%= formSeminar ? 'open' : '' %>" id="seminarModal" aria-hidden="<%= formSeminar ? 'false' : 'true' %>">
-          <div class="seminar-modal-panel" role="dialog" aria-modal="true" aria-labelledby="seminarFormTitle">
+          <div class="seminar-modal-panel" id="seminar-form-panel" role="dialog" aria-modal="true" aria-labelledby="seminarFormTitle">
             <button type="button" class="seminar-modal-close" id="seminarModalClose" aria-label="Închide formularul">×</button>
 
             <form action="/trainer/reports/<%= report._id %>/seminars" method="post" class="card form-grid seminar-form" id="seminarForm" novalidate data-ajax-save="1" data-report-id="<%= report._id %>" data-selected-month="<%= selectedMonth %>">
@@ -1014,7 +1033,7 @@ seminarsInMonth.forEach(s => {
           <div class="actions">
             <button class="btn primary" type="submit"><%= formSeminar ? 'Salvează modificările' : 'Salvează seminar' %></button>
             <% if (formSeminar) { %>
-              <a class="btn ghost" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= formSeminar._id %>#calendar-section">Renunță</a>
+              <a class="btn ghost" href="/trainer/reports/<%= report._id %>?month=<%= selectedMonth %>&seminar=<%= formSeminar._id %>#seminar-detail">Renunță</a>
             <% } %>
           </div>
             </form>
@@ -1084,6 +1103,41 @@ seminarsInMonth.forEach(s => {
     refreshMultiSelectSummary(details);
     details.querySelectorAll('input[type="checkbox"]').forEach((input) => {
       input.addEventListener('change', () => refreshMultiSelectSummary(details));
+    });
+  });
+
+  function scrollToSelectedSeminarTarget() {
+    if (!isMobileViewport()) return;
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('seminar')) return;
+
+    const target = params.get('edit') === '1'
+      ? document.getElementById('seminar-form-panel')
+      : document.getElementById('seminar-detail');
+
+    if (!target) return;
+    setTimeout(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.focus?.({ preventScroll: true });
+    }, 160);
+  }
+
+  scrollToSelectedSeminarTarget();
+
+  document.querySelectorAll('.calendar-day.saved').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      if (!isMobileViewport()) return;
+      const href = link.getAttribute('href');
+      if (!href) return;
+
+      const currentUrl = new URL(window.location.href);
+      const nextUrl = new URL(href, window.location.origin);
+      const isSameSelection = currentUrl.pathname === nextUrl.pathname && currentUrl.search === nextUrl.search;
+
+      if (isSameSelection) {
+        event.preventDefault();
+        scrollToSelectedSeminarTarget();
+      }
     });
   });
 
@@ -1200,7 +1254,7 @@ seminarsInMonth.forEach(s => {
         const link = document.createElement('a');
         link.className = 'calendar-day saved';
         link.dataset.date = dateKey;
-        link.href = `/trainer/reports/${form.dataset.reportId}?month=${form.dataset.selectedMonth}&seminar=${result.seminarId}#calendar-section`;
+        link.href = `/trainer/reports/${form.dataset.reportId}?month=${form.dataset.selectedMonth}&seminar=${result.seminarId}#seminar-detail`;
         link.title = 'Vezi detalii seminar';
         const day = Number(dateKey.slice(-2));
         const start = form.querySelector('[name="startTime"]')?.value || 'salvat';
