@@ -17,6 +17,39 @@
   </div>
 </section>
 
+<section class="dashboard-activity">
+  <div class="activity-intro">
+    <span class="activity-icon">!</span>
+    <div>
+      <p class="eyebrow">Noutăți rapoarte</p>
+      <h2>Activitate recentă în rapoarte</h2>
+      <p>Urmărește cele mai recente actualizări făcute de traineri și administratori.</p>
+    </div>
+  </div>
+  <div class="activity-items">
+    <% if (recentActivity.length) { %>
+      <% recentActivity.forEach(item => { %>
+        <a class="activity-item" href="<%= item.href %>">
+          <span class="activity-avatar"><%= item.icon %></span>
+          <span>
+            <strong><%= item.title %></strong>
+            <small><%= item.time %></small>
+          </span>
+        </a>
+      <% }) %>
+    <% } else { %>
+      <div class="activity-item empty">
+        <span class="activity-avatar">0</span>
+        <span>
+          <strong>Nu există activitate recentă</strong>
+          <small>Primele modificări vor apărea aici automat.</small>
+        </span>
+      </div>
+    <% } %>
+  </div>
+  <a class="btn small ghost activity-link" href="/admin#rapoarte-generate">Vezi toate modificările</a>
+</section>
+
 <section class="admin-home" data-admin-home>
   <div class="admin-home-copy">
     <h2>Alege zona de lucru</h2>

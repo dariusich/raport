@@ -359,6 +359,72 @@ function accountingByTrainer(trainers, reports) {
   });
 }
 
+function relativeTimeRo(dateValue) {
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return '';
+  const diffMs = Date.now() - date.getTime();
+  const minutes = Math.max(0, Math.floor(diffMs / 60000));
+  if (minutes < 1) return 'acum';
+  if (minutes < 60) return `acum ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours === 1 ? 'acum o oră' : `acum ${hours} ore`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return days === 1 ? 'ieri' : `acum ${days} zile`;
+  return date.toLocaleDateString('ro-RO');
+}
+
+function buildRecentActivity(reports, seriesRequests) {
+  const activities = [];
+
+  for (const report of reports) {
+    const trainerName = report.trainer?.name || 'Trainer';
+    if (report.createdAt) {
+      activities.push({
+        icon: 'R',
+        title: `${report.title} a fost alocat către ${trainerName}`,
+        time: relativeTimeRo(report.createdAt),
+        date: new Date(report.createdAt),
+        href: `/admin/reports/${report._id}`,
+      });
+    }
+    if (report.updatedAt && String(report.updatedAt) !== String(report.createdAt)) {
+      activities.push({
+        icon: 'A',
+        title: `${report.title} a fost actualizat`,
+        time: relativeTimeRo(report.updatedAt),
+        date: new Date(report.updatedAt),
+        href: `/admin/reports/${report._id}`,
+      });
+    }
+    for (const seminar of report.seminars || []) {
+      const seminarDate = seminar.updatedAt || seminar.createdAt;
+      if (!seminarDate) continue;
+      activities.push({
+        icon: (trainerName || 'T').slice(0, 1).toUpperCase(),
+        title: `${trainerName} a salvat seminar în ${report.title}`,
+        time: relativeTimeRo(seminarDate),
+        date: new Date(seminarDate),
+        href: `/admin/reports/${report._id}`,
+      });
+    }
+  }
+
+  for (const request of seriesRequests) {
+    activities.push({
+      icon: 'S',
+      title: `${request.trainer?.name || 'Trainer'} a solicitat seria ${request.courseName}`,
+      time: relativeTimeRo(request.createdAt),
+      date: new Date(request.createdAt),
+      href: '/admin#solicitari-serii',
+    });
+  }
+
+  return activities
+    .filter((activity) => !Number.isNaN(activity.date.getTime()))
+    .sort((a, b) => b.date - a.date)
+    .slice(0, 4);
+}
+
 router.get('/', async (req, res) => {
   const trainers = await User.find({ role: 'trainer' }).sort({ active: -1, name: 1 });
   const reports = await Report.find().populate('trainer').sort({ startDate: 1, title: 1 });
@@ -368,6 +434,7 @@ router.get('/', async (req, res) => {
   const finalizedReports = reports.filter((r) => r.status === 'finalized').length;
   const accounting = accountingByTrainer(trainers, reports);
   const openSeriesRequests = seriesRequests.filter((request) => request.status === 'open').length;
+  const recentActivity = buildRecentActivity(reports, seriesRequests);
 
   res.render('admin/index', {
     title: 'Admin',
@@ -379,6 +446,7 @@ router.get('/', async (req, res) => {
     accounting,
     seriesRequests,
     openSeriesRequests,
+    recentActivity,
   });
 });
 
