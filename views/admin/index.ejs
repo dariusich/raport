@@ -56,47 +56,49 @@
   </div>
   <% if (seriesRequests.length) { %>
     <section class="series-requests-admin" id="solicitari-serii">
-      <div class="section-title row-title">
-        <div>
-          <span class="pill red">Solicitări serii</span>
-          <h2><%= openSeriesRequests %> solicitări noi</h2>
-          <p>Trainerii care nu își văd seria pot trimite aici detaliile cursului lipsă.</p>
+      <details class="series-requests-accordion">
+        <summary>
+          <div>
+            <span class="pill red">Solicitări serii</span>
+            <h2><%= openSeriesRequests %> solicitări noi</h2>
+            <p>Trainerii care nu își văd seria pot trimite aici detaliile cursului lipsă.</p>
+          </div>
+        </summary>
+        <div class="series-request-admin-list">
+          <% seriesRequests.forEach(request => { %>
+            <article class="series-request-admin-row <%= request.status %>">
+              <div>
+                <span class="status <%= request.status === 'open' ? 'active' : 'finalized' %>">
+                  <%= request.status === 'open' ? 'nouă' : request.status === 'resolved' ? 'rezolvată' : 'respinsă' %>
+                </span>
+                <h3><%= request.courseName %></h3>
+                <p>
+                  <%= request.trainer?.name || 'Trainer' %>
+                  <% if (request.location) { %> · <%= request.location %><% } %>
+                  <% if (request.startDate) { %> · <%= new Date(request.startDate).toLocaleDateString('ro-RO') %><% } %>
+                  <% if (request.endDate) { %> - <%= new Date(request.endDate).toLocaleDateString('ro-RO') %><% } %>
+                </p>
+                <% if (request.notes) { %><small><%= request.notes %></small><% } %>
+              </div>
+              <div class="table-actions">
+                <% if (request.status === 'open') { %>
+                  <form action="/admin/series-requests/<%= request._id %>/status" method="post">
+                    <input type="hidden" name="status" value="resolved">
+                    <button class="btn small success" type="submit">Marchează rezolvată</button>
+                  </form>
+                  <form action="/admin/series-requests/<%= request._id %>/status" method="post">
+                    <input type="hidden" name="status" value="rejected">
+                    <button class="btn small ghost" type="submit">Respinge</button>
+                  </form>
+                <% } %>
+                <form action="/admin/series-requests/<%= request._id %>/delete" method="post" onsubmit="return confirm('Ștergi definitiv această solicitare?');">
+                  <button class="btn small danger" type="submit">Șterge definitiv</button>
+                </form>
+              </div>
+            </article>
+          <% }) %>
         </div>
-      </div>
-      <div class="series-request-admin-list">
-        <% seriesRequests.forEach(request => { %>
-          <article class="series-request-admin-row <%= request.status %>">
-            <div>
-              <span class="status <%= request.status === 'open' ? 'active' : 'finalized' %>">
-                <%= request.status === 'open' ? 'nouă' : request.status === 'resolved' ? 'rezolvată' : 'respinsă' %>
-              </span>
-              <h3><%= request.courseName %></h3>
-              <p>
-                <%= request.trainer?.name || 'Trainer' %>
-                <% if (request.location) { %> · <%= request.location %><% } %>
-                <% if (request.startDate) { %> · <%= new Date(request.startDate).toLocaleDateString('ro-RO') %><% } %>
-                <% if (request.endDate) { %> - <%= new Date(request.endDate).toLocaleDateString('ro-RO') %><% } %>
-              </p>
-              <% if (request.notes) { %><small><%= request.notes %></small><% } %>
-            </div>
-            <div class="table-actions">
-              <% if (request.status === 'open') { %>
-                <form action="/admin/series-requests/<%= request._id %>/status" method="post">
-                  <input type="hidden" name="status" value="resolved">
-                  <button class="btn small success" type="submit">Marchează rezolvată</button>
-                </form>
-                <form action="/admin/series-requests/<%= request._id %>/status" method="post">
-                  <input type="hidden" name="status" value="rejected">
-                  <button class="btn small ghost" type="submit">Respinge</button>
-                </form>
-              <% } %>
-              <form action="/admin/series-requests/<%= request._id %>/delete" method="post" onsubmit="return confirm('Ștergi definitiv această solicitare?');">
-                <button class="btn small danger" type="submit">Șterge definitiv</button>
-              </form>
-            </div>
-          </article>
-        <% }) %>
-      </div>
+      </details>
     </section>
   <% } %>
   <div class="admin-home-grid" aria-label="Sectiuni admin">

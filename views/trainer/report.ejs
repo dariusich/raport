@@ -116,12 +116,32 @@ for (let hour = 0; hour < 24; hour += 1) {
 
   .selected-date-box {
     margin: 0 0 18px;
-    padding: 14px 16px;
+    width: min(360px, 100%);
+    padding: 16px 18px;
     border-radius: 18px;
-    background: linear-gradient(135deg, rgba(196, 31, 45, 0.09), rgba(242, 92, 66, 0.08));
-    border: 1px solid rgba(196, 31, 45, 0.16);
+    background: linear-gradient(135deg, #c41f3f, #8f1028);
+    border: 1px solid rgba(196, 31, 45, 0.2);
+    box-shadow: 0 18px 36px rgba(156, 18, 42, 0.18);
     font-weight: 800;
-    color: #7a2030;
+    color: #fff;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .selected-date-box small {
+    display: block;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .selected-date-box span {
+    font-family: var(--font-serif);
+    font-size: 21px;
+    color: #fff;
   }
 
   .seminar-detail-actions {
@@ -892,7 +912,7 @@ seminarsInMonth.forEach(s => {
           </div>
 
           <div class="selected-date-box" id="selectedDateBox">
-            Zi selectată:
+            <small>Zi selectată</small>
             <span id="selectedDateText">
               <%= formSeminar ? new Date(formSeminar.date).toLocaleDateString('ro-RO') : 'alege o zi din calendar' %>
             </span>
@@ -1044,7 +1064,7 @@ seminarsInMonth.forEach(s => {
           <div class="inline-2">
             <label>Cantitatea de produse
               <select name="productsQuantity">
-                <option value="" <%= !formSeminar || !formSeminar.productsQuantity ? 'selected' : '' %>>Opțional</option>
+                <option value="" <%= !formSeminar || !formSeminar.productsQuantity ? 'selected' : '' %>>Selectează</option>
                 <option value="suficienta" <%= formSeminar && formSeminar.productsQuantity === 'suficienta' ? 'selected' : '' %>>Suficientă</option>
                 <option value="insuficienta" <%= formSeminar && formSeminar.productsQuantity === 'insuficienta' ? 'selected' : '' %>>Insuficientă</option>
               </select>
@@ -1052,7 +1072,7 @@ seminarsInMonth.forEach(s => {
 
             <label>Poze/filmulețe trimise din cadrul cursului
               <select name="mediaSent">
-                <option value="" <%= !formSeminar || !formSeminar.mediaSent ? 'selected' : '' %>>Opțional</option>
+                <option value="" <%= !formSeminar || !formSeminar.mediaSent ? 'selected' : '' %>>Selectează</option>
                 <option value="da" <%= formSeminar && formSeminar.mediaSent === 'da' ? 'selected' : '' %>>Da</option>
                 <option value="nu" <%= formSeminar && formSeminar.mediaSent === 'nu' ? 'selected' : '' %>>Nu</option>
               </select>
