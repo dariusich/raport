@@ -86,6 +86,156 @@ function parseNominalText(rawText) {
   };
 }
 
+function cellPlainValue(cell) {
+  const value = cell?.value;
+  if (value === null || value === undefined) return '';
+  if (value instanceof Date) return value;
+  if (typeof value === 'number') return value;
+  if (typeof value === 'object') {
+    if (value.result !== undefined) return value.result instanceof Date ? value.result : String(value.result || '').trim();
+    if (value.text) return String(value.text).trim();
+    if (Array.isArray(value.richText)) return value.richText.map((part) => part.text || '').join('').trim();
+  }
+  return String(value).trim();
+}
+
+function parseExcelDate(value) {
+  if (!value) return undefined;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
+  if (typeof value === 'number') {
+    const date = new Date(Math.round((value - 25569) * 86400 * 1000));
+    return Number.isNaN(date.getTime()) ? undefined : date.toISOString().slice(0, 10);
+  }
+  const parsed = parseDateRo(value);
+  if (parsed) return parsed;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString().slice(0, 10);
+}
+
+function normalizeCellLabel(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeTimePart(value) {
+  const match = String(value || '').trim().match(/(\d{1,2})(?:[.:,](\d{1,2}))?/);
+  if (!match) return '';
+  const hour = Math.min(23, Number(match[1]));
+  const minute = Math.min(59, Number(match[2] || 0));
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+function parseTimeRange(value) {
+  const parts = String(value || '').split(/[\/\-\u2013\u2014]+/).map(normalizeTimePart).filter(Boolean);
+  return { startTime: parts[0] || '', endTime: parts[1] || '' };
+}
+
+function splitLegacyNames(value, knownNames = []) {
+  const text = normalizeText(value);
+  if (!text) return [];
+  const found = knownNames.filter((name) => text.toLowerCase().includes(name.toLowerCase()));
+  if (found.length) return found;
+  return text
+    .split(/[,;\n]+/)
+    .map((item) => cleanName(item))
+    .filter((item) => item.length >= 3);
+}
+
+function normalizeLegacyEnum(value, type) {
+  const text = normalizeCellLabel(value);
+  if (!text) return '';
+  if (type === 'products') {
+    if (text.includes('insuf')) return 'insuficienta';
+    if (text.includes('suf')) return 'suficienta';
+  }
+  if (type === 'media') {
+    if (/\bda\b/.test(text)) return 'da';
+    if (/\bnu\b/.test(text)) return 'nu';
+  }
+  return '';
+}
+
+async function parseLegacyWorkbook(buffer) {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const sheets = workbook.worksheets;
+  if (!sheets.length) throw new Error('Fișierul Excel nu conține foi.');
+
+  const firstSheet = sheets[0];
+  const title = String(cellPlainValue(firstSheet.getCell(1, 2)) || cellPlainValue(firstSheet.getCell(1, 1)) || 'Raport importat').trim();
+  const periodMatch = title.match(/(\d{1,2}[.\-/]\d{1,2}[.\-/]\d{4})\s*[-–—]\s*(\d{1,2}[.\-/]\d{1,2}[.\-/]\d{4})/);
+  const startDate = periodMatch ? parseDateRo(periodMatch[1]) : undefined;
+  const endDate = periodMatch ? parseDateRo(periodMatch[2]) : undefined;
+
+  const trainees = [];
+  for (let rowNumber = 1; rowNumber <= Math.min(firstSheet.rowCount, 40); rowNumber += 1) {
+    const row = firstSheet.getRow(rowNumber);
+    const indexValue = cellPlainValue(row.getCell(1));
+    const name = cleanName(cellPlainValue(row.getCell(2)));
+    const notes = [cellPlainValue(row.getCell(3)), cellPlainValue(row.getCell(4))].filter(Boolean).join(' · ');
+    if (/^\d+(\.\d+)?$/.test(String(indexValue)) && name.length >= 5) {
+      trainees.push({ name, notes });
+    }
+  }
+  const knownNames = trainees.map((trainee) => trainee.name);
+
+  const seminars = [];
+  const rowLabels = {
+    date: 'data',
+    time: 'orele de inceput',
+    activity: 'activitate desfasurata',
+    issues: 'cursanti cu probleme',
+    roomState: 'starea salii',
+    brokenObjects: 'obiecte defecte',
+    productsQuantity: 'cantitatea de produse',
+    mediaSent: 'poze/filmulete',
+    talents: 'numiti o persoana',
+    notes: 'grad de satisfactie',
+  };
+
+  for (const sheet of sheets) {
+    const rows = {};
+    for (let rowNumber = 1; rowNumber <= sheet.rowCount; rowNumber += 1) {
+      const label = normalizeCellLabel(cellPlainValue(sheet.getRow(rowNumber).getCell(1)));
+      Object.entries(rowLabels).forEach(([key, needle]) => {
+        if (!rows[key] && label.includes(needle)) rows[key] = rowNumber;
+      });
+    }
+    if (!rows.date) continue;
+
+    const lastColumn = sheet.columnCount || sheet.actualColumnCount || 40;
+    for (let col = 2; col <= lastColumn; col += 1) {
+      const date = parseExcelDate(cellPlainValue(sheet.getRow(rows.date).getCell(col)));
+      if (!date) continue;
+      const time = parseTimeRange(cellPlainValue(sheet.getRow(rows.time || 0).getCell(col)));
+      const productsValue = cellPlainValue(sheet.getRow(rows.productsQuantity || 0).getCell(col));
+      const mediaValue = cellPlainValue(sheet.getRow(rows.mediaSent || 0).getCell(col));
+      seminars.push({
+        date,
+        startTime: time.startTime,
+        endTime: time.endTime,
+        hours: calculateHours(time.startTime, time.endTime),
+        activity: cellPlainValue(sheet.getRow(rows.activity || 0).getCell(col)) || '',
+        issues: splitLegacyNames(cellPlainValue(sheet.getRow(rows.issues || 0).getCell(col)), knownNames),
+        issuesDetails: '',
+        roomState: cellPlainValue(sheet.getRow(rows.roomState || 0).getCell(col)) || '',
+        brokenObjects: cellPlainValue(sheet.getRow(rows.brokenObjects || 0).getCell(col)) || '',
+        productsQuantity: normalizeLegacyEnum(productsValue, 'products'),
+        mediaSent: normalizeLegacyEnum(mediaValue, 'media'),
+        talents: splitLegacyNames(cellPlainValue(sheet.getRow(rows.talents || 0).getCell(col)), knownNames),
+        notes: cellPlainValue(sheet.getRow(rows.notes || 0).getCell(col)) || '',
+      });
+    }
+  }
+
+  seminars.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  return { title, startDate, endDate, trainees, seminars, sheetNames: sheets.map((sheet) => sheet.name) };
+}
+
 function seminarDayKey(dateValue) {
   if (!dateValue) return '';
   const date = new Date(dateValue);
@@ -383,6 +533,68 @@ router.post('/reports', upload.single('nominalDoc'), async (req, res) => {
       : 'Raport alocat trainerului.',
   };
   res.redirect('/admin#rapoarte');
+});
+
+router.post('/legacy-import/preview', upload.single('legacyExcel'), async (req, res) => {
+  const trainer = await User.findById(req.body.trainerId);
+  if (!trainer) {
+    req.session.flash = { type: 'error', message: 'Alege trainerul pentru import.' };
+    return res.redirect('/admin#import-raport-vechi');
+  }
+  if (!req.file?.buffer) {
+    req.session.flash = { type: 'error', message: 'Încarcă fișierul Excel vechi.' };
+    return res.redirect('/admin#import-raport-vechi');
+  }
+
+  try {
+    const parsed = await parseLegacyWorkbook(req.file.buffer);
+    req.session.legacyImportDraft = {
+      trainerId: String(trainer._id),
+      parsed,
+    };
+    res.render('admin/legacy-import-preview', {
+      title: 'Previzualizare import',
+      trainer,
+      parsed,
+    });
+  } catch (error) {
+    req.session.flash = { type: 'error', message: error.message || 'Nu am putut citi Excelul vechi.' };
+    res.redirect('/admin#import-raport-vechi');
+  }
+});
+
+router.post('/legacy-import/confirm', async (req, res) => {
+  const draft = req.session.legacyImportDraft;
+  if (!draft?.parsed || !draft.trainerId) {
+    req.session.flash = { type: 'error', message: 'Importul a expirat. Încarcă din nou Excelul vechi.' };
+    return res.redirect('/admin#import-raport-vechi');
+  }
+
+  const trainer = await User.findById(draft.trainerId);
+  if (!trainer) {
+    req.session.flash = { type: 'error', message: 'Trainerul selectat nu mai există.' };
+    return res.redirect('/admin#import-raport-vechi');
+  }
+
+  const parsed = draft.parsed;
+  const report = await Report.create({
+    title: req.body.title || parsed.title || 'Raport importat',
+    trainer: trainer._id,
+    location: req.body.location || trainer.location,
+    startDate: req.body.startDate || parsed.startDate || undefined,
+    endDate: req.body.endDate || parsed.endDate || undefined,
+    trainees: parsed.trainees || [],
+    seminars: (parsed.seminars || []).map((seminar) => ({
+      ...seminar,
+      date: seminar.date,
+      hours: calculateHours(seminar.startTime, seminar.endTime),
+    })),
+    adminNotes: `Importat din raport Excel vechi. Foi: ${(parsed.sheetNames || []).join(', ')}`,
+  });
+
+  delete req.session.legacyImportDraft;
+  req.session.flash = { type: 'success', message: `Raport importat: ${report.seminars.length} seminarii și ${report.trainees.length} cursanți.` };
+  res.redirect(`/admin/reports/${report._id}`);
 });
 
 router.get('/reports/:id', async (req, res) => {

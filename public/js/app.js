@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setActiveTopNav('');
       return;
     }
-    const isReportsSubtab = ['genereaza-raport', 'rapoarte-generate'].includes(hashId);
+    const isReportsSubtab = ['genereaza-raport', 'import-raport-vechi', 'rapoarte-generate'].includes(hashId);
     const targetId = isReportsSubtab ? 'rapoarte' : hashId;
     const targetPanel = Array.from(tabPanels).find((panel) => panel.id === targetId);
     if (!targetPanel) {

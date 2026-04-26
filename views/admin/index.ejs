@@ -88,6 +88,7 @@
 <section class="tab-panel" id="rapoarte">
   <div class="subtabs">
     <button class="tab-button active" data-subtab-target="genereaza-raport" type="button">Generează raport</button>
+    <button class="tab-button" data-subtab-target="import-raport-vechi" type="button">Import raport vechi</button>
     <button class="tab-button" data-subtab-target="rapoarte-generate" type="button">Rapoarte generate</button>
   </div>
 
@@ -121,6 +122,30 @@
         </label>
         <label>Note admin <textarea name="adminNotes" rows="3" placeholder="Detalii interne despre serie, program, observații."></textarea></label>
         <button class="btn primary full" type="submit">Alocă raport trainerului</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="subpanel" id="import-raport-vechi">
+    <div class="card">
+      <div class="section-title">
+        <span class="pill gold">Import Excel</span>
+        <h2>Import raport vechi</h2>
+        <p>Incarca Excelul vechi, alege trainerul, apoi verifica previzualizarea inainte de crearea raportului nou.</p>
+      </div>
+      <form action="/admin/legacy-import/preview" method="post" enctype="multipart/form-data" class="form-grid">
+        <label>Trainer
+          <select name="trainerId" required>
+            <% trainers.forEach(t => { %>
+              <option value="<%= t._id %>"><%= t.name %> - <%= t.location || 'fara filiala' %></option>
+            <% }) %>
+          </select>
+        </label>
+        <label>Raport vechi Excel (.xlsx)
+          <input name="legacyExcel" type="file" accept=".xlsx" required>
+          <small>Sistemul citeste foile lunare, cursantii si seminariile completate.</small>
+        </label>
+        <button class="btn primary full" type="submit">Analizeaza Excel</button>
       </form>
     </div>
   </div>

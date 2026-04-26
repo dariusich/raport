@@ -1,0 +1,84 @@
+<%- include('../partials/header') %>
+
+<section class="hero hero-admin compact-course-hero">
+  <div>
+    <p class="eyebrow">Import Excel</p>
+    <h1>Previzualizare raport vechi</h1>
+    <p class="hero-text">Verifica datele detectate inainte sa creezi raportul nou.</p>
+  </div>
+  <div class="hero-stats compact">
+    <div><strong><%= parsed.trainees.length %></strong><span>cursanti</span></div>
+    <div><strong><%= parsed.seminars.length %></strong><span>seminarii</span></div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="section-title">
+    <span class="pill gold">Confirmare</span>
+    <h2>Date detectate</h2>
+    <p>Trainer selectat: <strong><%= trainer.name %></strong><%= trainer.location ? ' - ' + trainer.location : '' %></p>
+  </div>
+
+  <form action="/admin/legacy-import/confirm" method="post" class="form-grid">
+    <label>Titlu raport
+      <input name="title" value="<%= parsed.title %>" required>
+    </label>
+    <div class="inline-2">
+      <label>Data inceput <input name="startDate" type="date" value="<%= parsed.startDate || '' %>"></label>
+      <label>Data final <input name="endDate" type="date" value="<%= parsed.endDate || '' %>"></label>
+    </div>
+    <label>Filiala <input name="location" value="<%= trainer.location || '' %>"></label>
+
+    <div class="legacy-preview-grid">
+      <article class="legacy-preview-box">
+        <h3>Cursanti detectati</h3>
+        <div class="trainee-compact-list">
+          <% parsed.trainees.forEach(trainee => { %>
+            <span class="trainee-chip"><%= trainee.name %></span>
+          <% }) %>
+        </div>
+      </article>
+
+      <article class="legacy-preview-box">
+        <h3>Foi citite</h3>
+        <div class="year-strip">
+          <% parsed.sheetNames.forEach(sheet => { %>
+            <span><b><%= sheet %></b></span>
+          <% }) %>
+        </div>
+      </article>
+    </div>
+
+    <section class="legacy-preview-box">
+      <h3>Seminarii detectate</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Data</th><th>Program</th><th>Activitate</th><th>Sala</th><th>Probleme</th></tr>
+          </thead>
+          <tbody>
+            <% parsed.seminars.slice(0, 80).forEach(seminar => { %>
+              <tr>
+                <td><%= new Date(seminar.date).toLocaleDateString('ro-RO') %></td>
+                <td><%= seminar.startTime || '-' %><%= seminar.endTime ? ' - ' + seminar.endTime : '' %></td>
+                <td><%= seminar.activity || '-' %></td>
+                <td><%= seminar.roomState || '-' %></td>
+                <td><%= seminar.issues.length ? seminar.issues.join(', ') : '-' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <% if (parsed.seminars.length > 80) { %>
+        <small>Sunt afisate primele 80 seminarii din <%= parsed.seminars.length %>.</small>
+      <% } %>
+    </section>
+
+    <div class="actions">
+      <button class="btn primary" type="submit">Creeaza raport nou</button>
+      <a class="btn ghost" href="/admin#import-raport-vechi">Inapoi la import</a>
+    </div>
+  </form>
+</section>
+
+<%- include('../partials/footer') %>

@@ -1287,6 +1287,42 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 }
 .year-strip b { color: var(--ruby-600); margin-right: 3px; }
 
+.legacy-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.legacy-preview-box {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-xs);
+}
+.legacy-preview-box h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+}
+.legacy-preview-box .table-wrap {
+  margin-top: 10px;
+}
+.trainee-compact-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.trainee-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--bg-deep);
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .months-grid { display: grid; gap: 6px; grid-template-columns: repeat(6, 1fr); margin-bottom: 14px; }
 .months-grid.big { grid-template-columns: repeat(4, 1fr); }
 .month-chip {
@@ -1982,6 +2018,9 @@ button[disabled], .btn[disabled] {
   .table-actions form,
   .table-actions button {
     width: 100%;
+  }
+  .legacy-preview-grid {
+    grid-template-columns: 1fr;
   }
 }
 
