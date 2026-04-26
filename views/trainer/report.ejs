@@ -167,6 +167,105 @@ const countUniqueSeminarDays = (seminars = []) => {
     box-shadow: none;
   }
 
+  .seminar-rubric {
+    padding: 22px;
+    border: 1px solid rgba(196, 31, 45, 0.1);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.74);
+    box-shadow: 0 12px 28px rgba(50, 24, 32, 0.04);
+  }
+
+  .rubric-head {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: 16px;
+    align-items: start;
+    margin-bottom: 14px;
+  }
+
+  .rubric-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(196, 31, 45, 0.07);
+    color: #9b1632;
+    font-size: 24px;
+    line-height: 1;
+  }
+
+  .rubric-head h3 {
+    margin: 4px 0 6px;
+    color: #17131a;
+    font-size: 20px;
+    font-weight: 900;
+  }
+
+  .rubric-desc {
+    margin: 0;
+    color: #5f5a66;
+    font-size: 15px;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .rubric-control {
+    position: relative;
+  }
+
+  .rubric-control textarea,
+  .rubric-control select,
+  .rubric-control .multi-select summary {
+    margin-top: 0;
+    border-color: rgba(122, 108, 114, 0.2);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(38, 31, 35, 0.03);
+  }
+
+  .rubric-control textarea {
+    min-height: 72px;
+    padding-right: 48px;
+  }
+
+  .rubric-control textarea::placeholder {
+    color: #8f8995;
+  }
+
+  .rubric-edit-icon {
+    position: absolute;
+    top: 20px;
+    right: 18px;
+    color: #9b1632;
+    font-size: 22px;
+    pointer-events: none;
+  }
+
+  .rubric-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0 0;
+    color: #7d7681;
+    font-size: 14px;
+  }
+
+  .rubric-note::before {
+    content: "i";
+    width: 24px;
+    height: 24px;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid rgba(196, 31, 45, 0.22);
+    border-radius: 999px;
+    color: #9b1632;
+    font-weight: 900;
+    flex: 0 0 auto;
+  }
+
   .trainee-compact {
     border: 1px solid rgba(196, 31, 45, 0.16);
     border-radius: 18px;
@@ -461,6 +560,43 @@ const countUniqueSeminarDays = (seminars = []) => {
       padding: 22px 18px 28px;
     }
 
+    .seminar-rubric {
+      padding: 18px;
+      border-radius: 18px;
+    }
+
+    .rubric-head {
+      grid-template-columns: 42px 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .rubric-icon {
+      width: 42px;
+      height: 42px;
+      font-size: 21px;
+    }
+
+    .rubric-head h3 {
+      margin-top: 2px;
+      font-size: 18px;
+    }
+
+    .rubric-desc {
+      max-width: 100%;
+      font-size: 13px;
+    }
+
+    .rubric-control textarea {
+      min-height: 62px;
+    }
+
+    .rubric-note {
+      align-items: flex-start;
+      font-size: 12.5px;
+      line-height: 1.35;
+    }
+
     .multi-menu {
       grid-template-columns: 1fr;
       max-height: 190px;
@@ -721,45 +857,98 @@ seminarsInMonth.forEach(s => {
             </div>
           </div>
 
-          <label>Activitate desfășurată
-            <textarea name="activity" rows="3" placeholder="Opțional: descrie pe scurt tema zilei, partea practică, recapitularea sau demonstrațiile făcute."><%= formSeminar ? formSeminar.activity : '' %></textarea>
-            <small>Opțional. Pentru salvare sunt obligatorii doar data, ora de început și ora finală.</small>
-          </label>
-
-          <label>Absenți / nume prenume
-            <details class="multi-select" data-multi-select>
-              <summary data-default="Selectează absenții">Selectează absenții</summary>
-              <div class="multi-menu">
-                <% report.trainees.forEach(t => { %>
-                  <label><input type="checkbox" name="absents" value="<%= t.name %>" <%= formSeminar && formSeminar.absents.includes(t.name) ? 'checked' : '' %>> <%= t.name %></label>
-                <% }) %>
+          <section class="seminar-rubric">
+            <div class="rubric-head">
+              <span class="rubric-icon" aria-hidden="true">✎</span>
+              <div>
+                <h3>Activitate desfășurată</h3>
+                <p class="rubric-desc">Descrie pe scurt tema zilei și partea practică.</p>
               </div>
-            </details>
-          </label>
+            </div>
+            <label class="rubric-control">
+              <textarea name="activity" rows="2" placeholder="Scrie aici..."><%= formSeminar ? formSeminar.activity : '' %></textarea>
+              <span class="rubric-edit-icon" aria-hidden="true">✎</span>
+            </label>
+            <p class="rubric-note">Opțional. Pentru salvare sunt obligatorii doar data, ora de început și ora finală.</p>
+          </section>
 
-          <label>Cursanți cu probleme
-            <small>Persoane care deranjează cursul, absentează, sunt restante la plată dar frecventează cursul sau au dificultăți mari.</small>
-            <details class="multi-select" data-multi-select>
-              <summary data-default="Selectează cursanții cu probleme">Selectează cursanții cu probleme</summary>
-              <div class="multi-menu">
-                <% report.trainees.forEach(t => { %>
-                  <label><input type="checkbox" name="issues" value="<%= t.name %>" <%= formSeminar && formSeminar.issues.includes(t.name) ? 'checked' : '' %>> <%= t.name %></label>
-                <% }) %>
+          <section class="seminar-rubric">
+            <div class="rubric-head">
+              <span class="rubric-icon" aria-hidden="true">☷</span>
+              <div>
+                <h3>Absenți / nume prenume</h3>
               </div>
-            </details>
-          </label>
+            </div>
+            <div class="rubric-control">
+              <details class="multi-select" data-multi-select>
+                <summary data-default="Selectează absenții">Selectează absenții</summary>
+                <div class="multi-menu">
+                  <% report.trainees.forEach(t => { %>
+                    <label><input type="checkbox" name="absents" value="<%= t.name %>" <%= formSeminar && formSeminar.absents.includes(t.name) ? 'checked' : '' %>> <%= t.name %></label>
+                  <% }) %>
+                </div>
+              </details>
+            </div>
+          </section>
 
-          <label>Exemplificați problemele
-            <textarea name="issuesDetails" rows="3" placeholder="Detalii scurte și clare: ce s-a întâmplat, când, ce trebuie urmărit."><%= formSeminar ? formSeminar.issuesDetails : '' %></textarea>
-          </label>
+          <section class="seminar-rubric">
+            <div class="rubric-head">
+              <span class="rubric-icon" aria-hidden="true">○</span>
+              <div>
+                <h3>Cursanți cu probleme</h3>
+                <p class="rubric-desc">Deranjează, absentează, au restanțe sau dificultăți.</p>
+              </div>
+            </div>
+            <div class="rubric-control">
+              <details class="multi-select" data-multi-select>
+                <summary data-default="Selectează cursanții cu probleme">Selectează cursanții cu probleme</summary>
+                <div class="multi-menu">
+                  <% report.trainees.forEach(t => { %>
+                    <label><input type="checkbox" name="issues" value="<%= t.name %>" <%= formSeminar && formSeminar.issues.includes(t.name) ? 'checked' : '' %>> <%= t.name %></label>
+                  <% }) %>
+                </div>
+              </details>
+            </div>
+          </section>
 
-          <label>Starea sălii la venire / plecare
-            <textarea name="roomState" rows="2" placeholder="Ex: sala curată la venire, lăsată în ordine la plecare."><%= formSeminar ? formSeminar.roomState : '' %></textarea>
-          </label>
+          <section class="seminar-rubric">
+            <div class="rubric-head">
+              <span class="rubric-icon" aria-hidden="true">□</span>
+              <div>
+                <h3>Exemplificați problemele</h3>
+              </div>
+            </div>
+            <label class="rubric-control">
+              <textarea name="issuesDetails" rows="2" placeholder="Scrie detalii..."><%= formSeminar ? formSeminar.issuesDetails : '' %></textarea>
+              <span class="rubric-edit-icon" aria-hidden="true">✎</span>
+            </label>
+          </section>
 
-          <label>Obiecte defecte / lipsă
-            <textarea name="brokenObjects" rows="2" placeholder="Scrie 'Nu este cazul' dacă nu sunt probleme."><%= formSeminar ? formSeminar.brokenObjects : '' %></textarea>
-          </label>
+          <section class="seminar-rubric">
+            <div class="rubric-head">
+              <span class="rubric-icon" aria-hidden="true">⌂</span>
+              <div>
+                <h3>Starea sălii la venire / plecare</h3>
+              </div>
+            </div>
+            <label class="rubric-control">
+              <textarea name="roomState" rows="2" placeholder="Scrie aici..."><%= formSeminar ? formSeminar.roomState : '' %></textarea>
+              <span class="rubric-edit-icon" aria-hidden="true">✎</span>
+            </label>
+          </section>
+
+          <section class="seminar-rubric">
+            <div class="rubric-head">
+              <span class="rubric-icon" aria-hidden="true">!</span>
+              <div>
+                <h3>Obiecte defecte / lipsă</h3>
+              </div>
+            </div>
+            <label class="rubric-control">
+              <textarea name="brokenObjects" rows="2" placeholder="Scrie 'Nu este cazul' dacă nu sunt probleme."><%= formSeminar ? formSeminar.brokenObjects : '' %></textarea>
+              <span class="rubric-edit-icon" aria-hidden="true">✎</span>
+            </label>
+          </section>
 
           <div class="inline-2">
             <label>Cantitatea de produse
