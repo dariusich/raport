@@ -16,6 +16,13 @@ const countUniqueSeminarDays = (seminars = []) => {
 
   return new Set(validDays).size;
 };
+
+const timeOptions = [];
+for (let hour = 0; hour < 24; hour += 1) {
+  for (const minute of [0, 15, 30, 45]) {
+    timeOptions.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
+  }
+}
 %>
 
 <style>
@@ -346,11 +353,14 @@ const countUniqueSeminarDays = (seminars = []) => {
     gap: 12px;
   }
 
-  .seminar-time-pair input[type="time"] {
+  .seminar-time-pair select {
     min-width: 0;
     padding-left: 10px;
     padding-right: 10px;
     text-align: center;
+    font-weight: 800;
+    color: #7a2030;
+    cursor: pointer;
   }
 
   .trainee-compact-list {
@@ -611,7 +621,7 @@ const countUniqueSeminarDays = (seminars = []) => {
       gap: 10px;
     }
 
-    .seminar-time-pair input[type="time"] {
+    .seminar-time-pair select {
       font-size: 16px;
     }
   }
@@ -848,11 +858,29 @@ seminarsInMonth.forEach(s => {
             </div>
 
             <div class="seminar-time-pair">
+              <% const startValue = formSeminar ? formSeminar.startTime : ''; %>
+              <% const endValue = formSeminar ? formSeminar.endTime : ''; %>
               <label>Ora început
-                <input name="startTime" type="time" required value="<%= formSeminar ? formSeminar.startTime : '' %>">
+                <select name="startTime" required>
+                  <option value="" <%= !startValue ? 'selected' : '' %>>Selectează ora</option>
+                  <% if (startValue && !timeOptions.includes(startValue)) { %>
+                    <option value="<%= startValue %>" selected><%= startValue %></option>
+                  <% } %>
+                  <% timeOptions.forEach(time => { %>
+                    <option value="<%= time %>" <%= startValue === time ? 'selected' : '' %>><%= time %></option>
+                  <% }) %>
+                </select>
               </label>
               <label>Ora final
-                <input name="endTime" type="time" required value="<%= formSeminar ? formSeminar.endTime : '' %>">
+                <select name="endTime" required>
+                  <option value="" <%= !endValue ? 'selected' : '' %>>Selectează ora</option>
+                  <% if (endValue && !timeOptions.includes(endValue)) { %>
+                    <option value="<%= endValue %>" selected><%= endValue %></option>
+                  <% } %>
+                  <% timeOptions.forEach(time => { %>
+                    <option value="<%= time %>" <%= endValue === time ? 'selected' : '' %>><%= time %></option>
+                  <% }) %>
+                </select>
               </label>
             </div>
           </div>
