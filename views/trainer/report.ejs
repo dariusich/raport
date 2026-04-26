@@ -930,16 +930,6 @@ seminarsInMonth.forEach(s => {
             </div>
           </details>
 
-          <div class="seminar-date-time-grid">
-            <div class="locked-date-field">
-              <label>Data aleasă</label>
-              <input id="seminarDateInput" name="date" type="hidden" required value="<%= formSeminar ? dateInputValue(formSeminar.date) : '' %>">
-              <div class="locked-date-display" id="lockedDateDisplay">
-                <%= formSeminar ? new Date(formSeminar.date).toLocaleDateString('ro-RO') : 'Alege ziua din calendar' %>
-              </div>
-              <small>Data este blocată după alegerea zilei din calendar.</small>
-            </div>
-
             <div class="seminar-time-pair">
               <% const startValue = formSeminar ? formSeminar.startTime : ''; %>
               <% const endValue = formSeminar ? formSeminar.endTime : ''; %>
