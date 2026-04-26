@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     year: document.querySelector('#accountingYearFilter'),
     month: document.querySelector('#accountingMonthFilter'),
   };
+  const accountingExportLink = document.querySelector('#accountingExportLink');
 
   const monthIndexFromDateKey = (dateKey) => {
     const [, monthNumber] = String(dateKey || '').split('-');
@@ -83,6 +84,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const totalBox = document.querySelector('#filteredTotal');
     if (totalBox) totalBox.textContent = filteredTotal;
+
+    if (accountingExportLink) {
+      const params = new URLSearchParams();
+      Object.entries({
+        trainer: trainerValue,
+        location: locationValue,
+        course: courseValue,
+        year: yearValue,
+        month: monthValue,
+      }).forEach(([key, value]) => {
+        if (value && value !== 'all') params.set(key, value);
+      });
+      accountingExportLink.href = `/admin/exports/accounting.xlsx${params.toString() ? `?${params.toString()}` : ''}`;
+    }
   };
 
   Object.values(accountingFilters).forEach((filter) => {

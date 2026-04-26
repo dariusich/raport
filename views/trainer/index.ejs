@@ -59,9 +59,12 @@
           <h3><%= r.title %></h3>
           <p><%= r.location || 'fără filială' %><%= start || end ? ' · ' + start + (end ? ' - ' + end : '') : '' %></p>
         </div>
-        <div class="course-meta">
-          <strong><%= countUniqueSeminarDays(r) %></strong>
-          <span>seminarii</span>
+        <div class="course-row-side">
+          <div class="course-meta">
+            <strong><%= countUniqueSeminarDays(r) %></strong>
+            <span>seminarii salvate</span>
+          </div>
+          <span class="course-arrow" aria-hidden="true">›</span>
         </div>
       </a>
     <% }) %>

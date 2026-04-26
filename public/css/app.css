@@ -953,6 +953,12 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 }
 .course-main h3 { font-family: var(--font-serif); font-size: 21px; font-weight: 600; margin: 6px 0 4px; }
 .course-main p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.course-row-side {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
 .course-meta {
   text-align: center;
   padding: 10px 16px;
@@ -967,7 +973,23 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   display: block;
   line-height: 1;
 }
-.course-meta span { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.course-meta span { font-size: 10px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--muted); }
+.course-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  color: var(--ruby-600);
+  font-size: 34px;
+  line-height: 1;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+.course-row:hover .course-arrow {
+  background: var(--ruby-50);
+  transform: translateX(3px);
+}
 
 .month-list-trainer {
   display: grid;
@@ -1363,6 +1385,7 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   thead th, tbody td { padding: 10px 12px; font-size: 13px; }
 
   .course-row { flex-direction: column; align-items: stretch; gap: 12px; }
+  .course-row-side { width: 100%; justify-content: space-between; margin-left: 0; }
   .course-meta { align-self: flex-start; }
 
   .row-title { flex-direction: column; align-items: stretch; }

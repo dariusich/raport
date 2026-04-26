@@ -555,6 +555,11 @@ router.get('/reports/:id/export.xlsx', async (req, res) => {
 
 router.get('/exports/accounting.xlsx', async (req, res) => {
   const reports = await Report.find().populate('trainer').sort({ startDate: 1, title: 1 });
+  const trainerFilter = String(req.query.trainer || 'all');
+  const locationFilter = String(req.query.location || 'all');
+  const courseFilter = String(req.query.course || 'all');
+  const yearFilter = String(req.query.year || 'all');
+  const monthFilter = String(req.query.month || 'all');
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet('Contabilitate');
   sheet.columns = [
@@ -570,10 +575,23 @@ router.get('/exports/accounting.xlsx', async (req, res) => {
   sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD4145A' } };
 
   for (const report of reports) {
+    const trainerId = String(report.trainer?._id || report.trainer || '');
+    const location = report.location || report.trainer?.location || '';
+    if (trainerFilter !== 'all' && trainerId !== trainerFilter) continue;
+    if (locationFilter !== 'all' && !location.includes(locationFilter)) continue;
+    if (courseFilter !== 'all' && report.title !== courseFilter) continue;
+
     for (const seminar of report.seminars || []) {
+      const dayKey = seminarDayKey(seminar.date);
+      if (!dayKey) continue;
+      const [, monthNumber] = dayKey.split('-');
+      const monthIndex = String(Number(monthNumber) - 1);
+      if (yearFilter !== 'all' && !dayKey.startsWith(yearFilter + '-')) continue;
+      if (monthFilter !== 'all' && monthIndex !== monthFilter) continue;
+
       sheet.addRow({
         trainer: report.trainer?.name || '-',
-        location: report.location || report.trainer?.location || '-',
+        location: location || '-',
         course: report.title,
         date: seminar.date ? new Date(seminar.date).toLocaleDateString('ro-RO') : '',
         interval: `${seminar.startTime || ''}${seminar.endTime ? ' - ' + seminar.endTime : ''}`,
