@@ -125,9 +125,54 @@ for (let hour = 0; hour < 24; hour += 1) {
   }
 
   .seminar-detail-actions {
-    margin-top: 22px;
-    padding-top: 18px;
-    border-top: 1px dashed rgba(122, 32, 48, 0.16);
+    margin-top: 16px;
+  }
+
+  .seminar-detail-toggle {
+    border: 1px solid rgba(196, 31, 45, 0.18);
+    border-radius: 18px;
+    background: rgba(255, 250, 248, 0.72);
+    overflow: hidden;
+  }
+
+  .seminar-detail-toggle summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+    color: #8b1230;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .seminar-detail-toggle summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .seminar-detail-toggle summary::after {
+    content: "▼";
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: rgba(196, 31, 45, 0.08);
+    color: #9b1632;
+    font-size: 15px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+  }
+
+  .seminar-detail-toggle[open] summary::after {
+    transform: rotate(180deg);
+  }
+
+  .seminar-detail-toggle .detail-grid {
+    padding: 0 18px 18px;
   }
 
 
@@ -792,26 +837,23 @@ seminarsInMonth.forEach(s => {
 
       <% if (selectedSeminar && !editMode) { %>
         <section class="card seminar-detail" id="seminar-detail" tabindex="-1">
-          <div class="section-title row-title">
-            <div>
-              <span class="pill red">Detalii seminar</span>
-              <h2><%= new Date(selectedSeminar.date).toLocaleDateString('ro-RO') %></h2>
+          <details class="seminar-detail-toggle">
+            <summary>Detalii seminar</summary>
+            <div class="detail-grid">
+              <p><b>Data:</b> <%= new Date(selectedSeminar.date).toLocaleDateString('ro-RO') %></p>
+              <p><b>Program:</b> <%= selectedSeminar.startTime || '-' %><%= selectedSeminar.endTime ? ' - ' + selectedSeminar.endTime : '' %></p>
+              <p><b>Activitate:</b> <%= selectedSeminar.activity || '-' %></p>
+              <p><b>Absenți:</b> <%= selectedSeminar.absents.join(', ') || '-' %></p>
+              <p><b>Cursanți cu probleme:</b> <%= selectedSeminar.issues.join(', ') || '-' %></p>
+              <p><b>Detalii probleme:</b> <%= selectedSeminar.issuesDetails || '-' %></p>
+              <p><b>Starea sălii:</b> <%= selectedSeminar.roomState || '-' %></p>
+              <p><b>Obiecte defecte/lipsă:</b> <%= selectedSeminar.brokenObjects || '-' %></p>
+              <p><b>Produse:</b> <%= selectedSeminar.productsQuantity || '-' %></p>
+              <p><b>Poze/filmulețe:</b> <%= selectedSeminar.mediaSent || '-' %></p>
+              <p><b>Talentați:</b> <%= selectedSeminar.talents.join(', ') || '-' %></p>
+              <p><b>Observații:</b> <%= selectedSeminar.notes || '-' %></p>
             </div>
-          </div>
-
-          <div class="detail-grid">
-            <p><b>Program:</b> <%= selectedSeminar.startTime || '-' %><%= selectedSeminar.endTime ? ' - ' + selectedSeminar.endTime : '' %></p>
-            <p><b>Activitate:</b> <%= selectedSeminar.activity || '-' %></p>
-            <p><b>Absenți:</b> <%= selectedSeminar.absents.join(', ') || '-' %></p>
-            <p><b>Cursanți cu probleme:</b> <%= selectedSeminar.issues.join(', ') || '-' %></p>
-            <p><b>Detalii probleme:</b> <%= selectedSeminar.issuesDetails || '-' %></p>
-            <p><b>Starea sălii:</b> <%= selectedSeminar.roomState || '-' %></p>
-            <p><b>Obiecte defecte/lipsă:</b> <%= selectedSeminar.brokenObjects || '-' %></p>
-            <p><b>Produse:</b> <%= selectedSeminar.productsQuantity || '-' %></p>
-            <p><b>Poze/filmulețe:</b> <%= selectedSeminar.mediaSent || '-' %></p>
-            <p><b>Talentați:</b> <%= selectedSeminar.talents.join(', ') || '-' %></p>
-            <p><b>Observații:</b> <%= selectedSeminar.notes || '-' %></p>
-          </div>
+          </details>
 
           <div class="actions seminar-detail-actions" data-testid="seminar-actions">
             <a class="btn primary" data-testid="seminar-edit-btn"
@@ -828,7 +870,9 @@ seminarsInMonth.forEach(s => {
             >Șterge</button>
           </div>
         </section>
-      <% } else if (report.status === 'active') { %>
+      <% } %>
+
+      <% if (report.status === 'active') { %>
         <% const formSeminar = editMode && selectedSeminar ? selectedSeminar : null; %>
 
         <div class="seminar-modal <%= formSeminar ? 'open' : '' %>" id="seminarModal" aria-hidden="<%= formSeminar ? 'false' : 'true' %>">
