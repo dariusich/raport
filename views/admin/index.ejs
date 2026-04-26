@@ -75,7 +75,7 @@
     <button class="admin-home-card" data-tab-target="traineri" type="button">
       <span>02</span>
       <strong>Traineri</strong>
-      <small>Administreaza conturi, statusuri, parole si filiale.</small>
+      <small>Administreaza conturi, statusuri si parole.</small>
     </button>
     <button class="admin-home-card" data-tab-target="contabilitate" type="button">
       <span>03</span>
@@ -103,7 +103,7 @@
         <label>Trainer
           <select name="trainerId" required>
             <% trainers.forEach(t => { %>
-              <option value="<%= t._id %>"><%= t.name %> · <%= t.location || 'fără filială' %></option>
+              <option value="<%= t._id %>"><%= t.name %></option>
             <% }) %>
           </select>
         </label>
@@ -116,7 +116,7 @@
           <label>Data început <input name="startDate" type="date"></label>
           <label>Data final <input name="endDate" type="date"></label>
         </div>
-        <label>Filială <input name="location" placeholder="implicit filiala trainerului"></label>
+        <label>Filială serie <input name="location" required placeholder="ex: Sibiu, Iași, Bacău"></label>
         <label>Lista cursanți manual, un nume pe rând
           <textarea name="traineesText" rows="5" placeholder="Folosește doar dacă nu încarci Word sau dacă vrei să completezi manual lista."></textarea>
         </label>
@@ -137,7 +137,7 @@
         <label>Trainer
           <select name="trainerId" required>
             <% trainers.forEach(t => { %>
-              <option value="<%= t._id %>"><%= t.name %> - <%= t.location || 'fara filiala' %></option>
+              <option value="<%= t._id %>"><%= t.name %></option>
             <% }) %>
           </select>
         </label>
@@ -229,7 +229,6 @@
         <label>Nume<input name="name" required placeholder="Nume trainer"></label>
         <label>User<input name="username" required placeholder="ex: maria.pop"></label>
         <label>Parolă<input name="password" type="password" required placeholder="Parolă inițială"></label>
-        <label>Filială<input name="location" placeholder="ex: Bacău"></label>
         <button class="btn primary full" type="submit">Creează trainer</button>
       </form>
     </div>
@@ -242,7 +241,7 @@
             <button class="trainer-accordion-head" type="button" data-trainer-toggle="<%= t._id %>">
               <span>
                 <strong><%= t.name %></strong>
-                <small><%= t.location || 'Fără filială' %> · user: <%= t.username %></small>
+                <small>user: <%= t.username %></small>
               </span>
               <span class="status <%= t.active ? 'active' : 'inactive' %>"><%= t.active ? 'activ' : 'inactiv' %></span>
             </button>
@@ -251,7 +250,6 @@
               <div class="trainer-detail-grid">
                 <p><b>Nume:</b> <%= t.name %></p>
                 <p><b>User:</b> <%= t.username %></p>
-                <p><b>Filială:</b> <%= t.location || '-' %></p>
                 <p><b>Status:</b> <%= t.active ? 'activ' : 'inactiv' %></p>
               </div>
 
@@ -260,7 +258,6 @@
                 <form action="/admin/trainers/<%= t._id %>/update" method="post" class="form-grid compact-form">
                   <label>Nume<input name="name" required value="<%= t.name %>"></label>
                   <label>User<input name="username" required value="<%= t.username %>"></label>
-                  <label>Filială<input name="location" value="<%= t.location || '' %>"></label>
                   <label>Status
                     <select name="active">
                       <option value="true" <%= t.active ? 'selected' : '' %>>Activ</option>
@@ -336,7 +333,7 @@
       <label>Filială
         <select id="accountingLocationFilter">
           <option value="all">Toate filialele</option>
-          <% [...new Set(accounting.flatMap(item => item.locations.length ? item.locations : [item.trainer.location]).filter(Boolean))].sort().forEach(location => { %>
+          <% [...new Set(accounting.flatMap(item => item.locations).filter(Boolean))].sort().forEach(location => { %>
             <option value="<%= location %>"><%= location %></option>
           <% }) %>
         </select>
@@ -372,13 +369,13 @@
         <% const dataPoints = item.courses.flatMap(course => course.points.map(point => course.name + '::' + point)); %>
         <article class="accounting-card luxe-mini-card"
           data-trainer-card="<%= item.trainer._id %>"
-          data-location="<%= item.trainer.location || item.locations.join(',') || '' %>"
+          data-location="<%= item.locations.join(',') || '' %>"
           data-total="<%= item.total %>"
           data-points="<%= dataPoints.join('|') %>">
           <div class="accounting-head">
             <div>
               <h3><%= item.trainer.name %></h3>
-              <p><%= item.trainer.location || 'Fără filială' %> · <%= item.reports.length %> rapoarte · <%= item.courses.length %> cursuri</p>
+              <p><%= item.locations.length ? item.locations.join(', ') : 'Fără filiale alocate' %> · <%= item.reports.length %> rapoarte · <%= item.courses.length %> cursuri</p>
             </div>
             <strong><%= item.total %> seminarii</strong>
           </div>
@@ -419,7 +416,7 @@
                 <div class="accounting-series-row">
                   <div>
                     <strong><%= report.title %></strong>
-                    <small><%= report.location || item.trainer.location || 'Fără filială' %> · <%= report.status === 'finalized' ? 'finalizat' : 'activ' %> · <%= report.seminars.length %> seminarii</small>
+                    <small><%= report.location || 'Fără filială' %> · <%= report.status === 'finalized' ? 'finalizat' : 'activ' %> · <%= report.seminars.length %> seminarii</small>
                   </div>
                   <div class="table-actions">
                     <a class="btn small ghost" href="/admin/reports/<%= report._id %>">Detalii</a>

@@ -16,7 +16,7 @@
   <div class="section-title">
     <span class="pill gold">Confirmare</span>
     <h2>Date detectate</h2>
-    <p>Trainer selectat: <strong><%= trainer.name %></strong><%= trainer.location ? ' - ' + trainer.location : '' %></p>
+    <p>Trainer selectat: <strong><%= trainer.name %></strong></p>
   </div>
 
   <form action="/admin/legacy-import/confirm" method="post" class="form-grid">
@@ -27,7 +27,7 @@
       <label>Data inceput <input name="startDate" type="date" value="<%= parsed.startDate || '' %>"></label>
       <label>Data final <input name="endDate" type="date" value="<%= parsed.endDate || '' %>"></label>
     </div>
-    <label>Filiala <input name="location" value="<%= trainer.location || '' %>"></label>
+    <label>Filiala serie <input name="location" required placeholder="ex: Sibiu, Iasi, Bacau"></label>
 
     <div class="legacy-preview-grid">
       <article class="legacy-preview-box">

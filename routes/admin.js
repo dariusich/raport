@@ -413,7 +413,7 @@ router.post('/series-requests/:id/delete', async (req, res) => {
 });
 
 router.post('/trainers', async (req, res) => {
-  const { name, username, password, location } = req.body;
+  const { name, username, password } = req.body;
   const passwordHash = await bcrypt.hash(password, 10);
 
   try {
@@ -422,7 +422,6 @@ router.post('/trainers', async (req, res) => {
       username: String(username).toLowerCase().trim(),
       passwordHash,
       role: 'trainer',
-      location,
       commissionPerSeminar: 0,
     });
     req.session.flash = { type: 'success', message: 'Trainer creat.' };
@@ -451,7 +450,6 @@ router.post('/trainers/:id/update', async (req, res) => {
 
   trainer.name = String(req.body.name || trainer.name).trim();
   trainer.username = String(req.body.username || trainer.username).toLowerCase().trim();
-  trainer.location = String(req.body.location || '').trim();
   trainer.active = req.body.active === 'true';
 
   try {
@@ -515,11 +513,16 @@ router.post('/reports', upload.single('nominalDoc'), async (req, res) => {
 
   const manualTrainees = parseTrainees(req.body.traineesText);
   const trainees = imported.trainees.length ? imported.trainees : manualTrainees;
+  const reportLocation = String(req.body.location || '').trim();
+  if (!reportLocation) {
+    req.session.flash = { type: 'error', message: 'Alege filiala pentru seria alocată.' };
+    return res.redirect('/admin#rapoarte');
+  }
 
   await Report.create({
     title: req.body.title || imported.title || 'Raport curs',
     trainer: trainer._id,
-    location: req.body.location || trainer.location,
+    location: reportLocation,
     startDate: req.body.startDate || imported.startDate || undefined,
     endDate: req.body.endDate || imported.endDate || undefined,
     trainees,
@@ -577,10 +580,16 @@ router.post('/legacy-import/confirm', async (req, res) => {
   }
 
   const parsed = draft.parsed;
+  const reportLocation = String(req.body.location || '').trim();
+  if (!reportLocation) {
+    req.session.flash = { type: 'error', message: 'Completează filiala seriei înainte de import.' };
+    return res.redirect('/admin#import-raport-vechi');
+  }
+
   const report = await Report.create({
     title: req.body.title || parsed.title || 'Raport importat',
     trainer: trainer._id,
-    location: req.body.location || trainer.location,
+    location: reportLocation,
     startDate: req.body.startDate || parsed.startDate || undefined,
     endDate: req.body.endDate || parsed.endDate || undefined,
     trainees: parsed.trainees || [],
@@ -788,7 +797,7 @@ router.get('/exports/accounting.xlsx', async (req, res) => {
 
   for (const report of reports) {
     const trainerId = String(report.trainer?._id || report.trainer || '');
-    const location = report.location || report.trainer?.location || '';
+    const location = report.location || '';
     if (trainerFilter !== 'all' && trainerId !== trainerFilter) continue;
     if (locationFilter !== 'all' && !location.includes(locationFilter)) continue;
     if (courseFilter !== 'all' && report.title !== courseFilter) continue;
