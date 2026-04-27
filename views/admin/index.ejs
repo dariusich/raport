@@ -1,9 +1,17 @@
 <%- include('../partials/header') %>
 
 <%
-  const accountingCourses = [...new Set(accounting.flatMap(item => item.courses.map(course => course.name)))].sort((a, b) => a.localeCompare(b, 'ro'));
+  const accountingCourses = Array.from(
+    new Map(accounting.flatMap(item => item.courses.map(course => [course.key, course.name]))).entries()
+  ).map(([key, name]) => ({ key, name })).sort((a, b) => a.name.localeCompare(b.name, 'ro'));
   const activityRoles = [...new Set(activityLogs.map(item => item.actorRole).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ro'));
   const activityCategories = [...new Set(activityLogs.map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ro'));
+  const reportPeriod = (report) => {
+    const start = report.startDate ? new Date(report.startDate).toLocaleDateString('ro-RO') : '';
+    const end = report.endDate ? new Date(report.endDate).toLocaleDateString('ro-RO') : '';
+    if (start && end) return `${start} - ${end}`;
+    return start || end || '';
+  };
 %>
 
 <section class="hero hero-admin">
@@ -293,14 +301,19 @@
             <% reports.forEach(r => { %>
               <tr
                 data-report-row
-                data-title="<%= String(r.title || '').toLowerCase() %>"
+                data-title="<%= `${r.title || ''} ${reportPeriod(r)}`.toLowerCase() %>"
                 data-trainer="<%= String(r.trainer?.name || '').toLowerCase() %>"
                 data-location="<%= String(r.location || '').toLowerCase() %>"
                 data-status="<%= r.status %>"
                 data-seminars="<%= r.seminars.length %>"
                 data-updated="<%= r.updatedAt ? new Date(r.updatedAt).getTime() : 0 %>"
               >
-                <td><strong><%= r.title %></strong></td>
+                <td>
+                  <strong><%= r.title %></strong>
+                  <% if (reportPeriod(r)) { %>
+                    <small class="report-period"><%= reportPeriod(r) %></small>
+                  <% } %>
+                </td>
                 <td><%= r.trainer?.name || '-' %></td>
                 <td><%= r.location %></td>
                 <td><span class="status <%= r.status %>"><%= r.status === 'finalized' ? 'finalizat' : 'activ' %></span></td>
@@ -455,7 +468,7 @@
         <select id="accountingCourseFilter">
           <option value="all">Toate cursurile</option>
           <% accountingCourses.forEach(course => { %>
-            <option value="<%= course %>"><%= course %></option>
+            <option value="<%= course.key %>"><%= course.name %></option>
           <% }) %>
         </select>
       </label>
@@ -479,7 +492,7 @@
 
     <div class="accounting-list">
       <% accounting.forEach(item => { %>
-        <% const dataPoints = item.courses.flatMap(course => course.points.map(point => course.name + '::' + point)); %>
+        <% const dataPoints = item.courses.flatMap(course => course.points.map(point => course.key + '::' + point)); %>
         <article class="accounting-card luxe-mini-card"
           data-trainer-card="<%= item.trainer._id %>"
           data-location="<%= item.locations.join(',') || '' %>"
@@ -496,7 +509,7 @@
           <div class="course-breakdown">
             <% if (item.courses.length) { %>
               <% item.courses.forEach(course => { %>
-                <div class="course-line" data-course-name="<%= course.name %>" data-course-points="<%= course.points.join('|') %>" data-course-total="<%= course.total %>">
+                <div class="course-line" data-course-key="<%= course.key %>" data-course-name="<%= course.name %>" data-course-points="<%= course.points.join('|') %>" data-course-total="<%= course.total %>">
                   <span><%= course.name %></span>
                   <strong><%= course.total %> seminarii</strong>
                 </div>

@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const courseRows = Array.from(card.querySelectorAll('[data-course-name]'));
 
       courseRows.forEach((row) => {
-        const courseName = row.dataset.courseName || '';
-        const courseMatch = courseValue === 'all' || courseName === courseValue;
+        const courseKey = row.dataset.courseKey || row.dataset.courseName || '';
+        const courseMatch = courseValue === 'all' || courseKey === courseValue;
         const dayPoints = (row.dataset.coursePoints || '').split('|').filter(Boolean);
         const count = courseMatch ? dayPoints.filter((day) => dayMatchesFilters(day, yearValue, monthValue)).length : 0;
 
@@ -64,8 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
       card.querySelectorAll('.month-chip').forEach((chip) => {
         const idx = chip.dataset.monthIndex;
         const monthCount = courseRows.reduce((sum, row) => {
-          const courseName = row.dataset.courseName || '';
-          if (courseValue !== 'all' && courseName !== courseValue) return sum;
+          const courseKey = row.dataset.courseKey || row.dataset.courseName || '';
+          if (courseValue !== 'all' && courseKey !== courseValue) return sum;
           const dayPoints = (row.dataset.coursePoints || '').split('|').filter(Boolean);
           return sum + dayPoints.filter((day) => {
             const [year] = day.split('-');

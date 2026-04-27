@@ -30,6 +30,26 @@ function parseDateRo(value) {
   return `${yyyy}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
 }
 
+function formatDateRoShort(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('ro-RO');
+}
+
+function reportPeriodLabel(report) {
+  const start = formatDateRoShort(report.startDate);
+  const end = formatDateRoShort(report.endDate);
+  if (start && end) return `${start} - ${end}`;
+  return start || end || '';
+}
+
+function reportTitleWithPeriod(report) {
+  const title = report.title || 'Curs fără titlu';
+  const period = reportPeriodLabel(report);
+  return period ? `${title} · ${period}` : title;
+}
+
 function cleanName(name) {
   return String(name || '')
     .replace(/\s+/g, ' ')
@@ -284,11 +304,15 @@ function accountingByTrainer(trainers, reports) {
 
     for (const report of trainerReports) {
       if (report.location) locations.add(report.location);
-      const courseTitle = report.title || 'Curs fără titlu';
+      const courseKey = String(report._id);
+      const courseTitle = reportTitleWithPeriod(report);
 
-      if (!courseMap.has(courseTitle)) {
-        courseMap.set(courseTitle, {
+      if (!courseMap.has(courseKey)) {
+        courseMap.set(courseKey, {
+          key: courseKey,
           name: courseTitle,
+          baseName: report.title || 'Curs fără titlu',
+          period: reportPeriodLabel(report),
           reportIds: new Set(),
           points: new Set(),
           byYear: new Map(),
@@ -296,7 +320,7 @@ function accountingByTrainer(trainers, reports) {
         });
       }
 
-      const course = courseMap.get(courseTitle);
+      const course = courseMap.get(courseKey);
       course.reportIds.add(String(report._id));
 
       for (const seminar of report.seminars || []) {
@@ -307,7 +331,7 @@ function accountingByTrainer(trainers, reports) {
         const year = date.getUTCFullYear();
         const monthIndex = date.getUTCMonth();
         const yearMonthKey = year + '-' + monthIndex;
-        const courseDayKey = courseTitle + '|' + dayKey;
+        const courseDayKey = courseKey + '|' + dayKey;
 
         course.points.add(dayKey);
         course.byYear.set(year, course.byYear.get(year) || new Set());
@@ -332,7 +356,10 @@ function accountingByTrainer(trainers, reports) {
     }));
 
     const courses = Array.from(courseMap.values()).map((course) => ({
+      key: course.key,
       name: course.name,
+      baseName: course.baseName,
+      period: course.period,
       reportCount: course.reportIds.size,
       total: course.points.size,
       points: Array.from(course.points).sort(),
@@ -966,7 +993,7 @@ router.get('/exports/accounting.xlsx', async (req, res) => {
     const location = report.location || '';
     if (trainerFilter !== 'all' && trainerId !== trainerFilter) continue;
     if (locationFilter !== 'all' && !location.includes(locationFilter)) continue;
-    if (courseFilter !== 'all' && report.title !== courseFilter) continue;
+    if (courseFilter !== 'all' && String(report._id) !== courseFilter) continue;
 
     for (const seminar of report.seminars || []) {
       const dayKey = seminarDayKey(seminar.date);
@@ -979,7 +1006,7 @@ router.get('/exports/accounting.xlsx', async (req, res) => {
       sheet.addRow({
         trainer: report.trainer?.name || '-',
         location: location || '-',
-        course: report.title,
+        course: reportTitleWithPeriod(report),
         date: seminar.date ? new Date(seminar.date).toLocaleDateString('ro-RO') : '',
         interval: `${seminar.startTime || ''}${seminar.endTime ? ' - ' + seminar.endTime : ''}`,
         hours: seminar.hours || '',

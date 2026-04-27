@@ -1747,6 +1747,14 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   font-weight: 700;
 }
 
+.report-period {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .course-line strong {
   color: var(--ruby-600);
   white-space: nowrap;
