@@ -1426,20 +1426,20 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .accounting-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
 }
 .accounting-card, .luxe-mini-card {
   background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  padding: 22px;
+  padding: 24px;
   box-shadow: var(--shadow-xs);
   transition: all 0.2s ease;
 }
 .accounting-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--ruby-200); }
 .accounting-head { display: flex; justify-content: space-between; align-items: start; margin-bottom: 14px; gap: 12px; }
-.accounting-head h3 { font-family: var(--font-serif); font-size: 20px; margin: 0; }
+.accounting-head h3 { font-family: var(--font-serif); font-size: 23px; line-height: 1.08; margin: 0; }
 .accounting-head p { font-size: 12.5px; color: var(--muted); margin: 4px 0 0; }
 .accounting-head strong { color: var(--ruby-600); font-size: 14px; white-space: nowrap; padding: 6px 12px; background: var(--ruby-50); border-radius: 999px; }
 .accounting-trainer-export {
@@ -1727,19 +1727,20 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .course-breakdown {
   display: grid;
-  gap: 8px;
-  margin: 12px 0 14px;
+  gap: 12px;
+  margin: 16px 0 16px;
 }
 
 .course-line {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 14px;
-  padding: 14px;
+  gap: 16px;
+  min-height: 96px;
+  padding: 18px;
   border: 1px solid rgba(196, 31, 45, 0.12);
-  border-radius: 18px;
-  background: rgba(255, 247, 249, 0.72);
+  border-radius: 20px;
+  background: rgba(255, 247, 249, 0.84);
   font-size: 13px;
 }
 
@@ -1750,12 +1751,23 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .course-line-main span,
 .course-line > span {
   display: block;
+  max-width: 100%;
   font-weight: 700;
+  line-height: 1.28;
+}
+
+.course-line-main em {
+  display: block;
+  margin-top: 7px;
+  color: var(--ink);
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .course-line-main small {
   display: block;
-  margin-top: 4px;
+  margin-top: 7px;
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
@@ -1772,6 +1784,9 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .course-line strong {
   color: var(--ruby-600);
   white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(196, 31, 45, 0.06);
 }
 
 .icon-actions {
@@ -1786,8 +1801,8 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 }
 
 .icon-action {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   border: 1px solid rgba(196, 31, 45, 0.18);
   border-radius: 999px;
   display: inline-grid;
@@ -1795,7 +1810,7 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   background: #fff;
   color: var(--ruby-700);
   text-decoration: none;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 900;
   line-height: 1;
   cursor: pointer;
@@ -1833,6 +1848,7 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   .course-line {
     grid-template-columns: 1fr;
     align-items: stretch;
+    min-height: auto;
   }
 
   .icon-actions {

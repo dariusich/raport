@@ -511,12 +511,15 @@
               <% item.courses.forEach(course => { %>
                 <div class="course-line" data-course-key="<%= course.key %>" data-course-name="<%= course.name %>" data-course-points="<%= course.points.join('|') %>" data-course-total="<%= course.total %>">
                   <div class="course-line-main">
-                    <span><%= course.name %></span>
+                    <span><%= course.baseName %></span>
+                    <% if (course.period) { %>
+                      <em><%= course.period %></em>
+                    <% } %>
                     <small><%= course.report.location || 'Fără filială' %> · <%= course.report.status === 'finalized' ? 'finalizat' : 'activ' %></small>
                   </div>
-                  <strong><%= course.total %> seminarii</strong>
+                  <strong><%= course.total %> <%= course.total === 1 ? 'seminar' : 'seminarii' %></strong>
                   <div class="icon-actions" aria-label="Acțiuni serie">
-                    <a class="icon-action" href="/admin/reports/<%= course.report._id %>" title="Vezi detalii" aria-label="Vezi detalii">⌕</a>
+                    <a class="icon-action" href="/admin/reports/<%= course.report._id %>" title="Vezi detalii" aria-label="Vezi detalii">↗</a>
                     <% if (course.report.status !== 'finalized') { %>
                       <form action="/admin/reports/<%= course.report._id %>/finalize" method="post">
                         <input type="hidden" name="returnTo" value="/admin#contabilitate">
