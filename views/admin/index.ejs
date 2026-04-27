@@ -438,7 +438,7 @@
         <span class="pill red">Contabilitate</span>
         <h2>Evidență lunară, anuală și calcul plată</h2>
         <p>Filtrează după trainer, filială, an și lună. Contabila vede rapid seminariile efectuate și calculează plata trainerului.</p>
-        <a class="btn small ghost" href="/admin/exports/accounting.xlsx" id="accountingExportLink">Export Excel contabilitate</a>
+        <a class="btn small ghost excel-export-btn" href="/admin/exports/accounting.xlsx" id="accountingExportLink"><span class="excel-icon" aria-hidden="true">X</span>Export Excel</a>
       </div>
       <div class="accounting-total-box">
         <span>Total filtrat</span>
@@ -511,10 +511,7 @@
               <% item.courses.forEach(course => { %>
                 <div class="course-line" data-course-key="<%= course.key %>" data-course-name="<%= course.name %>" data-course-points="<%= course.points.join('|') %>" data-course-total="<%= course.total %>">
                   <div class="course-line-main">
-                    <span><%= course.baseName %></span>
-                    <% if (course.period) { %>
-                      <em><%= course.period %></em>
-                    <% } %>
+                    <span><%= course.baseName %><% if (course.period) { %> <em><%= course.period %></em><% } %></span>
                     <small><%= course.report.location || 'Fără filială' %> · <%= course.report.status === 'finalized' ? 'finalizat' : 'activ' %></small>
                   </div>
                   <strong><%= course.total %> <%= course.total === 1 ? 'seminar' : 'seminarii' %></strong>
@@ -538,7 +535,7 @@
             <% } %>
           </div>
 
-          <a class="btn small ghost accounting-trainer-export" href="/admin/exports/accounting.xlsx?trainer=<%= item.trainer._id %>" data-trainer-export="<%= item.trainer._id %>">Export Excel</a>
+          <a class="btn small ghost accounting-trainer-export excel-export-btn" href="/admin/exports/accounting.xlsx?trainer=<%= item.trainer._id %>" data-trainer-export="<%= item.trainer._id %>"><span class="excel-icon" aria-hidden="true">X</span>Export Excel</a>
         </article>
       <% }) %>
     </div>
