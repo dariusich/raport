@@ -8,6 +8,12 @@
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
   const traineeNames = (report.trainees || []).map(t => t.name).filter(Boolean);
+  const transferLabel = (target) => {
+    const start = target.startDate ? new Date(target.startDate).toLocaleDateString('ro-RO') : '';
+    const end = target.endDate ? new Date(target.endDate).toLocaleDateString('ro-RO') : '';
+    const period = start && end ? `${start} - ${end}` : start || end;
+    return `${target.title}${period ? ' · ' + period : ''} · ${target.trainer?.name || 'Trainer'} · ${target.location || 'Fără filială'}`;
+  };
 %>
 
 <section class="report-hero">
@@ -50,6 +56,39 @@
       <div class="trainee-list horizontal">
         <% report.trainees.forEach(t => { %><span><%= t.name %></span><% }) %>
       </div>
+      <% if (report.trainees.length && transferTargets.length) { %>
+        <details class="transfer-box">
+          <summary>Transferă cursant</summary>
+          <form action="/admin/reports/<%= report._id %>/trainees/transfer" method="post" class="compact-form">
+            <label>Cursant
+              <select name="traineeName" required>
+                <% report.trainees.forEach(t => { %>
+                  <option value="<%= t.name %>"><%= t.name %></option>
+                <% }) %>
+              </select>
+            </label>
+            <label>Seria destinație
+              <select name="targetReportId" required>
+                <% transferTargets.forEach(target => { %>
+                  <option value="<%= target._id %>"><%= transferLabel(target) %></option>
+                <% }) %>
+              </select>
+            </label>
+            <div class="inline-2">
+              <label>Acțiune
+                <select name="mode">
+                  <option value="move">Transfer complet</option>
+                  <option value="copy">Copiază în altă serie</option>
+                </select>
+              </label>
+              <label>Notă
+                <input name="note" placeholder="Opțional">
+              </label>
+            </div>
+            <button class="btn small primary" type="submit">Aplică transfer</button>
+          </form>
+        </details>
+      <% } %>
     </div>
   </div>
 </section>

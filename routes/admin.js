@@ -761,7 +761,69 @@ router.get('/reports/:id', async (req, res) => {
   const report = await Report.findById(req.params.id).populate('trainer');
   if (!report) return res.status(404).render('404', { title: 'Raport negăsit' });
   const stats = reportStats(report);
-  res.render('admin/report', { title: report.title, report, stats, customCommission: '' });
+  const transferTargets = await Report.find({ _id: { $ne: report._id } })
+    .populate('trainer')
+    .sort({ status: 1, startDate: 1, title: 1 });
+  res.render('admin/report', { title: report.title, report, stats, customCommission: '', transferTargets });
+});
+
+router.post('/reports/:id/trainees/transfer', async (req, res) => {
+  const sourceReport = await Report.findById(req.params.id).populate('trainer');
+  const targetReport = await Report.findById(req.body.targetReportId).populate('trainer');
+
+  if (!sourceReport || !targetReport) {
+    req.session.flash = { type: 'error', message: 'Seria sursă sau seria destinație nu a fost găsită.' };
+    return res.redirect(sourceReport ? `/admin/reports/${sourceReport._id}` : '/admin#rapoarte-generate');
+  }
+
+  if (String(sourceReport._id) === String(targetReport._id)) {
+    req.session.flash = { type: 'error', message: 'Alege o serie destinație diferită.' };
+    return res.redirect(`/admin/reports/${sourceReport._id}`);
+  }
+
+  const traineeName = String(req.body.traineeName || '').trim();
+  const mode = req.body.mode === 'copy' ? 'copy' : 'move';
+  const note = String(req.body.note || '').trim();
+  const trainee = sourceReport.trainees.find((item) => item.name === traineeName);
+
+  if (!trainee) {
+    req.session.flash = { type: 'error', message: 'Cursantul nu a fost găsit în seria curentă.' };
+    return res.redirect(`/admin/reports/${sourceReport._id}`);
+  }
+
+  const alreadyExists = targetReport.trainees.some((item) => item.name.toLowerCase() === trainee.name.toLowerCase());
+  if (!alreadyExists) {
+    targetReport.trainees.push({
+      name: trainee.name,
+      phone: trainee.phone || '',
+      notes: [trainee.notes, note ? `Transfer: ${note}` : 'Transfer din altă serie'].filter(Boolean).join(' · '),
+    });
+  }
+
+  if (mode === 'move') {
+    sourceReport.trainees = sourceReport.trainees.filter((item) => item.name !== trainee.name);
+  }
+
+  await targetReport.save();
+  if (mode === 'move') await sourceReport.save();
+
+  await logActivity(req, {
+    title: `${trainee.name} a fost ${mode === 'move' ? 'transferat' : 'copiat'} din ${sourceReport.title} în ${targetReport.title}`,
+    category: 'traineri',
+    href: `/admin/reports/${targetReport._id}`,
+    targetType: 'Report',
+    targetId: targetReport._id,
+  });
+
+  req.session.flash = {
+    type: 'success',
+    message: alreadyExists
+      ? mode === 'move'
+        ? `${trainee.name} exista deja în seria destinație și a fost scos din seria curentă.`
+        : `${trainee.name} exista deja în seria destinație.`
+      : `${trainee.name} a fost ${mode === 'move' ? 'transferat' : 'copiat'} în seria „${targetReport.title}”.`,
+  };
+  res.redirect(`/admin/reports/${sourceReport._id}`);
 });
 
 

@@ -2277,6 +2277,18 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   font-weight: 900;
   color: #7a2030;
 }
+.transfer-box {
+  margin-top: 16px;
+  border: 1px solid rgba(196,31,45,.13);
+  border-radius: 18px;
+  padding: 12px 14px;
+  background: rgba(255,247,249,.72);
+}
+.transfer-box summary {
+  cursor: pointer;
+  font-weight: 900;
+  color: #7a2030;
+}
 .compact-form {
   margin-top: 12px;
 }
