@@ -1732,18 +1732,32 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 }
 
 .course-line {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 9px 12px;
+  gap: 14px;
+  padding: 14px;
   border: 1px solid rgba(196, 31, 45, 0.12);
-  border-radius: 14px;
+  border-radius: 18px;
   background: rgba(255, 247, 249, 0.72);
   font-size: 13px;
 }
 
-.course-line span {
+.course-line-main {
+  min-width: 0;
+}
+
+.course-line-main span,
+.course-line > span {
+  display: block;
+  font-weight: 700;
+}
+
+.course-line-main small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -1760,14 +1774,69 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   white-space: nowrap;
 }
 
+.icon-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.icon-actions form {
+  margin: 0;
+}
+
+.icon-action {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(196, 31, 45, 0.18);
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  background: #fff;
+  color: var(--ruby-700);
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.icon-action:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.icon-action.success {
+  color: #12805c;
+  border-color: rgba(18, 128, 92, 0.22);
+}
+
+.icon-action.danger {
+  color: #fff;
+  background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+  border-color: transparent;
+}
+
+.accounting-trainer-export {
+  margin-top: 14px;
+  justify-content: center;
+  width: 100%;
+}
+
 @media (max-width: 720px) {
   .trainer-detail-grid {
     grid-template-columns: 1fr;
   }
 
   .course-line {
-    align-items: flex-start;
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .icon-actions {
+    justify-content: flex-start;
   }
 }
 
