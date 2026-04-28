@@ -33,8 +33,8 @@
       </span>
     </a>
 
-    <% if (currentUser) { %>
-      <div class="header-actions">
+    <div class="header-actions">
+      <% if (currentUser) { %>
         <nav class="topnav premium-nav" aria-label="Navigație principală" data-testid="top-nav">
           <a href="<%= currentUser.role === 'admin' ? '/admin' : '/trainer' %>" data-testid="nav-dashboard">Dashboard</a>
           <% if (currentUser.role === 'admin') { %>
@@ -43,12 +43,13 @@
             <a href="/admin#contabilitate" data-testid="nav-contabilitate">Contabilitate</a>
           <% } %>
         </nav>
+      <% } %>
 
-        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Schimba tema">
-          <span data-theme-toggle-icon>Dark</span>
-          <strong data-theme-toggle-label>Theme</strong>
-        </button>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Schimba tema" title="Schimba tema">
+        <span data-theme-toggle-icon aria-hidden="true">☾</span>
+      </button>
 
+      <% if (currentUser) { %>
         <div class="user-menu" data-user-menu>
           <button class="user-chip" type="button" data-user-menu-button aria-label="Utilizator logat" data-testid="user-menu-button">
             <span class="avatar"><%= (currentUser.name || currentUser.username || 'U').trim().charAt(0).toUpperCase() %></span>
@@ -75,8 +76,8 @@
             </form>
           </div>
         </div>
-      </div>
-    <% } %>
+      <% } %>
+    </div>
   </header>
 
   <main class="page-shell">

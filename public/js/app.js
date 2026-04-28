@@ -10,8 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       // Ignore storage errors in private browsing.
     }
-    if (themeToggleIcon) themeToggleIcon.textContent = nextTheme === 'dark' ? 'Light' : 'Dark';
-    if (themeToggleLabel) themeToggleLabel.textContent = nextTheme === 'dark' ? 'Mode' : 'Mode';
+    if (themeToggleIcon) themeToggleIcon.textContent = nextTheme === 'dark' ? '☀' : '☾';
+    if (themeToggle) {
+      const label = nextTheme === 'dark' ? 'Activeaza tema luminoasa' : 'Activeaza tema intunecata';
+      themeToggle.setAttribute('aria-label', label);
+      themeToggle.setAttribute('title', label);
+    }
+    if (themeToggleLabel) themeToggleLabel.textContent = '';
   };
 
   applyTheme(document.documentElement.getAttribute('data-theme') || 'light');

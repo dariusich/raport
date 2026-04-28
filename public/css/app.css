@@ -280,9 +280,12 @@ small, .muted { color: var(--muted); font-size: 13px; }
 .theme-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 6px 12px;
+  justify-content: center;
+  gap: 0;
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  padding: 0;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--card);
@@ -297,20 +300,22 @@ small, .muted { color: var(--muted); font-size: 13px; }
   box-shadow: var(--shadow-sm);
 }
 .theme-toggle span {
-  min-width: 38px;
-  padding: 5px 8px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  min-width: 0;
+  padding: 0;
   border-radius: 999px;
   background: var(--ruby-50);
   color: var(--ruby-700);
-  font-size: 11px;
+  font-size: 18px;
   font-weight: 900;
+  line-height: 1;
   text-align: center;
 }
 .theme-toggle strong {
-  color: var(--muted);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: .08em;
+  display: none;
 }
 
 /* User menu */
@@ -768,6 +773,51 @@ small, .muted { color: var(--muted); font-size: 13px; }
   border-radius: 999px;
   font-size: 13px;
   line-height: 1;
+}
+
+html[data-theme="dark"] .login-card {
+  background:
+    radial-gradient(420px 220px at 85% 0%, rgba(69, 191, 227, 0.10), transparent 72%),
+    linear-gradient(180deg, #1B2838, #121D2B);
+  border-color: rgba(130, 154, 184, 0.22);
+  color: #EEF4FB;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
+}
+html[data-theme="dark"] .login-card::before {
+  background: linear-gradient(90deg, #38BDF8, #2563EB, #2DD4BF);
+}
+html[data-theme="dark"] .login-card h1,
+html[data-theme="dark"] .login-card label,
+html[data-theme="dark"] .password-help-panel h2 {
+  color: #EEF4FB;
+}
+html[data-theme="dark"] .login-card .muted,
+html[data-theme="dark"] .login-secure-note,
+html[data-theme="dark"] .password-help-panel p {
+  color: #A9B8CA;
+}
+html[data-theme="dark"] .forgot-password-link,
+html[data-theme="dark"] .login-lock {
+  color: #6BD3F0;
+}
+html[data-theme="dark"] .forgot-password-link:hover {
+  color: #9DE8FB;
+}
+html[data-theme="dark"] .login-copyright {
+  border-top-color: rgba(107, 211, 240, 0.28);
+  color: #9FB0C4;
+}
+html[data-theme="dark"] .password-help-modal {
+  background: rgba(6, 10, 16, 0.68);
+}
+html[data-theme="dark"] .password-help-pill {
+  background: rgba(69, 191, 227, 0.12);
+  border-color: rgba(69, 191, 227, 0.26);
+  color: #9DE8FB;
+}
+html[data-theme="dark"] .whatsapp-reset-button {
+  background: linear-gradient(135deg, #38BDF8, #2563EB);
+  box-shadow: 0 18px 38px rgba(37, 99, 235, 0.28);
 }
 
 @media (max-width: 720px) {
@@ -1980,6 +2030,17 @@ html[data-theme="dark"] .app-header.topbar {
   background: rgba(14, 18, 25, 0.86);
 }
 
+html[data-theme="dark"] .theme-toggle {
+  background: #182536;
+  border-color: rgba(130, 154, 184, 0.24);
+  color: #DCE7F4;
+}
+
+html[data-theme="dark"] .theme-toggle span {
+  background: rgba(69, 191, 227, 0.12);
+  color: #9DE8FB;
+}
+
 html[data-theme="dark"] .dashboard-activity {
   background: linear-gradient(135deg, rgba(25, 35, 50, 0.98), rgba(16, 24, 35, 0.98));
   border-color: rgba(130, 154, 184, 0.18);
@@ -2247,15 +2308,16 @@ html[data-theme="dark"] .admin-seminar-detail-summary small {
   .topnav { flex: 1; overflow-x: auto; }
   .topnav a { padding: 8px 12px; font-size: 12.5px; }
   .theme-toggle {
-    padding: 5px 8px;
-    min-height: 34px;
-  }
-  .theme-toggle strong {
-    display: none;
+    width: 38px;
+    height: 38px;
+    min-height: 38px;
+    padding: 0;
   }
   .theme-toggle span {
-    min-width: 34px;
-    font-size: 10px;
+    width: 28px;
+    height: 28px;
+    min-width: 0;
+    font-size: 16px;
   }
   .user-chip { padding: 4px 10px 4px 4px; }
   .user-copy { display: none; }

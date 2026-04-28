@@ -1,37 +1,37 @@
 <%- include('partials/header') %>
 <section class="login-card" data-testid="login-card">
   <div>
-    <p class="eyebrow">platformă rapoarte</p>
+    <p class="eyebrow">platforma rapoarte</p>
     <h1>Bine ai revenit</h1>
-    <p class="muted">Platformă internă Reflexovital pentru gestionarea rapoartelor de curs și evidența trainerilor.</p>
+    <p class="muted">Platforma interna Reflexovital pentru gestionarea rapoartelor de curs si evidenta trainerilor.</p>
   </div>
   <form method="post" action="/login" class="stack" data-testid="login-form">
     <label>Utilizator
       <input name="username" autocomplete="username" required placeholder="ex: darius.folea" data-testid="login-username">
     </label>
-    <label>Parolă
-      <input name="password" type="password" autocomplete="current-password" required placeholder="••••••••" data-testid="login-password">
+    <label>Parola
+      <input name="password" type="password" autocomplete="current-password" required placeholder="********" data-testid="login-password">
     </label>
     <button class="forgot-password-link" type="button" id="forgotPasswordButton">Ai uitat parola?</button>
-    <button class="btn primary full" type="submit" data-testid="login-submit">Intră în cont</button>
+    <button class="btn primary full" type="submit" data-testid="login-submit">Intra in cont</button>
     <p class="login-secure-note" aria-label="Acces securizat">
       <span class="login-lock" aria-hidden="true"></span>
-      Acces securizat pentru administratori și traineri
+      Acces securizat pentru administratori si traineri
     </p>
   </form>
 </section>
 
-<p class="login-copyright">Copyright © 2026 Reflexovital. Toate drepturile rezervate.</p>
+<p class="login-copyright">Copyright &copy; 2026 Reflexovital. Toate drepturile rezervate.</p>
 
 <div class="password-help-modal" id="passwordHelpModal" aria-hidden="true">
   <section class="card password-help-panel" role="dialog" aria-modal="true" aria-labelledby="passwordHelpTitle">
-    <button class="modal-x" type="button" id="closePasswordHelp" aria-label="Închide">×</button>
-    <span class="password-help-pill">Resetare parolă</span>
+    <button class="modal-x" type="button" id="closePasswordHelp" aria-label="Inchide">x</button>
+    <span class="password-help-pill">Resetare parola</span>
     <h2 id="passwordHelpTitle">Ai uitat parola?</h2>
-    <p>Contactează-ne pentru resetarea parolei.</p>
+    <p>Contacteaza-ne pentru resetarea parolei.</p>
     <a class="whatsapp-reset-button" href="https://wa.me/40773846153?text=Bun%C4%83%2C%20am%20uitat%20parola%20pentru%20platforma%20rapoarte%20Reflexovital%20%C8%99i%20am%20nevoie%20de%20resetare." target="_blank" rel="noopener">
-      <span class="whatsapp-mark" aria-hidden="true">☎</span>
-      Contactează-ne pe WhatsApp
+      <span class="whatsapp-mark" aria-hidden="true">WA</span>
+      Contacteaza-ne pe WhatsApp
     </a>
   </section>
 </div>
