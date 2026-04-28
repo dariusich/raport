@@ -1810,9 +1810,18 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 }
 
 .admin-calendar-day span {
-  display: block;
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-bottom: 2px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.72);
+  box-shadow: inset 0 0 0 1px rgba(26,16,18,.07);
   font-family: var(--font-serif);
-  font-size: 18px;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
 }
 
 .admin-calendar-day strong {
@@ -1841,6 +1850,12 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   background: linear-gradient(135deg, #20B86B, #0E8F54);
   color: #fff;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.2);
+}
+
+.admin-calendar-day.has-seminar span {
+  background: rgba(255,255,255,.94);
+  color: #087243;
+  box-shadow: 0 6px 16px rgba(0,0,0,.10);
 }
 
 .admin-calendar-day.has-seminar i {
@@ -1961,6 +1976,49 @@ html[data-theme="dark"] .app-header.topbar {
   background: rgba(14, 18, 25, 0.86);
 }
 
+html[data-theme="dark"] .dashboard-activity {
+  background: linear-gradient(135deg, rgba(25, 35, 50, 0.98), rgba(16, 24, 35, 0.98));
+  border-color: rgba(130, 154, 184, 0.18);
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.28);
+}
+
+html[data-theme="dark"] .activity-intro h2,
+html[data-theme="dark"] .activity-item strong {
+  color: #EEF4FB;
+}
+
+html[data-theme="dark"] .activity-intro p:last-child,
+html[data-theme="dark"] .activity-item small {
+  color: #9FB0C4;
+}
+
+html[data-theme="dark"] .activity-icon,
+html[data-theme="dark"] .activity-avatar {
+  background: #263446;
+  color: #F36C86;
+  box-shadow: inset 0 0 0 1px rgba(243, 108, 134, 0.18);
+}
+
+html[data-theme="dark"] .activity-item {
+  color: #EEF4FB;
+  border-color: rgba(130, 154, 184, 0.16);
+}
+
+html[data-theme="dark"] .activity-link.btn.ghost {
+  background: #182334;
+  border-color: rgba(130, 154, 184, 0.26);
+  color: #DCE7F4;
+}
+
+html[data-theme="dark"] .hero-stats > div {
+  background: linear-gradient(180deg, #263446, #1B2635);
+  border-color: rgba(130, 154, 184, 0.18);
+}
+
+html[data-theme="dark"] .hero-stats strong {
+  color: #F36C86;
+}
+
 html[data-theme="dark"] .card,
 html[data-theme="dark"] .luxe-card,
 html[data-theme="dark"] .admin-report-detail-card,
@@ -1975,6 +2033,31 @@ html[data-theme="dark"] .accounting-card {
   background: linear-gradient(180deg, rgba(32, 43, 57, 0.96), rgba(24, 32, 43, 0.96));
   border-color: var(--line);
   box-shadow: var(--shadow-sm);
+}
+
+html[data-theme="dark"] .admin-home-card {
+  background:
+    radial-gradient(260px 180px at 66% 34%, rgba(67, 132, 196, 0.12), transparent 72%),
+    linear-gradient(180deg, #1E2A39, #162130);
+  border-color: rgba(130, 154, 184, 0.18);
+}
+
+html[data-theme="dark"] .admin-home-card:hover {
+  background:
+    radial-gradient(260px 180px at 66% 34%, rgba(67, 132, 196, 0.18), transparent 72%),
+    linear-gradient(180deg, #243346, #182536);
+  border-color: rgba(99, 165, 230, 0.34);
+}
+
+html[data-theme="dark"] .admin-home-icon {
+  background: linear-gradient(135deg, #26364B, #1A2535);
+  border-color: rgba(99, 165, 230, 0.20);
+  color: #6AB6FF;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+html[data-theme="dark"] .admin-home-arrow {
+  color: #5D95C8;
 }
 
 html[data-theme="dark"] .series-detail-banner,
@@ -2024,6 +2107,17 @@ html[data-theme="dark"] .admin-calendar-tabs button.active {
 html[data-theme="dark"] .admin-calendar-day.has-seminar {
   background: linear-gradient(135deg, #1FB66C, #0D8050);
   color: #fff;
+}
+
+html[data-theme="dark"] .admin-calendar-day span {
+  background: rgba(28, 40, 55, 0.96);
+  color: #EAF2FA;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+html[data-theme="dark"] .admin-calendar-day.has-seminar span {
+  background: #EAF2FA;
+  color: #0A6B45;
 }
 
 html[data-theme="dark"] .admin-calendar-day.selected {

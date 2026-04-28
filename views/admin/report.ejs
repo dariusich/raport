@@ -14,7 +14,7 @@
     const start = target.startDate ? new Date(target.startDate).toLocaleDateString('ro-RO') : '';
     const end = target.endDate ? new Date(target.endDate).toLocaleDateString('ro-RO') : '';
     const period = start && end ? `${start} - ${end}` : start || end;
-    return `${target.title}${period ? ' Â· ' + period : ''} Â· ${target.trainer?.name || 'Trainer'} Â· ${target.location || 'Fara filiala'}`;
+    return target.title + (period ? ' - ' + period : '') + ' - ' + (target.trainer?.name || 'Trainer') + ' - ' + (target.location || 'Fara filiala');
   };
   const activityPreview = (text) => {
     const words = String(text || '').trim().split(/\s+/).filter(Boolean);
@@ -48,7 +48,7 @@
 %>
 
 <section class="admin-report-detail-card" data-admin-report-detail>
-  <a class="back-link" href="/admin#rapoarte-generate">â† Inapoi la cursuri</a>
+  <a class="back-link" href="/admin#rapoarte-generate">Inapoi la cursuri</a>
 
   <div class="section-title">
     <span class="pill">Seminarii</span>
@@ -56,11 +56,11 @@
   </div>
 
   <div class="series-detail-banner">
-    <span class="series-detail-icon" aria-hidden="true">â—</span>
+    <span class="series-detail-icon" aria-hidden="true">R</span>
     <div>
       <h1><%= report.title %></h1>
       <% if (periodLabel) { %><strong><%= periodLabel %></strong><% } %>
-      <p><%= report.location || 'Fara filiala' %> Â· Trainer: <%= report.trainer?.name || 'Trainer sters' %></p>
+      <p><%= report.location || 'Fara filiala' %> - Trainer: <%= report.trainer?.name || 'Trainer sters' %></p>
     </div>
     <span class="seminar-count-pill"><%= stats.total %> <%= stats.total === 1 ? 'seminar' : 'seminarii' %></span>
   </div>
@@ -96,7 +96,7 @@
         <div class="admin-calendar-months">
           <% monthGroups.forEach((month, monthIndex) => { %>
             <div class="admin-calendar-month <%= monthIndex === 0 ? 'active' : '' %>" data-admin-calendar-month="<%= monthIndex %>">
-              <h3>â–¦ <%= month.name %> <%= month.year %></h3>
+              <h3><%= month.name %> <%= month.year %></h3>
               <div class="admin-calendar-weekdays"><span>Lun</span><span>Mar</span><span>Mie</span><span>Joi</span><span>Vin</span><span>Sam</span><span>Dum</span></div>
               <div class="admin-calendar-grid">
                 <% month.cells.forEach((cell) => { %>
@@ -125,8 +125,8 @@
         <% sortedSeminars.forEach((s) => { %>
           <article class="admin-seminar-detail <%= String(s._id) === String(firstSeminarId) ? 'active' : '' %>" data-admin-seminar-detail="<%= s._id %>">
             <div class="admin-seminar-detail-head">
-              <span>â–¦ <%= new Date(s.date).toLocaleDateString('ro-RO', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }) %></span>
-              <button class="detail-collapse" type="button" data-admin-detail-collapse>âŚ</button>
+              <span><%= new Date(s.date).toLocaleDateString('ro-RO', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }) %></span>
+              <button class="detail-collapse" type="button" data-admin-detail-collapse>⌃</button>
             </div>
             <div class="admin-seminar-detail-summary">
               <strong><%= s.startTime || '-' %><%= s.endTime ? ' - ' + s.endTime : '' %></strong>
@@ -135,7 +135,7 @@
             </div>
             <div class="admin-seminar-detail-body">
               <div><b>Absenti</b><span><%= s.absents.join(', ') || '-' %></span></div>
-              <div><b>Probleme</b><span><%= s.issues.join(', ') || '-' %><%= s.issuesDetails ? ' Â· ' + s.issuesDetails : '' %></span></div>
+              <div><b>Probleme</b><span><%= s.issues.join(', ') || '-' %><%= s.issuesDetails ? ' - ' + s.issuesDetails : '' %></span></div>
               <div><b>Talentati</b><span><%= s.talents.join(', ') || '-' %></span></div>
               <div><b>Produse</b><span><%= s.productsQuantity || '-' %></span></div>
               <div><b>Media</b><span><%= s.mediaSent || '-' %></span></div>
