@@ -172,13 +172,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const monthPanels = Array.from(reportDetail.querySelectorAll('[data-admin-calendar-month]'));
+    const monthTabs = Array.from(reportDetail.querySelectorAll('[data-admin-calendar-tab]'));
     let currentMonth = monthPanels.findIndex((panel) => panel.classList.contains('active'));
     if (currentMonth < 0) currentMonth = 0;
     const showMonth = (index) => {
       if (!monthPanels.length) return;
       currentMonth = Math.max(0, Math.min(index, monthPanels.length - 1));
       monthPanels.forEach((panel, idx) => panel.classList.toggle('active', idx === currentMonth));
+      monthTabs.forEach((tab, idx) => tab.classList.toggle('active', idx === currentMonth));
     };
+    monthTabs.forEach((tab) => {
+      tab.addEventListener('click', () => showMonth(Number(tab.dataset.adminCalendarTab || 0)));
+    });
     reportDetail.querySelector('[data-admin-calendar-prev]')?.addEventListener('click', () => showMonth(currentMonth - 1));
     reportDetail.querySelector('[data-admin-calendar-next]')?.addEventListener('click', () => showMonth(currentMonth + 1));
 

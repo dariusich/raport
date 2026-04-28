@@ -1606,7 +1606,7 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .report-calendar-shell {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   align-items: stretch;
   padding: 16px;
@@ -1614,6 +1614,54 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   border-radius: 18px;
   background: rgba(255,255,255,.82);
   box-shadow: var(--shadow-xs);
+}
+
+.admin-calendar-tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+}
+
+.admin-calendar-tabs button {
+  min-width: 138px;
+  padding: 13px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink-2);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.admin-calendar-tabs button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(47, 125, 92, .25);
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-calendar-tabs button.active {
+  border-color: transparent;
+  background: linear-gradient(135deg, #20B86B, #0E8F54);
+  color: #fff;
+  box-shadow: 0 14px 30px rgba(14, 143, 84, .18);
+}
+
+.admin-calendar-tabs span,
+.admin-calendar-tabs small {
+  display: block;
+}
+
+.admin-calendar-tabs span {
+  font-weight: 900;
+}
+
+.admin-calendar-tabs small {
+  margin-top: 2px;
+  color: inherit;
+  opacity: .78;
 }
 
 .calendar-nav {
@@ -1688,6 +1736,9 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .admin-calendar-day.has-seminar {
   cursor: pointer;
+  background: linear-gradient(135deg, #20B86B, #0E8F54);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.2);
 }
 
 .admin-calendar-day.has-seminar i {
@@ -1696,13 +1747,13 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   height: 8px;
   margin: 6px auto 0;
   border-radius: 999px;
-  background: var(--ruby-600);
+  background: rgba(255,255,255,.92);
 }
 
 .admin-calendar-day.selected {
-  background: linear-gradient(135deg, var(--ruby-500), var(--ruby-700));
+  background: linear-gradient(135deg, #139B5D, #087243);
   color: #fff;
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,.35);
+  box-shadow: inset 0 0 0 3px rgba(255,255,255,.5), 0 0 0 4px rgba(47, 125, 92, .16);
 }
 
 .admin-calendar-day.selected i {
@@ -2014,6 +2065,9 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   }
   .report-calendar-shell {
     grid-template-columns: 1fr;
+  }
+  .admin-calendar-tabs button {
+    min-width: 118px;
   }
   .calendar-nav {
     display: none;
