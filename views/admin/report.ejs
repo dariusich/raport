@@ -16,6 +16,11 @@
     const period = start && end ? `${start} - ${end}` : start || end;
     return `${target.title}${period ? ' Â· ' + period : ''} Â· ${target.trainer?.name || 'Trainer'} Â· ${target.location || 'Fara filiala'}`;
   };
+  const activityPreview = (text) => {
+    const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return 'Seminar completat';
+    return `${words.slice(0, 5).join(' ')}${words.length > 5 ? '...' : ''}`;
+  };
   const sortedSeminars = [...(report.seminars || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
   const seminarKey = (seminar) => formatDateInput(seminar.date);
   const seminarByKey = new Map(sortedSeminars.map((seminar) => [seminarKey(seminar), seminar]));
@@ -39,7 +44,7 @@
     }
     monthGroups.push({ name: roMonthNames[d.getMonth()], year: d.getFullYear(), cells });
   });
-  const firstSeminarId = sortedSeminars[0]?._id;
+  const firstSeminarId = '';
 %>
 
 <section class="admin-report-detail-card" data-admin-report-detail>
@@ -103,7 +108,10 @@
                       class="admin-calendar-day <%= cell.seminar ? 'has-seminar' : '' %> <%= String(cell.seminar?._id || '') === String(firstSeminarId || '') ? 'selected' : '' %>"
                       <% if (cell.seminar) { %>data-admin-seminar-select="<%= cell.seminar._id %>"<% } %>>
                       <span><%= cell.day %></span>
-                      <% if (cell.seminar) { %><i></i><% } %>
+                      <% if (cell.seminar) { %>
+                        <strong><%= cell.seminar.startTime || '--:--' %><%= cell.seminar.endTime ? ' - ' + cell.seminar.endTime : '' %></strong>
+                        <small><%= activityPreview(cell.seminar.activity) %></small>
+                      <% } %>
                     </button>
                   <% } %>
                 <% }) %>

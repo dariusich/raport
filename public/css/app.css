@@ -55,6 +55,40 @@
   --font-sans:  'Outfit', 'Manrope', system-ui, -apple-system, sans-serif;
 }
 
+html[data-theme="dark"] {
+  --ruby-50:   #2A1720;
+  --ruby-100:  #3A1B27;
+  --ruby-200:  #5D2737;
+  --ruby-300:  #A34258;
+  --ruby-400:  #D95E7A;
+  --ruby-500:  #E64A68;
+  --ruby-600:  #F0728A;
+  --ruby-700:  #FF9AAF;
+  --ruby-800:  #FFC5D0;
+  --ruby-900:  #FFE7EC;
+
+  --primary:       var(--ruby-500);
+  --primary-dark:  #B62A45;
+  --primary-soft:  rgba(230, 74, 104, 0.18);
+
+  --gold:        #E3BD72;
+  --gold-soft:   rgba(227, 189, 114, 0.18);
+
+  --bg:          #0E1219;
+  --bg-deep:     #17202C;
+  --card:        #202B39;
+  --ink:         #F7FAFC;
+  --ink-2:       #D9E1EA;
+  --muted:       #9EADBD;
+  --line:        rgba(255, 255, 255, 0.10);
+  --line-strong: rgba(255, 255, 255, 0.18);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.22);
+  --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 18px 42px rgba(0, 0, 0, 0.26);
+  --shadow-lg: 0 26px 70px rgba(0, 0, 0, 0.36);
+}
+
 /* =================== RESET =================== */
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; width: 100%; max-width: 100%; overflow-x: hidden; }
@@ -70,6 +104,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+}
+
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(900px 520px at 8% 96%, rgba(20, 116, 184, 0.28), transparent 68%),
+    radial-gradient(900px 520px at 88% 4%, rgba(230, 74, 104, 0.10), transparent 72%),
+    linear-gradient(135deg, #090C12 0%, #111B28 48%, #172636 100%);
 }
 a { text-decoration: none; color: inherit; }
 img { max-width: 100%; display: block; }
@@ -230,6 +271,42 @@ small, .muted { color: var(--muted); font-size: 13px; }
   background: linear-gradient(135deg, var(--ruby-500), var(--ruby-700));
   color: #fff;
   box-shadow: 0 10px 22px rgba(164, 22, 48, 0.3), inset 0 1px 0 rgba(255,255,255,0.24);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink-2);
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
+}
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  border-color: var(--ruby-300);
+  box-shadow: var(--shadow-sm);
+}
+.theme-toggle span {
+  min-width: 38px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: var(--ruby-50);
+  color: var(--ruby-700);
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+}
+.theme-toggle strong {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
 }
 
 /* User menu */
@@ -1715,7 +1792,11 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 }
 
 .admin-calendar-day {
-  min-height: 58px;
+  min-height: 92px;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 10px;
   border: 0;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
@@ -1734,6 +1815,27 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   font-size: 18px;
 }
 
+.admin-calendar-day strong {
+  display: block;
+  margin-top: 3px;
+  color: inherit;
+  font-size: 11.5px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.admin-calendar-day small {
+  display: -webkit-box;
+  overflow: hidden;
+  color: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+  opacity: .9;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
 .admin-calendar-day.has-seminar {
   cursor: pointer;
   background: linear-gradient(135deg, #20B86B, #0E8F54);
@@ -1742,7 +1844,7 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 }
 
 .admin-calendar-day.has-seminar i {
-  display: block;
+  display: none;
   width: 8px;
   height: 8px;
   margin: 6px auto 0;
@@ -1855,6 +1957,94 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   display: none;
 }
 
+html[data-theme="dark"] .app-header.topbar {
+  background: rgba(14, 18, 25, 0.86);
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .luxe-card,
+html[data-theme="dark"] .admin-report-detail-card,
+html[data-theme="dark"] .report-calendar-shell,
+html[data-theme="dark"] .admin-seminar-detail,
+html[data-theme="dark"] .table-wrap,
+html[data-theme="dark"] .user-dropdown,
+html[data-theme="dark"] .admin-home,
+html[data-theme="dark"] .admin-home-card,
+html[data-theme="dark"] .trainer-course-card,
+html[data-theme="dark"] .accounting-card {
+  background: linear-gradient(180deg, rgba(32, 43, 57, 0.96), rgba(24, 32, 43, 0.96));
+  border-color: var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+html[data-theme="dark"] .series-detail-banner,
+html[data-theme="dark"] .report-hero,
+html[data-theme="dark"] .hero {
+  background:
+    radial-gradient(520px 240px at 88% 10%, rgba(230, 74, 104, 0.12), transparent 70%),
+    linear-gradient(180deg, rgba(32, 43, 57, 0.98), rgba(22, 30, 41, 0.98));
+}
+
+html[data-theme="dark"] .topnav,
+html[data-theme="dark"] .report-view-tabs,
+html[data-theme="dark"] .accounting-filters,
+html[data-theme="dark"] .user-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--line);
+}
+
+html[data-theme="dark"] .topnav a:hover,
+html[data-theme="dark"] .report-view-tabs button.active {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: rgba(247, 250, 252, 0.46);
+}
+
+html[data-theme="dark"] .admin-calendar-tabs button,
+html[data-theme="dark"] .admin-calendar-day {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="dark"] .admin-calendar-tabs button.active {
+  background: linear-gradient(135deg, #20B86B, #0E8F54);
+  color: #fff;
+}
+
+html[data-theme="dark"] .admin-calendar-day.has-seminar {
+  background: linear-gradient(135deg, #1FB66C, #0D8050);
+  color: #fff;
+}
+
+html[data-theme="dark"] .admin-calendar-day.selected {
+  background: linear-gradient(135deg, #15955C, #086943);
+  color: #fff;
+}
+
+html[data-theme="dark"] .admin-calendar-day.empty {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+html[data-theme="dark"] .admin-seminar-detail-summary {
+  background: linear-gradient(90deg, rgba(230, 74, 104, 0.14), rgba(255, 255, 255, 0.04));
+}
+
+html[data-theme="dark"] .admin-seminar-detail-body span,
+html[data-theme="dark"] .admin-seminar-detail-summary p,
+html[data-theme="dark"] .admin-seminar-detail-summary small {
+  color: var(--ink-2);
+}
+
 .year-strip { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .year-strip span {
   font-size: 12px;
@@ -1958,6 +2148,17 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   .header-actions { width: 100%; justify-content: space-between; }
   .topnav { flex: 1; overflow-x: auto; }
   .topnav a { padding: 8px 12px; font-size: 12.5px; }
+  .theme-toggle {
+    padding: 5px 8px;
+    min-height: 34px;
+  }
+  .theme-toggle strong {
+    display: none;
+  }
+  .theme-toggle span {
+    min-width: 34px;
+    font-size: 10px;
+  }
   .user-chip { padding: 4px 10px 4px 4px; }
   .user-copy { display: none; }
   .chevron { display: none; }
@@ -2079,7 +2280,12 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   .admin-calendar-day {
-    min-height: 64px;
+    min-height: 76px;
+    padding: 8px;
+  }
+  .admin-calendar-day strong,
+  .admin-calendar-day small {
+    font-size: 10px;
   }
   .admin-seminar-detail-summary,
   .admin-seminar-detail-body {

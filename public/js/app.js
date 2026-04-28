@@ -1,4 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const themeToggle = document.querySelector('[data-theme-toggle]');
+  const themeToggleIcon = document.querySelector('[data-theme-toggle-icon]');
+  const themeToggleLabel = document.querySelector('[data-theme-toggle-label]');
+  const applyTheme = (theme) => {
+    const nextTheme = theme === 'dark' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    try {
+      localStorage.setItem('rv-theme', nextTheme);
+    } catch (error) {
+      // Ignore storage errors in private browsing.
+    }
+    if (themeToggleIcon) themeToggleIcon.textContent = nextTheme === 'dark' ? 'Light' : 'Dark';
+    if (themeToggleLabel) themeToggleLabel.textContent = nextTheme === 'dark' ? 'Mode' : 'Mode';
+  };
+
+  applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
+  themeToggle?.addEventListener('click', () => {
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+
   const accountingFilters = {
     trainer: document.querySelector('#accountingTrainerFilter') || document.querySelector('#accountingFilter'),
     location: document.querySelector('#accountingLocationFilter'),
