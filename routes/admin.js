@@ -903,7 +903,10 @@ router.post('/reports/:id/commission', async (req, res) => {
   const report = await Report.findById(req.params.id).populate('trainer');
   if (!report) return res.redirect('/admin');
   const stats = reportStats(report, req.body.commission);
-  res.render('admin/report', { title: report.title, report, stats, customCommission: Number(req.body.commission || 0) });
+  const transferTargets = await Report.find({ _id: { $ne: report._id } })
+    .populate('trainer')
+    .sort({ status: 1, startDate: 1, title: 1 });
+  res.render('admin/report', { title: report.title, report, stats, customCommission: Number(req.body.commission || 0), transferTargets });
 });
 
 router.post('/reports/:id/status', async (req, res) => {

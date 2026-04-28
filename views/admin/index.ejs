@@ -533,7 +533,7 @@
           <div class="course-breakdown">
             <% if (item.courses.length) { %>
               <% item.courses.forEach(course => { %>
-                <div class="course-line" data-course-key="<%= course.key %>" data-course-name="<%= course.name %>" data-course-points="<%= course.points.join('|') %>" data-course-total="<%= course.total %>">
+                <div class="course-line" data-course-key="<%= course.key %>" data-course-name="<%= course.name %>" data-course-location="<%= course.report.location || '' %>" data-course-points="<%= course.points.join('|') %>" data-course-total="<%= course.total %>">
                   <div class="course-line-main">
                     <span><%= course.baseName %><% if (course.period) { %> <em><%= course.period %></em><% } %></span>
                     <small><%= course.report.location || 'Fără filială' %> · <%= course.report.status === 'finalized' ? 'finalizat' : 'activ' %></small>

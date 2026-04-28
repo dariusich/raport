@@ -7,183 +7,279 @@
     if (Number.isNaN(d.getTime())) return '';
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
+  const formatDateRo = (date) => date ? new Date(date).toLocaleDateString('ro-RO') : '';
+  const periodLabel = [formatDateRo(report.startDate), formatDateRo(report.endDate)].filter(Boolean).join(' - ');
   const traineeNames = (report.trainees || []).map(t => t.name).filter(Boolean);
   const transferLabel = (target) => {
     const start = target.startDate ? new Date(target.startDate).toLocaleDateString('ro-RO') : '';
     const end = target.endDate ? new Date(target.endDate).toLocaleDateString('ro-RO') : '';
     const period = start && end ? `${start} - ${end}` : start || end;
-    return `${target.title}${period ? ' · ' + period : ''} · ${target.trainer?.name || 'Trainer'} · ${target.location || 'Fără filială'}`;
+    return `${target.title}${period ? ' · ' + period : ''} · ${target.trainer?.name || 'Trainer'} · ${target.location || 'Fara filiala'}`;
   };
+  const sortedSeminars = [...(report.seminars || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const seminarKey = (seminar) => formatDateInput(seminar.date);
+  const seminarByKey = new Map(sortedSeminars.map((seminar) => [seminarKey(seminar), seminar]));
+  const roMonthNames = ['Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'];
+  const monthGroups = [];
+  const monthKeys = new Set();
+  sortedSeminars.forEach((seminar) => {
+    const d = new Date(seminar.date);
+    if (Number.isNaN(d.getTime())) return;
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    if (monthKeys.has(key)) return;
+    monthKeys.add(key);
+    const first = new Date(d.getFullYear(), d.getMonth(), 1);
+    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    const leading = (first.getDay() + 6) % 7;
+    const cells = [];
+    for (let i = 0; i < leading; i += 1) cells.push(null);
+    for (let day = 1; day <= last.getDate(); day += 1) {
+      const keyDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      cells.push({ day, key: keyDate, seminar: seminarByKey.get(keyDate) });
+    }
+    monthGroups.push({ name: roMonthNames[d.getMonth()], year: d.getFullYear(), cells });
+  });
+  const firstSeminarId = sortedSeminars[0]?._id;
 %>
 
-<section class="report-hero">
-  <div>
-    <p class="eyebrow">Raport trainer</p>
-    <h1><%= report.title %></h1>
-    <p><%= report.trainer?.name || 'Trainer șters' %> · <%= report.location || 'Fără filială' %></p>
-    <div class="report-hero-actions">
-      <a class="btn small ghost" href="/admin/reports/<%= report._id %>/export.xlsx">Export Excel</a>
-      <form action="/admin/reports/<%= report._id %>/status" method="post">
-        <input type="hidden" name="status" value="<%= report.status === 'active' ? 'finalized' : 'active' %>">
-        <button class="btn small success" type="submit"><%= report.status === 'active' ? 'Marchează finalizat' : 'Redeschide raport' %></button>
-      </form>
-      <form action="/admin/reports/<%= report._id %>/delete" method="post" onsubmit="return confirm('Sigur vrei să ștergi seria «<%= String(report.title || '').replace(/'/g, '&#39;') %>»? Se vor șterge și seminariile completate.');">
-        <input type="hidden" name="returnTo" value="/admin#rapoarte-generate">
-        <button class="btn small danger" type="submit">Șterge serie</button>
-      </form>
-    </div>
-  </div>
-  <div class="hero-stats compact">
-    <div><strong><%= stats.total %></strong><span>seminarii</span></div>
-    <div><strong><%= report.trainees.length %></strong><span>cursanți</span></div>
-    <div><strong><%= report.status === 'finalized' ? 'Da' : 'Nu' %></strong><span>finalizat</span></div>
-  </div>
-</section>
+<section class="admin-report-detail-card" data-admin-report-detail>
+  <a class="back-link" href="/admin#rapoarte-generate">← Inapoi la cursuri</a>
 
-<section class="report-overview">
-  <div class="report-side-stack">
-    <div class="card">
-      <div class="section-title"><span class="pill green">Lunar</span><h2>Seminarii pe luni</h2></div>
-      <div class="months-grid big">
-        <% stats.monthly.forEach(m => { %>
-          <span class="month-chip <%= m.count ? 'has-count' : '' %>"><%= m.name %>: <b><%= m.count %></b></span>
+  <div class="section-title">
+    <span class="pill">Seminarii</span>
+    <h2>Detalii serie seminarii</h2>
+  </div>
+
+  <div class="series-detail-banner">
+    <span class="series-detail-icon" aria-hidden="true">◈</span>
+    <div>
+      <h1><%= report.title %></h1>
+      <% if (periodLabel) { %><strong><%= periodLabel %></strong><% } %>
+      <p><%= report.location || 'Fara filiala' %> · Trainer: <%= report.trainer?.name || 'Trainer sters' %></p>
+    </div>
+    <span class="seminar-count-pill"><%= stats.total %> <%= stats.total === 1 ? 'seminar' : 'seminarii' %></span>
+  </div>
+
+  <div class="report-hero-actions compact-actions">
+    <a class="btn small ghost" href="/admin/reports/<%= report._id %>/export.xlsx">Export Excel</a>
+    <form action="/admin/reports/<%= report._id %>/status" method="post">
+      <input type="hidden" name="status" value="<%= report.status === 'active' ? 'finalized' : 'active' %>">
+      <button class="btn small success" type="submit"><%= report.status === 'active' ? 'Marcheaza finalizat' : 'Redeschide raport' %></button>
+    </form>
+    <form action="/admin/reports/<%= report._id %>/delete" method="post" onsubmit="return confirm('Sigur vrei sa stergi seria? Se vor sterge si seminariile completate.');">
+      <input type="hidden" name="returnTo" value="/admin#rapoarte-generate">
+      <button class="btn small danger" type="submit">Sterge serie</button>
+    </form>
+  </div>
+
+  <div class="report-view-tabs">
+    <button class="active" type="button" data-admin-report-view="calendar">Calendar</button>
+    <button type="button" data-admin-report-view="list">Lista</button>
+  </div>
+
+  <div class="admin-report-view active" data-admin-report-panel="calendar">
+    <% if (monthGroups.length) { %>
+      <div class="report-calendar-shell">
+        <button class="calendar-nav" type="button" data-admin-calendar-prev aria-label="Luna anterioara">‹</button>
+        <div class="admin-calendar-months">
+          <% monthGroups.forEach((month, monthIndex) => { %>
+            <div class="admin-calendar-month <%= monthIndex === 0 ? 'active' : '' %>" data-admin-calendar-month="<%= monthIndex %>">
+              <h3>▦ <%= month.name %> <%= month.year %></h3>
+              <div class="admin-calendar-weekdays"><span>Lun</span><span>Mar</span><span>Mie</span><span>Joi</span><span>Vin</span><span>Sam</span><span>Dum</span></div>
+              <div class="admin-calendar-grid">
+                <% month.cells.forEach((cell) => { %>
+                  <% if (!cell) { %>
+                    <span class="admin-calendar-day empty"></span>
+                  <% } else { %>
+                    <button
+                      type="button"
+                      class="admin-calendar-day <%= cell.seminar ? 'has-seminar' : '' %> <%= String(cell.seminar?._id || '') === String(firstSeminarId || '') ? 'selected' : '' %>"
+                      <% if (cell.seminar) { %>data-admin-seminar-select="<%= cell.seminar._id %>"<% } %>>
+                      <span><%= cell.day %></span>
+                      <% if (cell.seminar) { %><i></i><% } %>
+                    </button>
+                  <% } %>
+                <% }) %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+        <button class="calendar-nav" type="button" data-admin-calendar-next aria-label="Luna urmatoare">›</button>
+      </div>
+
+      <div class="admin-seminar-details-list">
+        <% sortedSeminars.forEach((s) => { %>
+          <article class="admin-seminar-detail <%= String(s._id) === String(firstSeminarId) ? 'active' : '' %>" data-admin-seminar-detail="<%= s._id %>">
+            <div class="admin-seminar-detail-head">
+              <span>▦ <%= new Date(s.date).toLocaleDateString('ro-RO', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }) %></span>
+              <button class="detail-collapse" type="button" data-admin-detail-collapse>⌃</button>
+            </div>
+            <div class="admin-seminar-detail-summary">
+              <strong><%= s.startTime || '-' %><%= s.endTime ? ' - ' + s.endTime : '' %></strong>
+              <p><%= s.activity || '-' %></p>
+              <small>Trainer: <%= report.trainer?.name || '-' %></small>
+            </div>
+            <div class="admin-seminar-detail-body">
+              <div><b>Absenti</b><span><%= s.absents.join(', ') || '-' %></span></div>
+              <div><b>Probleme</b><span><%= s.issues.join(', ') || '-' %><%= s.issuesDetails ? ' · ' + s.issuesDetails : '' %></span></div>
+              <div><b>Talentati</b><span><%= s.talents.join(', ') || '-' %></span></div>
+              <div><b>Produse</b><span><%= s.productsQuantity || '-' %></span></div>
+              <div><b>Media</b><span><%= s.mediaSent || '-' %></span></div>
+              <div><b>Alte observatii</b><span><%= s.notes || '-' %></span></div>
+            </div>
+          </article>
         <% }) %>
       </div>
-    </div>
+    <% } else { %>
+      <div class="history-empty"><strong>Nu exista seminarii completate.</strong><small>Primele zile salvate vor aparea aici.</small></div>
+    <% } %>
+  </div>
 
-    <div class="card">
-      <div class="section-title"><span class="pill">Cursanți</span><h2>Lista cursanți</h2></div>
-      <div class="trainee-list horizontal">
-        <% report.trainees.forEach(t => { %><span><%= t.name %></span><% }) %>
+  <div class="admin-report-view" data-admin-report-panel="list">
+    <div class="report-side-stack">
+      <div class="card">
+        <div class="section-title"><span class="pill green">Lunar</span><h2>Seminarii pe luni</h2></div>
+        <div class="months-grid big">
+          <% stats.monthly.forEach(m => { %>
+            <span class="month-chip <%= m.count ? 'has-count' : '' %>"><%= m.name %>: <b><%= m.count %></b></span>
+          <% }) %>
+        </div>
       </div>
-      <% if (report.trainees.length && transferTargets.length) { %>
-        <details class="transfer-box">
-          <summary>Transferă cursant</summary>
-          <form action="/admin/reports/<%= report._id %>/trainees/transfer" method="post" class="compact-form">
-            <label>Cursant
-              <select name="traineeName" required>
-                <% report.trainees.forEach(t => { %>
-                  <option value="<%= t.name %>"><%= t.name %></option>
-                <% }) %>
-              </select>
-            </label>
-            <label>Seria destinație
-              <select name="targetReportId" required>
-                <% transferTargets.forEach(target => { %>
-                  <option value="<%= target._id %>"><%= transferLabel(target) %></option>
-                <% }) %>
-              </select>
-            </label>
-            <div class="inline-2">
-              <label>Acțiune
-                <select name="mode">
-                  <option value="move">Transfer complet</option>
-                  <option value="copy">Copiază în altă serie</option>
+
+      <div class="card">
+        <div class="section-title"><span class="pill">Cursanti</span><h2>Lista cursanti</h2></div>
+        <div class="trainee-list horizontal">
+          <% report.trainees.forEach(t => { %><span><%= t.name %></span><% }) %>
+        </div>
+        <% if (report.trainees.length && (transferTargets || []).length) { %>
+          <details class="transfer-box">
+            <summary>Transfera cursant</summary>
+            <form action="/admin/reports/<%= report._id %>/trainees/transfer" method="post" class="compact-form">
+              <label>Cursant
+                <select name="traineeName" required>
+                  <% report.trainees.forEach(t => { %>
+                    <option value="<%= t.name %>"><%= t.name %></option>
+                  <% }) %>
                 </select>
               </label>
-              <label>Notă
-                <input name="note" placeholder="Opțional">
+              <label>Seria destinatie
+                <select name="targetReportId" required>
+                  <% (transferTargets || []).forEach(target => { %>
+                    <option value="<%= target._id %>"><%= transferLabel(target) %></option>
+                  <% }) %>
+                </select>
               </label>
-            </div>
-            <button class="btn small primary" type="submit">Aplică transfer</button>
-          </form>
-        </details>
-      <% } %>
-    </div>
-  </div>
-</section>
-
-<section class="card">
-  <div class="section-title"><span class="pill">Seminarii</span><h2>Seminarii completate</h2></div>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Data</th><th>Ore</th><th>Activitate</th><th>Absenți</th><th>Probleme</th><th>Talentați</th><th>Produse</th><th>Media</th><th>Acțiuni</th></tr></thead>
-      <tbody>
-        <% report.seminars.forEach((s, idx) => { %>
-          <tr>
-            <td><%= new Date(s.date).toLocaleDateString('ro-RO') %></td>
-            <td><%= s.startTime || '' %><%= s.endTime ? ' - ' + s.endTime : '' %></td>
-            <td><%= s.activity || '-' %></td>
-            <td><%= s.absents.join(', ') || '-' %></td>
-            <td><%= s.issues.join(', ') || '-' %><br><small><%= s.issuesDetails || '' %></small></td>
-            <td><%= s.talents.join(', ') || '-' %></td>
-            <td><%= s.productsQuantity || '-' %></td>
-            <td><%= s.mediaSent || '-' %></td>
-            <td>
-              <div class="table-actions">
-                <button class="btn small ghost js-toggle-admin-seminar" type="button" data-target="admin-seminar-<%= s._id %>">Modifică</button>
-                <form action="/admin/reports/<%= report._id %>/seminars/<%= s._id %>/delete" method="post" onsubmit="return confirm('Sigur vrei să ștergi seminarul din <%= new Date(s.date).toLocaleDateString('ro-RO') %>?');">
-                  <button class="btn small danger" type="submit">Șterge</button>
-                </form>
-              </div>
-            </td>
-          </tr>
-          <tr class="admin-seminar-edit-row" id="admin-seminar-<%= s._id %>">
-            <td colspan="9">
-              <form action="/admin/reports/<%= report._id %>/seminars/<%= s._id %>/update" method="post" class="admin-seminar-edit form-grid">
-                <div class="inline-3">
-                  <label>Data <input name="date" type="date" required value="<%= formatDateInput(s.date) %>"></label>
-                  <label>Ora început <input name="startTime" type="time" required value="<%= s.startTime || '' %>"></label>
-                  <label>Ora final <input name="endTime" type="time" required value="<%= s.endTime || '' %>"></label>
-                </div>
-                <label>Activitate desfășurată
-                  <textarea name="activity" rows="3" placeholder="Opțional"><%= s.activity || '' %></textarea>
+              <div class="inline-2">
+                <label>Actiune
+                  <select name="mode">
+                    <option value="move">Transfer complet</option>
+                    <option value="copy">Copiaza in alta serie</option>
+                  </select>
                 </label>
-                <div class="inline-2">
-                  <label>Absenți
-                    <select name="absents" multiple size="5">
-                      <% traineeNames.forEach(name => { %>
-                        <option value="<%= name %>" <%= s.absents.includes(name) ? 'selected' : '' %>><%= name %></option>
-                      <% }) %>
-                    </select>
-                  </label>
-                  <label>Cursanți cu probleme
-                    <select name="issues" multiple size="5">
-                      <% traineeNames.forEach(name => { %>
-                        <option value="<%= name %>" <%= s.issues.includes(name) ? 'selected' : '' %>><%= name %></option>
-                      <% }) %>
-                    </select>
-                  </label>
-                </div>
-                <label>Detalii probleme <textarea name="issuesDetails" rows="2"><%= s.issuesDetails || '' %></textarea></label>
-                <div class="inline-2">
-                  <label>Starea sălii <textarea name="roomState" rows="2"><%= s.roomState || '' %></textarea></label>
-                  <label>Obiecte defecte / lipsă <textarea name="brokenObjects" rows="2"><%= s.brokenObjects || '' %></textarea></label>
-                </div>
-                <div class="inline-3">
-                  <label>Cantitatea de produse
-                    <select name="productsQuantity">
-                      <option value="" <%= !s.productsQuantity ? 'selected' : '' %>>-</option>
-                      <option value="suficienta" <%= s.productsQuantity === 'suficienta' ? 'selected' : '' %>>Suficientă</option>
-                      <option value="insuficienta" <%= s.productsQuantity === 'insuficienta' ? 'selected' : '' %>>Insuficientă</option>
-                    </select>
-                  </label>
-                  <label>Media trimisă
-                    <select name="mediaSent">
-                      <option value="" <%= !s.mediaSent ? 'selected' : '' %>>-</option>
-                      <option value="da" <%= s.mediaSent === 'da' ? 'selected' : '' %>>Da</option>
-                      <option value="nu" <%= s.mediaSent === 'nu' ? 'selected' : '' %>>Nu</option>
-                    </select>
-                  </label>
-                  <label>Talentați
-                    <select name="talents" multiple size="4">
-                      <% traineeNames.forEach(name => { %>
-                        <option value="<%= name %>" <%= s.talents.includes(name) ? 'selected' : '' %>><%= name %></option>
-                      <% }) %>
-                    </select>
-                  </label>
-                </div>
-                <label>Observații <textarea name="notes" rows="2"><%= s.notes || '' %></textarea></label>
-                <button class="btn primary" type="submit">Salvează modificările</button>
-              </form>
-            </td>
-          </tr>
-        <% }) %>
-        <% if (!report.seminars.length) { %>
-          <tr><td colspan="9">Nu există seminarii completate încă.</td></tr>
+                <label>Nota
+                  <input name="note" placeholder="Optional">
+                </label>
+              </div>
+              <button class="btn small primary" type="submit">Aplica transfer</button>
+            </form>
+          </details>
         <% } %>
-      </tbody>
-    </table>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="section-title"><span class="pill">Seminarii</span><h2>Seminarii completate</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Data</th><th>Ore</th><th>Activitate</th><th>Absenti</th><th>Probleme</th><th>Talentati</th><th>Produse</th><th>Media</th><th>Actiuni</th></tr></thead>
+          <tbody>
+            <% sortedSeminars.forEach((s) => { %>
+              <tr>
+                <td><%= new Date(s.date).toLocaleDateString('ro-RO') %></td>
+                <td><%= s.startTime || '' %><%= s.endTime ? ' - ' + s.endTime : '' %></td>
+                <td><%= s.activity || '-' %></td>
+                <td><%= s.absents.join(', ') || '-' %></td>
+                <td><%= s.issues.join(', ') || '-' %><br><small><%= s.issuesDetails || '' %></small></td>
+                <td><%= s.talents.join(', ') || '-' %></td>
+                <td><%= s.productsQuantity || '-' %></td>
+                <td><%= s.mediaSent || '-' %></td>
+                <td>
+                  <div class="table-actions">
+                    <button class="btn small ghost js-toggle-admin-seminar" type="button" data-target="admin-seminar-<%= s._id %>">Modifica</button>
+                    <form action="/admin/reports/<%= report._id %>/seminars/<%= s._id %>/delete" method="post" onsubmit="return confirm('Sigur vrei sa stergi seminarul?');">
+                      <button class="btn small danger" type="submit">Sterge</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              <tr class="admin-seminar-edit-row" id="admin-seminar-<%= s._id %>">
+                <td colspan="9">
+                  <form action="/admin/reports/<%= report._id %>/seminars/<%= s._id %>/update" method="post" class="admin-seminar-edit form-grid">
+                    <div class="inline-3">
+                      <label>Data <input name="date" type="date" required value="<%= formatDateInput(s.date) %>"></label>
+                      <label>Ora inceput <input name="startTime" type="time" required value="<%= s.startTime || '' %>"></label>
+                      <label>Ora final <input name="endTime" type="time" required value="<%= s.endTime || '' %>"></label>
+                    </div>
+                    <label>Activitate desfasurata
+                      <textarea name="activity" rows="3" placeholder="Optional"><%= s.activity || '' %></textarea>
+                    </label>
+                    <div class="inline-2">
+                      <label>Absenti
+                        <select name="absents" multiple size="5">
+                          <% traineeNames.forEach(name => { %>
+                            <option value="<%= name %>" <%= s.absents.includes(name) ? 'selected' : '' %>><%= name %></option>
+                          <% }) %>
+                        </select>
+                      </label>
+                      <label>Cursanti cu probleme
+                        <select name="issues" multiple size="5">
+                          <% traineeNames.forEach(name => { %>
+                            <option value="<%= name %>" <%= s.issues.includes(name) ? 'selected' : '' %>><%= name %></option>
+                          <% }) %>
+                        </select>
+                      </label>
+                    </div>
+                    <label>Detalii probleme <textarea name="issuesDetails" rows="2"><%= s.issuesDetails || '' %></textarea></label>
+                    <div class="inline-2">
+                      <label>Starea salii <textarea name="roomState" rows="2"><%= s.roomState || '' %></textarea></label>
+                      <label>Obiecte defecte / lipsa <textarea name="brokenObjects" rows="2"><%= s.brokenObjects || '' %></textarea></label>
+                    </div>
+                    <div class="inline-3">
+                      <label>Cantitatea de produse
+                        <select name="productsQuantity">
+                          <option value="" <%= !s.productsQuantity ? 'selected' : '' %>>-</option>
+                          <option value="suficienta" <%= s.productsQuantity === 'suficienta' ? 'selected' : '' %>>Suficienta</option>
+                          <option value="insuficienta" <%= s.productsQuantity === 'insuficienta' ? 'selected' : '' %>>Insuficienta</option>
+                        </select>
+                      </label>
+                      <label>Media trimisa
+                        <select name="mediaSent">
+                          <option value="" <%= !s.mediaSent ? 'selected' : '' %>>-</option>
+                          <option value="da" <%= s.mediaSent === 'da' ? 'selected' : '' %>>Da</option>
+                          <option value="nu" <%= s.mediaSent === 'nu' ? 'selected' : '' %>>Nu</option>
+                        </select>
+                      </label>
+                      <label>Talentati
+                        <select name="talents" multiple size="4">
+                          <% traineeNames.forEach(name => { %>
+                            <option value="<%= name %>" <%= s.talents.includes(name) ? 'selected' : '' %>><%= name %></option>
+                          <% }) %>
+                        </select>
+                      </label>
+                    </div>
+                    <label>Observatii <textarea name="notes" rows="2"><%= s.notes || '' %></textarea></label>
+                    <button class="btn primary" type="submit">Salveaza modificarile</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+            <% if (!sortedSeminars.length) { %>
+              <tr><td colspan="9">Nu exista seminarii completate inca.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 </section>
 

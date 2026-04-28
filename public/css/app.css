@@ -1496,6 +1496,314 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   margin-bottom: 18px;
 }
 
+.admin-report-detail-card {
+  display: grid;
+  gap: 18px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, #fff 0%, #fffaf8 100%);
+  box-shadow: var(--shadow-sm);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  color: var(--ink-2);
+  font-weight: 700;
+}
+
+.series-detail-banner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    radial-gradient(320px 160px at 90% 20%, rgba(196, 30, 58, 0.06), transparent 70%),
+    #fff;
+}
+
+.series-detail-icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--ruby-50);
+  color: var(--ruby-600);
+  font-size: 25px;
+}
+
+.series-detail-banner h1 {
+  margin: 0 0 4px;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.series-detail-banner strong {
+  display: block;
+  color: var(--ruby-700);
+}
+
+.series-detail-banner p {
+  margin: 4px 0 0;
+  color: var(--ink-2);
+}
+
+.seminar-count-pill {
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: var(--ruby-50);
+  color: var(--ruby-600);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.compact-actions {
+  margin-top: 0;
+}
+
+.report-view-tabs {
+  display: inline-flex;
+  width: fit-content;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 12px;
+  background: var(--bg-deep);
+}
+
+.report-view-tabs button {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 16px;
+  background: transparent;
+  color: var(--ink-2);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.report-view-tabs button.active {
+  background: #fff;
+  color: var(--ruby-700);
+  box-shadow: var(--shadow-xs);
+}
+
+.admin-report-view {
+  display: none;
+}
+
+.admin-report-view.active {
+  display: grid;
+  gap: 18px;
+}
+
+.report-calendar-shell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: stretch;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255,255,255,.82);
+  box-shadow: var(--shadow-xs);
+}
+
+.calendar-nav {
+  align-self: start;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--ruby-200);
+  background: #fff;
+  color: var(--ruby-700);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.admin-calendar-month {
+  display: none;
+}
+
+.admin-calendar-month.active {
+  display: block;
+}
+
+.admin-calendar-month h3 {
+  margin: 4px 0 18px;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.admin-calendar-weekdays,
+.admin-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.admin-calendar-weekdays span {
+  padding: 8px;
+  text-align: center;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-calendar-grid {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.admin-calendar-day {
+  min-height: 58px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: rgba(255,255,255,.78);
+  color: var(--ink);
+  cursor: default;
+}
+
+.admin-calendar-day:not(.empty):nth-child(7n) {
+  border-right: 0;
+}
+
+.admin-calendar-day span {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 18px;
+}
+
+.admin-calendar-day.has-seminar {
+  cursor: pointer;
+}
+
+.admin-calendar-day.has-seminar i {
+  display: block;
+  width: 8px;
+  height: 8px;
+  margin: 6px auto 0;
+  border-radius: 999px;
+  background: var(--ruby-600);
+}
+
+.admin-calendar-day.selected {
+  background: linear-gradient(135deg, var(--ruby-500), var(--ruby-700));
+  color: #fff;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.35);
+}
+
+.admin-calendar-day.selected i {
+  background: #fff;
+}
+
+.admin-calendar-day.empty {
+  background: rgba(249,245,241,.45);
+}
+
+.admin-seminar-details-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-seminar-detail {
+  display: none;
+  border: 1px solid var(--ruby-200);
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: var(--shadow-xs);
+}
+
+.admin-seminar-detail.active {
+  display: block;
+}
+
+.admin-seminar-detail-head {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  color: var(--ruby-700);
+  font-weight: 900;
+}
+
+.detail-collapse {
+  position: absolute;
+  right: 22px;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ruby-50);
+  color: var(--ruby-700);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.admin-seminar-detail-summary {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 20px;
+  border-top: 1px solid var(--ruby-200);
+  border-bottom: 1px solid var(--ruby-200);
+  background: linear-gradient(90deg, var(--ruby-50), #fff);
+}
+
+.admin-seminar-detail-summary strong {
+  color: var(--ruby-700);
+}
+
+.admin-seminar-detail-summary p {
+  margin: 0;
+}
+
+.admin-seminar-detail-body {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  padding: 20px;
+}
+
+.admin-seminar-detail-body div {
+  min-height: 62px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-seminar-detail-body b {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--ruby-700);
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.admin-seminar-detail-body span {
+  color: var(--ink-2);
+}
+
+.admin-seminar-detail.collapsed .admin-seminar-detail-body {
+  display: none;
+}
+
 .year-strip { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .year-strip span {
   font-size: 12px;
@@ -1691,6 +1999,41 @@ tbody td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
   .table-wrap { border-radius: var(--radius-sm); }
   thead th, tbody td { padding: 10px 12px; font-size: 13px; }
+
+  .admin-report-detail-card {
+    padding: 18px;
+    border-radius: var(--radius-lg);
+  }
+  .series-detail-banner {
+    grid-template-columns: 1fr;
+    align-items: start;
+    padding: 18px;
+  }
+  .seminar-count-pill {
+    width: fit-content;
+  }
+  .report-calendar-shell {
+    grid-template-columns: 1fr;
+  }
+  .calendar-nav {
+    display: none;
+  }
+  .admin-calendar-weekdays {
+    display: none;
+  }
+  .admin-calendar-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .admin-calendar-day {
+    min-height: 64px;
+  }
+  .admin-seminar-detail-summary,
+  .admin-seminar-detail-body {
+    grid-template-columns: 1fr;
+  }
+  .detail-collapse {
+    position: static;
+  }
 
   .course-row { flex-direction: column; align-items: stretch; gap: 12px; }
   .course-row-side { width: 100%; justify-content: space-between; margin-left: 0; }

@@ -19,7 +19,47 @@ document.addEventListener('DOMContentLoaded', () => {
     return (yearValue === 'all' || year === yearValue) && (monthValue === 'all' || monthIndex === monthValue);
   };
 
+  const updateAccountingCourseOptions = () => {
+    const courseSelect = accountingFilters.course;
+    if (!courseSelect) return;
+
+    const currentValue = courseSelect.value || 'all';
+    const trainerValue = accountingFilters.trainer?.value || 'all';
+    const locationValue = accountingFilters.location?.value || 'all';
+    const yearValue = accountingFilters.year?.value || 'all';
+    const monthValue = accountingFilters.month?.value || 'all';
+    const courses = new Map();
+
+    document.querySelectorAll('[data-trainer-card]').forEach((card) => {
+      const trainerMatch = trainerValue === 'all' || card.dataset.trainerCard === trainerValue;
+      if (!trainerMatch) return;
+
+      card.querySelectorAll('[data-course-name]').forEach((row) => {
+        const courseLocation = row.dataset.courseLocation || '';
+        const locationMatch = locationValue === 'all' || courseLocation === locationValue;
+        if (!locationMatch) return;
+
+        const dayPoints = (row.dataset.coursePoints || '').split('|').filter(Boolean);
+        const count = dayPoints.filter((day) => dayMatchesFilters(day, yearValue, monthValue)).length;
+        if (!count) return;
+
+        const key = row.dataset.courseKey || row.dataset.courseName || '';
+        if (!key) return;
+        courses.set(key, row.dataset.courseName || key);
+      });
+    });
+
+    courseSelect.innerHTML = '';
+    courseSelect.append(new Option('Toate cursurile', 'all'));
+    Array.from(courses.entries())
+      .sort((a, b) => a[1].localeCompare(b[1], 'ro'))
+      .forEach(([key, name]) => courseSelect.append(new Option(name, key)));
+
+    courseSelect.value = courses.has(currentValue) ? currentValue : 'all';
+  };
+
   const updateAccounting = () => {
+    updateAccountingCourseOptions();
     const trainerValue = accountingFilters.trainer?.value || 'all';
     const locationValue = accountingFilters.location?.value || 'all';
     const courseValue = accountingFilters.course?.value || 'all';
@@ -118,6 +158,51 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filter) filter.addEventListener('change', updateAccounting);
   });
   updateAccounting();
+
+  const reportDetail = document.querySelector('[data-admin-report-detail]');
+  if (reportDetail) {
+    const viewButtons = reportDetail.querySelectorAll('[data-admin-report-view]');
+    const viewPanels = reportDetail.querySelectorAll('[data-admin-report-panel]');
+    viewButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const view = button.dataset.adminReportView;
+        viewButtons.forEach((item) => item.classList.toggle('active', item === button));
+        viewPanels.forEach((panel) => panel.classList.toggle('active', panel.dataset.adminReportPanel === view));
+      });
+    });
+
+    const monthPanels = Array.from(reportDetail.querySelectorAll('[data-admin-calendar-month]'));
+    let currentMonth = monthPanels.findIndex((panel) => panel.classList.contains('active'));
+    if (currentMonth < 0) currentMonth = 0;
+    const showMonth = (index) => {
+      if (!monthPanels.length) return;
+      currentMonth = Math.max(0, Math.min(index, monthPanels.length - 1));
+      monthPanels.forEach((panel, idx) => panel.classList.toggle('active', idx === currentMonth));
+    };
+    reportDetail.querySelector('[data-admin-calendar-prev]')?.addEventListener('click', () => showMonth(currentMonth - 1));
+    reportDetail.querySelector('[data-admin-calendar-next]')?.addEventListener('click', () => showMonth(currentMonth + 1));
+
+    reportDetail.querySelectorAll('[data-admin-seminar-select]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const id = button.dataset.adminSeminarSelect;
+        reportDetail.querySelectorAll('[data-admin-seminar-select]').forEach((item) => item.classList.toggle('selected', item === button));
+        reportDetail.querySelectorAll('[data-admin-seminar-detail]').forEach((detail) => {
+          detail.classList.toggle('active', detail.dataset.adminSeminarDetail === id);
+          detail.classList.remove('collapsed');
+        });
+        reportDetail.querySelector(`[data-admin-seminar-detail="${id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    });
+
+    reportDetail.querySelectorAll('[data-admin-detail-collapse]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const card = button.closest('[data-admin-seminar-detail]');
+        if (!card) return;
+        card.classList.toggle('collapsed');
+        button.textContent = card.classList.contains('collapsed') ? '⌄' : '⌃';
+      });
+    });
+  }
 
   document.querySelectorAll('[data-trainer-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
