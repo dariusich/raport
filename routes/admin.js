@@ -15,6 +15,15 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 *
 
 router.use(requireAdmin);
 
+function isValidAvatarData(value) {
+  return /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/i.test(String(value || ''));
+}
+
+function uploadedImageToDataUrl(file) {
+  if (!file?.buffer || !/^image\/(png|jpe?g|webp)$/i.test(file.mimetype || '')) return '';
+  return `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+}
+
 function normalizeText(value) {
   return String(value || '')
     .replace(/\r/g, '\n')
@@ -557,7 +566,7 @@ router.post('/trainers/:id/toggle', async (req, res) => {
   res.redirect('/admin#traineri');
 });
 
-router.post('/trainers/:id/update', async (req, res) => {
+router.post('/trainers/:id/update', upload.single('avatarImage'), async (req, res) => {
   const trainer = await User.findById(req.params.id);
   if (!trainer || trainer.role !== 'trainer') {
     req.session.flash = { type: 'error', message: 'Trainerul nu a fost găsit.' };
@@ -567,6 +576,10 @@ router.post('/trainers/:id/update', async (req, res) => {
   trainer.name = String(req.body.name || trainer.name).trim();
   trainer.username = String(req.body.username || trainer.username).toLowerCase().trim();
   trainer.active = req.body.active === 'true';
+  const resizedAvatar = String(req.body.avatarData || '');
+  const uploadedAvatar = uploadedImageToDataUrl(req.file);
+  if (isValidAvatarData(resizedAvatar)) trainer.avatarData = resizedAvatar;
+  else if (uploadedAvatar) trainer.avatarData = uploadedAvatar;
 
   try {
     await trainer.save();

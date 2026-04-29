@@ -3339,3 +3339,147 @@ html[data-theme="dark"] .icon-action.danger {
   border-color: transparent;
   color: #0D1420;
 }
+
+/* Trainer avatars + accounting accordion */
+.trainer-avatar-upload {
+  display: grid;
+  gap: 10px;
+}
+
+.trainer-avatar-preview,
+.trainer-avatar-accounting {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: #f7f1ee;
+  overflow: hidden;
+  display: inline-grid;
+  place-items: center;
+  box-shadow: var(--shadow-xs);
+  flex: 0 0 auto;
+}
+
+.trainer-avatar-preview::before,
+.trainer-avatar-accounting::before {
+  content: "";
+}
+
+.trainer-avatar-preview.has-image::before,
+.trainer-avatar-accounting.has-image::before {
+  display: none;
+}
+
+.trainer-avatar-preview img,
+.trainer-avatar-accounting img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.trainer-avatar-upload input[type="file"] {
+  border: 1px dashed var(--line-strong);
+  border-radius: 16px;
+  padding: 11px;
+  background: #fff;
+}
+
+.accounting-card {
+  padding: 22px;
+}
+
+.accounting-accordion-trigger {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  margin: 0;
+  padding: 0 0 6px;
+  color: var(--ink);
+}
+
+.accounting-accordion-trigger:hover .accounting-trainer-name {
+  color: var(--ruby-700);
+}
+
+.accounting-trainer-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.accounting-trainer-name {
+  font-family: var(--font-serif);
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.05;
+  transition: color .16s ease;
+}
+
+.accounting-trainer-copy small {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.accounting-accordion-body {
+  display: none;
+  padding-top: 14px;
+}
+
+.accounting-card.open .accounting-accordion-body {
+  display: grid;
+}
+
+.accounting-card.open .accounting-accordion-trigger {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.accounting-card[style*="display: none"] .accounting-accordion-body {
+  display: none;
+}
+
+.accounting-trainer-export {
+  margin-top: 16px;
+}
+
+html[data-theme="dark"] .trainer-avatar-preview,
+html[data-theme="dark"] .trainer-avatar-accounting {
+  background: #182536;
+  border-color: rgba(130, 154, 184, 0.24);
+}
+
+html[data-theme="dark"] .accounting-accordion-trigger {
+  color: #EEF4FB;
+}
+
+html[data-theme="dark"] .accounting-trainer-copy small {
+  color: #9FB0C4;
+}
+
+@media (max-width: 720px) {
+  .accounting-accordion-trigger {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .accounting-accordion-trigger > strong {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .trainer-avatar-accounting {
+    width: 62px;
+    height: 62px;
+  }
+
+  .accounting-trainer-name {
+    font-size: 21px;
+  }
+}

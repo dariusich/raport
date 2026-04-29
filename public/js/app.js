@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (visible) filteredTotal += cardVisibleTotal;
 
       const strong = card.querySelector('.accounting-head strong');
-      if (strong) strong.textContent = `${cardVisibleTotal} seminarii`;
+      if (strong) strong.textContent = `${cardVisibleTotal} ${cardVisibleTotal === 1 ? 'seminar' : 'seminarii'}`;
 
       card.querySelectorAll('.month-chip').forEach((chip) => {
         const idx = chip.dataset.monthIndex;
@@ -241,6 +241,52 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!body) return;
       const isOpen = body.classList.toggle('open');
       button.classList.toggle('open', isOpen);
+    });
+  });
+
+  document.querySelectorAll('[data-accounting-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const card = button.closest('[data-trainer-card]');
+      if (!card) return;
+      const isOpen = card.classList.toggle('open');
+      button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  });
+
+  const cropAvatarToSquare = (file, done) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const size = Math.min(image.width, image.height);
+        const sourceX = Math.max(0, Math.round((image.width - size) / 2));
+        const sourceY = Math.max(0, Math.round((image.height - size) * 0.22));
+        const canvas = document.createElement('canvas');
+        canvas.width = 360;
+        canvas.height = 360;
+        const context = canvas.getContext('2d');
+        context.drawImage(image, sourceX, sourceY, size, size, 0, 0, canvas.width, canvas.height);
+        done(canvas.toDataURL('image/jpeg', 0.86));
+      };
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  document.querySelectorAll('[data-avatar-input]').forEach((input) => {
+    input.addEventListener('change', () => {
+      const file = input.files?.[0];
+      if (!file || !file.type.startsWith('image/')) return;
+      const form = input.closest('form');
+      const hidden = form?.querySelector('[data-avatar-data]');
+      const preview = form?.querySelector('.trainer-avatar-preview');
+      cropAvatarToSquare(file, (dataUrl) => {
+        if (hidden) hidden.value = dataUrl;
+        if (preview) {
+          preview.classList.add('has-image');
+          preview.innerHTML = `<img src="${dataUrl}" alt="Avatar trainer">`;
+        }
+      });
     });
   });
 

@@ -405,7 +405,7 @@
 
               <details class="trainer-edit-box">
                 <summary>Editează trainer</summary>
-                <form action="/admin/trainers/<%= t._id %>/update" method="post" class="form-grid compact-form">
+                <form action="/admin/trainers/<%= t._id %>/update" method="post" enctype="multipart/form-data" class="form-grid compact-form trainer-avatar-form">
                   <label>Nume<input name="name" required value="<%= t.name %>"></label>
                   <label>User<input name="username" required value="<%= t.username %>"></label>
                   <label>Status
@@ -413,6 +413,16 @@
                       <option value="true" <%= t.active ? 'selected' : '' %>>Activ</option>
                       <option value="false" <%= !t.active ? 'selected' : '' %>>Inactiv</option>
                     </select>
+                  </label>
+                  <label class="trainer-avatar-upload">Incarca poza
+                    <span class="trainer-avatar-preview <%= t.avatarData ? 'has-image' : '' %>">
+                      <% if (t.avatarData) { %>
+                        <img src="<%= t.avatarData %>" alt="Avatar <%= t.name %>">
+                      <% } %>
+                    </span>
+                    <input name="avatarImage" type="file" accept="image/png,image/jpeg,image/webp" data-avatar-input>
+                    <input name="avatarData" type="hidden" data-avatar-data>
+                    <small>Poza se decupeaza automat patrat pentru avatar.</small>
                   </label>
                   <button class="btn small primary" type="submit">Salvează trainer</button>
                 </form>
@@ -462,7 +472,6 @@
         <span class="pill red">Contabilitate</span>
         <h2>Evidență lunară, anuală și calcul plată</h2>
         <p>Filtrează după trainer, filială, an și lună. Contabila vede rapid seminariile efectuate și calculează plata trainerului.</p>
-        <a class="btn small ghost excel-export-btn" href="/admin/exports/accounting.xlsx" id="accountingExportLink"><span class="excel-icon" aria-hidden="true">X</span>Export Excel</a>
       </div>
       <div class="accounting-total-box">
         <span>Total filtrat</span>
@@ -522,15 +531,20 @@
           data-location="<%= item.locations.join(',') || '' %>"
           data-total="<%= item.total %>"
           data-points="<%= dataPoints.join('|') %>">
-          <div class="accounting-head">
-            <div>
-              <h3><%= item.trainer.name %></h3>
-              <p><%= item.locations.length ? item.locations.join(', ') : 'Fără filiale alocate' %> · <%= item.reports.length %> rapoarte · <%= item.courses.length %> cursuri</p>
-            </div>
+          <button class="accounting-head accounting-accordion-trigger" type="button" data-accounting-toggle="<%= item.trainer._id %>" aria-expanded="false" aria-controls="accounting-courses-<%= item.trainer._id %>">
+            <span class="trainer-avatar-accounting <%= item.trainer.avatarData ? 'has-image' : '' %>">
+              <% if (item.trainer.avatarData) { %>
+                <img src="<%= item.trainer.avatarData %>" alt="Avatar <%= item.trainer.name %>">
+              <% } %>
+            </span>
+            <span class="accounting-trainer-copy">
+              <span class="accounting-trainer-name"><%= item.trainer.name %></span>
+              <small><%= item.locations.length ? item.locations.join(', ') : 'Fără filiale alocate' %> · <%= item.reports.length %> rapoarte · <%= item.courses.length %> cursuri</small>
+            </span>
             <strong><%= item.total %> seminarii</strong>
-          </div>
+          </button>
 
-          <div class="course-breakdown">
+          <div class="course-breakdown accounting-accordion-body" id="accounting-courses-<%= item.trainer._id %>">
             <% if (item.courses.length) { %>
               <% item.courses.forEach(course => { %>
                 <div class="course-line" data-course-key="<%= course.key %>" data-course-name="<%= course.name %>" data-course-location="<%= course.report.location || '' %>" data-course-points="<%= course.points.join('|') %>" data-course-total="<%= course.total %>">
@@ -557,9 +571,9 @@
             <% } else { %>
               <div class="course-line empty"><span>Fără cursuri cu seminarii salvate</span><strong>0 seminarii</strong></div>
             <% } %>
-          </div>
 
-          <a class="btn small ghost accounting-trainer-export excel-export-btn" href="/admin/exports/accounting.xlsx?trainer=<%= item.trainer._id %>" data-trainer-export="<%= item.trainer._id %>"><span class="excel-icon" aria-hidden="true">X</span>Export Excel</a>
+            <a class="btn small ghost accounting-trainer-export excel-export-btn" href="/admin/exports/accounting.xlsx?trainer=<%= item.trainer._id %>" data-trainer-export="<%= item.trainer._id %>"><span class="excel-icon" aria-hidden="true">X</span>Export Excel</a>
+          </div>
         </article>
       <% }) %>
     </div>

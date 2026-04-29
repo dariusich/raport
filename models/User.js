@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ['admin', 'trainer'], default: 'trainer' },
     location: { type: String, trim: true, default: '' },
     commissionPerSeminar: { type: Number, default: 0 },
+    avatarData: { type: String, default: '' },
     active: { type: Boolean, default: true },
   },
   { timestamps: true }
