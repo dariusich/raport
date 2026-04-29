@@ -53,6 +53,7 @@ router.post('/login', async (req, res) => {
     username: user.username,
     role: user.role,
     location: user.location,
+    avatarData: user.avatarData || '',
   };
 
   res.redirect(user.role === 'admin' ? '/admin' : '/trainer');

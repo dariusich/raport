@@ -53,7 +53,13 @@
       <% if (currentUser) { %>
         <div class="user-menu" data-user-menu>
           <button class="user-chip" type="button" data-user-menu-button aria-label="Utilizator logat" data-testid="user-menu-button">
-            <span class="avatar"><%= (currentUser.name || currentUser.username || 'U').trim().charAt(0).toUpperCase() %></span>
+            <span class="avatar <%= currentUser.avatarData ? 'has-image' : '' %>">
+              <% if (currentUser.avatarData) { %>
+                <img src="<%= currentUser.avatarData %>" alt="Avatar <%= currentUser.name || currentUser.username %>">
+              <% } else { %>
+                <%= (currentUser.name || currentUser.username || 'U').trim().charAt(0).toUpperCase() %>
+              <% } %>
+            </span>
             <span class="user-copy">
               <small>Logat ca</small>
               <strong><%= currentUser.name || currentUser.username %></strong>
@@ -62,7 +68,13 @@
           </button>
           <div class="user-dropdown" data-testid="user-dropdown">
             <div class="dropdown-user">
-              <span class="avatar large"><%= (currentUser.name || currentUser.username || 'U').trim().charAt(0).toUpperCase() %></span>
+              <span class="avatar large <%= currentUser.avatarData ? 'has-image' : '' %>">
+                <% if (currentUser.avatarData) { %>
+                  <img src="<%= currentUser.avatarData %>" alt="Avatar <%= currentUser.name || currentUser.username %>">
+                <% } else { %>
+                  <%= (currentUser.name || currentUser.username || 'U').trim().charAt(0).toUpperCase() %>
+                <% } %>
+              </span>
               <div>
                 <strong><%= currentUser.name || currentUser.username %></strong>
                 <small><%= currentUser.role === 'admin' ? 'Administrator' : 'Trainer' %><%= currentUser.location ? ' · ' + currentUser.location : '' %></small>
