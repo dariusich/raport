@@ -3483,3 +3483,194 @@ html[data-theme="dark"] .accounting-trainer-copy small {
     font-size: 21px;
   }
 }
+
+/* Compact report calendar */
+.report-calendar-shell {
+  padding: 22px;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(26, 16, 18, 0.08);
+}
+
+.admin-calendar-tabs {
+  gap: 12px;
+  padding: 2px 2px 14px;
+}
+
+.admin-calendar-tabs button {
+  min-width: 122px;
+  padding: 12px 16px;
+  border-radius: 16px;
+}
+
+.admin-calendar-tabs button.active {
+  background: linear-gradient(135deg, #07804e, #035f3c);
+  box-shadow: 0 16px 30px rgba(3, 95, 60, .18);
+}
+
+.admin-calendar-month h3 {
+  margin: 6px 0 14px;
+  font-size: 17px;
+}
+
+.admin-calendar-weekdays {
+  margin-bottom: 8px;
+}
+
+.admin-calendar-weekdays span {
+  padding: 5px 8px;
+  font-size: 11px;
+}
+
+.admin-calendar-grid {
+  gap: 7px;
+  padding: 12px;
+  border-radius: 20px;
+  background: rgba(249, 245, 241, .56);
+  border-color: var(--line);
+  overflow: visible;
+}
+
+.admin-calendar-day {
+  position: relative;
+  min-height: 86px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.admin-calendar-day:not(.empty):nth-child(7n) {
+  border-right: 1px solid var(--line);
+}
+
+.admin-calendar-day span {
+  width: auto;
+  height: auto;
+  margin: 0;
+  display: block;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.admin-calendar-day.has-seminar {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: var(--shadow-xs);
+}
+
+.admin-calendar-day.has-seminar::after {
+  content: "";
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #057a4b;
+}
+
+.admin-calendar-day.has-seminar:hover,
+.admin-calendar-day.selected {
+  transform: translateY(-1px);
+  border-color: rgba(5, 122, 75, .28);
+  background: linear-gradient(180deg, #fff, #f5fbf8);
+  box-shadow: 0 12px 26px rgba(3, 95, 60, .10);
+}
+
+.admin-calendar-day.has-seminar span {
+  background: transparent;
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.admin-calendar-day strong,
+.admin-calendar-day small {
+  width: 100%;
+  border-radius: 10px;
+  background: rgba(5, 122, 75, .09);
+  color: var(--ink-2);
+}
+
+.admin-calendar-day strong {
+  margin-top: 8px;
+  padding: 8px 10px 2px;
+  font-size: 11px;
+  color: #035f3c;
+}
+
+.admin-calendar-day small {
+  margin-top: -4px;
+  padding: 0 10px 9px;
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+.admin-calendar-day.empty {
+  background: rgba(255,255,255,.44);
+}
+
+.admin-seminar-detail {
+  border-color: var(--line);
+  border-radius: 18px;
+}
+
+.admin-seminar-detail-summary {
+  grid-template-columns: 140px minmax(0, 1fr) auto;
+  background: linear-gradient(90deg, rgba(5, 122, 75, .07), #fff);
+  border-color: var(--line);
+}
+
+.admin-seminar-detail-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-seminar-detail-actions form {
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .report-calendar-shell {
+    padding: 14px;
+  }
+
+  .admin-calendar-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-calendar-day {
+    min-height: 74px;
+  }
+
+  .admin-seminar-detail-actions {
+    justify-content: stretch;
+  }
+
+  .admin-seminar-detail-actions .btn,
+  .admin-seminar-detail-actions form {
+    width: 100%;
+  }
+}
+
+html[data-theme="dark"] .report-calendar-shell,
+html[data-theme="dark"] .admin-calendar-grid,
+html[data-theme="dark"] .admin-calendar-day.has-seminar,
+html[data-theme="dark"] .admin-seminar-detail-summary {
+  background: #182536;
+}
+
+html[data-theme="dark"] .admin-calendar-day strong,
+html[data-theme="dark"] .admin-calendar-day small {
+  background: rgba(45, 212, 191, .10);
+  color: #EAF2FA;
+}

@@ -131,7 +131,12 @@
             <div class="admin-seminar-detail-summary">
               <strong><%= s.startTime || '-' %><%= s.endTime ? ' - ' + s.endTime : '' %></strong>
               <p><%= s.activity || '-' %></p>
-              <small>Trainer: <%= report.trainer?.name || '-' %></small>
+              <div class="admin-seminar-detail-actions">
+                <small>Trainer: <%= report.trainer?.name || '-' %></small>
+                <form action="/admin/reports/<%= report._id %>/seminars/<%= s._id %>/delete" method="post" onsubmit="return confirm('Sigur vrei sa stergi seminarul din aceasta data?');">
+                  <button class="btn small danger" type="submit">Sterge data</button>
+                </form>
+              </div>
             </div>
             <div class="admin-seminar-detail-body">
               <div><b>Absenti</b><span><%= s.absents.join(', ') || '-' %></span></div>
