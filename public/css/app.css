@@ -4639,3 +4639,64 @@ html[data-theme="dark"] .login-panel .login-secure-note {
     margin-bottom: 22px;
   }
 }
+
+/* Final login alignment polish */
+.login-stats article {
+  background: rgba(214, 180, 170, .90);
+}
+
+.login-stats article:nth-child(3) {
+  background: rgba(232, 190, 184, .90);
+}
+
+.login-feature-row div {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  gap: 9px;
+  text-align: center;
+}
+
+.login-feature-row span {
+  grid-row: auto;
+}
+
+.login-feature-row strong {
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .login-shell {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 86px 18px 42px;
+  }
+
+  .login-shell::before {
+    inset: 0;
+    opacity: .34;
+  }
+
+  .login-shell::after {
+    background: rgba(255,255,255,.82);
+  }
+
+  .login-left-panel,
+  .login-feature-row,
+  .login-stats {
+    display: none;
+  }
+
+  .login-right-stack {
+    width: min(430px, 100%);
+    justify-self: center;
+    align-self: center;
+  }
+
+  .login-panel {
+    padding: 34px 20px 26px;
+    border-radius: 28px;
+  }
+}
