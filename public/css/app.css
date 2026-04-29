@@ -4642,13 +4642,13 @@ html[data-theme="dark"] .login-panel .login-secure-note {
 
 /* Final login alignment polish */
 .login-stats article {
-  background: rgba(255, 255, 255, .24);
+  background: rgba(255, 255, 255, .90);
   border-color: rgba(255,255,255,.58);
-  box-shadow: 0 18px 42px rgba(90, 40, 48, .12), inset 0 1px 0 rgba(255,255,255,.48);
+  box-shadow: 0 18px 42px rgba(90, 40, 48, .12), inset 0 1px 0 rgba(255,255,255,.90);
 }
 
 .login-stats article:nth-child(3) {
-  background: rgba(255, 210, 207, .30);
+  background: rgba(255, 210, 207, .90);
 }
 
 .login-feature-row div {
