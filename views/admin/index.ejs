@@ -188,6 +188,13 @@
           </select>
         </label>
       </div>
+      <div class="history-bulk-actions" data-history-bulk-actions>
+        <label class="history-select-all"><input type="checkbox" data-history-select-all> Selectează tot ce este vizibil</label>
+        <form action="/admin/activity/bulk-delete" method="post" data-history-bulk-form onsubmit="return confirm('Ștergi modificările selectate din istoric?');">
+          <input type="hidden" name="activityIds" data-history-selected-ids>
+          <button class="btn small danger" type="submit" disabled data-history-bulk-delete>Șterge selectate</button>
+        </form>
+      </div>
     <% } %>
     <div class="history-list">
       <% if (activityLogs.length) { %>
@@ -200,6 +207,7 @@
             data-category="<%= item.category || '' %>"
           >
             <div class="history-main">
+              <label class="history-check"><input type="checkbox" value="<%= item.id %>" data-history-check aria-label="Selectează modificarea"></label>
               <span class="activity-avatar"><%= item.icon %></span>
               <div>
                 <strong><%= item.title %></strong>
@@ -561,6 +569,7 @@
                         <button class="icon-action success" type="submit" title="Marchează finalizat" aria-label="Marchează finalizat">✓</button>
                       </form>
                     <% } %>
+                    <a class="icon-action excel-action" href="/admin/exports/accounting.xlsx?trainer=<%= item.trainer._id %>&course=<%= course.key %>" data-course-export data-trainer-id="<%= item.trainer._id %>" data-course-id="<%= course.key %>" title="Export Excel serie" aria-label="Export Excel serie"><span class="excel-icon" aria-hidden="true">X</span></a>
                     <form action="/admin/reports/<%= course.report._id %>/delete" method="post" onsubmit="return confirm('Sigur vrei să ștergi seria «<%= String(course.report.title || '').replace(/'/g, '&#39;') %>»? Se vor șterge și seminariile completate.');">
                       <input type="hidden" name="returnTo" value="/admin#contabilitate">
                       <button class="icon-action danger" type="submit" title="Șterge serie" aria-label="Șterge serie">×</button>

@@ -3674,3 +3674,75 @@ html[data-theme="dark"] .admin-calendar-day small {
   background: rgba(45, 212, 191, .10);
   color: #EAF2FA;
 }
+
+/* Accounting row Excel action + history bulk delete */
+.icon-action.excel-action {
+  color: #1f8f4d;
+  border-color: rgba(31, 143, 77, 0.24);
+}
+
+.icon-action.excel-action .excel-icon {
+  width: 17px;
+  height: 17px;
+  font-size: 9px;
+  box-shadow: none;
+}
+
+.history-bulk-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: -8px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255,255,255,.76);
+}
+
+.history-bulk-actions form {
+  margin: 0;
+}
+
+.history-select-all,
+.history-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.history-select-all input,
+.history-check input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--ruby-600);
+}
+
+.history-main {
+  grid-template-columns: auto 42px minmax(0, 1fr);
+}
+
+.history-check {
+  align-self: center;
+}
+
+html[data-theme="dark"] .history-bulk-actions {
+  background: rgba(255,255,255,.04);
+  border-color: rgba(130, 154, 184, 0.18);
+}
+
+@media (max-width: 720px) {
+  .history-bulk-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .history-bulk-actions .btn,
+  .history-bulk-actions form {
+    width: 100%;
+  }
+}

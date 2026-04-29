@@ -177,6 +177,20 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       link.href = `/admin/exports/accounting.xlsx?${params.toString()}`;
     });
+
+    document.querySelectorAll('[data-course-export]').forEach((link) => {
+      const params = new URLSearchParams();
+      params.set('trainer', link.dataset.trainerId);
+      params.set('course', link.dataset.courseId);
+      Object.entries({
+        location: locationValue,
+        year: yearValue,
+        month: monthValue,
+      }).forEach(([key, value]) => {
+        if (value && value !== 'all') params.set(key, value);
+      });
+      link.href = `/admin/exports/accounting.xlsx?${params.toString()}`;
+    });
   };
 
   Object.values(accountingFilters).forEach((filter) => {
@@ -351,9 +365,52 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   [historySearch, historyRoleFilter, historyCategoryFilter].forEach((field) => {
-    field?.addEventListener(field.tagName === 'INPUT' ? 'input' : 'change', updateHistoryRows);
+    field?.addEventListener(field.tagName === 'INPUT' ? 'input' : 'change', () => {
+      updateHistoryRows();
+      updateHistoryBulk();
+    });
   });
-  if (historyRows.length) updateHistoryRows();
+
+  const historyChecks = Array.from(document.querySelectorAll('[data-history-check]'));
+  const historySelectAll = document.querySelector('[data-history-select-all]');
+  const historyBulkForm = document.querySelector('[data-history-bulk-form]');
+  const historySelectedIds = document.querySelector('[data-history-selected-ids]');
+  const historyBulkDelete = document.querySelector('[data-history-bulk-delete]');
+
+  const visibleHistoryChecks = () => historyChecks.filter((check) => check.closest('[data-history-row]')?.style.display !== 'none');
+  const updateHistoryBulk = () => {
+    const selected = historyChecks.filter((check) => check.checked).map((check) => check.value);
+    if (historySelectedIds) historySelectedIds.value = selected.join(',');
+    if (historyBulkDelete) {
+      historyBulkDelete.disabled = selected.length === 0;
+      historyBulkDelete.textContent = selected.length ? `Șterge selectate (${selected.length})` : 'Șterge selectate';
+    }
+    if (historySelectAll) {
+      const visible = visibleHistoryChecks();
+      const selectedVisible = visible.filter((check) => check.checked).length;
+      historySelectAll.checked = visible.length > 0 && selectedVisible === visible.length;
+      historySelectAll.indeterminate = selectedVisible > 0 && selectedVisible < visible.length;
+    }
+  };
+
+  historyChecks.forEach((check) => check.addEventListener('change', updateHistoryBulk));
+  historySelectAll?.addEventListener('change', () => {
+    visibleHistoryChecks().forEach((check) => {
+      check.checked = historySelectAll.checked;
+    });
+    updateHistoryBulk();
+  });
+  historyBulkForm?.addEventListener('submit', (event) => {
+    updateHistoryBulk();
+    if (!historySelectedIds?.value) {
+      event.preventDefault();
+      showToast('Selectează cel puțin o modificare.', 'error');
+    }
+  });
+  if (historyRows.length) {
+    updateHistoryRows();
+    updateHistoryBulk();
+  }
 
   const tabButtons = document.querySelectorAll('[data-tab-target]');
   const tabPanels = document.querySelectorAll('.tab-panel');

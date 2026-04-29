@@ -471,6 +471,25 @@ router.get('/', async (req, res) => {
   });
 });
 
+router.post('/activity/bulk-delete', async (req, res) => {
+  const ids = String(req.body.activityIds || '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter((id) => /^[a-f\d]{24}$/i.test(id));
+
+  if (!ids.length) {
+    req.session.flash = { type: 'error', message: 'Selectează cel puțin o modificare din istoric.' };
+    return res.redirect('/admin#istoric');
+  }
+
+  const result = await ActivityLog.deleteMany({ _id: { $in: ids } });
+  req.session.flash = {
+    type: 'success',
+    message: `Am șters ${result.deletedCount || 0} ${result.deletedCount === 1 ? 'modificare' : 'modificări'} din istoric.`,
+  };
+  return res.redirect('/admin#istoric');
+});
+
 router.post('/activity/:id/delete', async (req, res) => {
   await ActivityLog.findByIdAndDelete(req.params.id);
   req.session.flash = { type: 'success', message: 'Intrarea din istoric a fost ștearsă.' };
