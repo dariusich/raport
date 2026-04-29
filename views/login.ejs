@@ -1,27 +1,97 @@
 <%- include('partials/header') %>
-<section class="login-card" data-testid="login-card">
-  <div>
-    <p class="eyebrow">platforma rapoarte</p>
-    <h1>Bine ai revenit</h1>
-    <p class="muted">Platforma interna Reflexovital pentru gestionarea rapoartelor de curs si evidenta trainerilor.</p>
-  </div>
-  <form method="post" action="/login" class="stack" data-testid="login-form">
-    <label>Utilizator
-      <input name="username" autocomplete="username" required placeholder="ex: darius.folea" data-testid="login-username">
-    </label>
-    <label>Parola
-      <input name="password" type="password" autocomplete="current-password" required placeholder="********" data-testid="login-password">
-    </label>
-    <button class="forgot-password-link" type="button" id="forgotPasswordButton">Ai uitat parola?</button>
-    <button class="btn primary full" type="submit" data-testid="login-submit">Intra in cont</button>
-    <p class="login-secure-note" aria-label="Acces securizat">
-      <span class="login-lock" aria-hidden="true"></span>
-      Acces securizat pentru administratori si traineri
-    </p>
-  </form>
-</section>
 
-<p class="login-copyright">Copyright &copy; 2026 Reflexovital. Toate drepturile rezervate.</p>
+<section class="login-shell" data-testid="login-card">
+  <button class="login-theme-button" type="button" data-theme-toggle aria-label="Schimba tema" title="Schimba tema">
+    <span data-theme-toggle-icon aria-hidden="true">☼</span>
+  </button>
+
+  <div class="login-brand">
+    <span class="login-brand-mark">R</span>
+    <span class="login-brand-divider"></span>
+    <span class="login-brand-name">Reflexovital</span>
+    <span class="login-brand-separator">·</span>
+    <span class="login-brand-academy">Academia de Cursuri</span>
+    <small>Platforma trainerilor</small>
+  </div>
+
+  <div class="login-left-panel">
+    <div class="login-network" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="login-plant" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <div class="login-device" aria-hidden="true"></div>
+
+    <div class="login-hero-copy">
+      <h1>Totul, sub<br><span>control.</span></h1>
+      <p class="login-red-line" aria-hidden="true"></p>
+      <p>Platforma ta pentru gestionarea cursurilor<br>și activităților de trainer.</p>
+    </div>
+
+    <div class="login-stats">
+      <article>
+        <small>Cursuri active</small>
+        <strong>24</strong>
+        <svg viewBox="0 0 120 42" aria-hidden="true"><path d="M4 34 L18 25 L30 28 L43 14 L56 22 L69 12 L82 18 L96 7 L112 15" /></svg>
+      </article>
+      <article>
+        <small>Seminarii programate</small>
+        <strong>120</strong>
+        <span class="login-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      </article>
+      <article>
+        <small>Progres curs</small>
+        <strong>82%</strong>
+        <span class="login-ring" aria-hidden="true"></span>
+      </article>
+    </div>
+
+    <div class="login-feature-row">
+      <div><span>▣</span><strong>Planifică</strong><small>cu ușurință</small></div>
+      <div><span>↗</span><strong>Monitorizează</strong><small>progresul</small></div>
+      <div><span>♙</span><strong>Conectează-te</strong><small>cu cursanții</small></div>
+    </div>
+
+    <p class="login-left-secure"><span>♢</span> Acces securizat. Datele tale sunt protejate.</p>
+  </div>
+
+  <section class="login-panel">
+    <div class="login-card-topline"></div>
+    <p class="login-kicker">Platforma trainerilor</p>
+    <h2>Bine ai revenit!</h2>
+    <p class="login-red-line small" aria-hidden="true"></p>
+
+    <form method="post" action="/login" class="login-form-new" data-testid="login-form">
+      <label>Email sau utilizator
+        <span class="login-input-wrap">
+          <span aria-hidden="true">♙</span>
+          <input name="username" autocomplete="username" required placeholder="ex: darius.folea" data-testid="login-username">
+        </span>
+      </label>
+
+      <label>Parolă
+        <span class="login-input-wrap">
+          <span aria-hidden="true">▢</span>
+          <input id="loginPasswordInput" name="password" type="password" autocomplete="current-password" required placeholder="••••••••••" data-testid="login-password">
+          <button class="login-eye" type="button" id="toggleLoginPassword" aria-label="Arata parola">⌧</button>
+        </span>
+      </label>
+
+      <button class="forgot-password-link login-forgot" type="button" id="forgotPasswordButton">Ai uitat parola?</button>
+      <button class="login-submit" type="submit" data-testid="login-submit">Intră în cont <span>→</span></button>
+
+      <div class="login-divider"><span>sau</span></div>
+
+      <p class="login-secure-note" aria-label="Acces securizat">
+        <span class="login-lock" aria-hidden="true"></span>
+        Acces securizat pentru traineri
+      </p>
+    </form>
+  </section>
+
+  <p class="login-copyright">© 2026 Reflexovital. Toate drepturile rezervate.</p>
+</section>
 
 <div class="password-help-modal" id="passwordHelpModal" aria-hidden="true">
   <section class="card password-help-panel" role="dialog" aria-modal="true" aria-labelledby="passwordHelpTitle">
@@ -54,5 +124,14 @@
   passwordHelpModal?.addEventListener('click', (event) => {
     if (event.target === passwordHelpModal) closePasswordHelpModal();
   });
+
+  const toggleLoginPassword = document.getElementById('toggleLoginPassword');
+  const loginPasswordInput = document.getElementById('loginPasswordInput');
+  toggleLoginPassword?.addEventListener('click', () => {
+    const show = loginPasswordInput.type === 'password';
+    loginPasswordInput.type = show ? 'text' : 'password';
+    toggleLoginPassword.textContent = show ? '◉' : '⌧';
+  });
 </script>
+
 <%- include('partials/footer') %>
