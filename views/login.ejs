@@ -40,53 +40,55 @@
     </div>
 
     <div class="login-feature-row">
-      <div><span>▣</span><strong>Planifică</strong><small>cu ușurință</small></div>
-      <div><span>↗</span><strong>Monitorizează</strong><small>progresul</small></div>
-      <div><span>♙</span><strong>Conectează-te</strong><small>cu cursanții</small></div>
+      <div><span>▣</span><strong>Planifică</strong></div>
+      <div><span>↗</span><strong>Monitorizează</strong></div>
+      <div><span>♙</span><strong>Conectează-te</strong></div>
     </div>
 
     <p class="login-left-secure"><span>♢</span> Acces securizat. Datele tale sunt protejate.</p>
   </div>
 
-  <section class="login-panel">
-    <div class="login-card-topline"></div>
-    <div class="login-panel-brand">
-      <span class="login-panel-mark">R</span>
-      <span><b>Reflexovital</b><small>Academia de Cursuri</small></span>
-    </div>
-    <p class="login-kicker">Platforma trainerilor</p>
-    <h2>Bine ai revenit!</h2>
-    <p class="login-red-line small" aria-hidden="true"></p>
+  <div class="login-right-stack">
+    <section class="login-panel">
+      <div class="login-card-topline"></div>
+      <div class="login-panel-brand">
+        <span class="login-panel-mark">R</span>
+        <span><b>Reflexovital</b><small>Academia de Cursuri</small></span>
+      </div>
+      <p class="login-kicker">Platforma trainerilor</p>
+      <h2>Bine ai revenit!</h2>
+      <p class="login-red-line small" aria-hidden="true"></p>
 
-    <form method="post" action="/login" class="login-form-new" data-testid="login-form">
-      <label>Email sau utilizator
-        <span class="login-input-wrap">
-          <span aria-hidden="true">♙</span>
-          <input name="username" autocomplete="username" required placeholder="ex: darius.folea" data-testid="login-username">
-        </span>
-      </label>
+      <form method="post" action="/login" class="login-form-new" data-testid="login-form">
+        <label>Email sau utilizator
+          <span class="login-input-wrap">
+            <span aria-hidden="true">♙</span>
+            <input name="username" autocomplete="username" required placeholder="ex: darius.folea" data-testid="login-username">
+          </span>
+        </label>
 
-      <label>Parolă
-        <span class="login-input-wrap">
-          <span aria-hidden="true">▢</span>
-          <input id="loginPasswordInput" name="password" type="password" autocomplete="current-password" required placeholder="••••••••••" data-testid="login-password">
-          <button class="login-eye" type="button" id="toggleLoginPassword" aria-label="Arata parola">⌧</button>
-        </span>
-      </label>
+        <label>Parolă
+          <span class="login-input-wrap">
+            <span aria-hidden="true">▢</span>
+            <input id="loginPasswordInput" name="password" type="password" autocomplete="current-password" required placeholder="••••••••••" data-testid="login-password">
+            <button class="login-eye" type="button" id="toggleLoginPassword" aria-label="Arata parola">⌧</button>
+          </span>
+        </label>
 
-      <button class="forgot-password-link login-forgot" type="button" id="forgotPasswordButton">Ai uitat parola?</button>
-      <button class="login-submit" type="submit" data-testid="login-submit">Intră în cont <span>→</span></button>
+        <button class="forgot-password-link login-forgot" type="button" id="forgotPasswordButton">Ai uitat parola?</button>
+        <button class="login-submit" type="submit" data-testid="login-submit">Intră în cont <span>→</span></button>
 
-      <div class="login-divider"><span>sau</span></div>
+        <div class="login-divider"><span>sau</span></div>
 
-      <p class="login-secure-note" aria-label="Acces securizat">
-        <span class="login-lock" aria-hidden="true"></span>
-        Acces securizat pentru traineri
-      </p>
-    </form>
-  </section>
+        <p class="login-secure-note" aria-label="Acces securizat">
+          <span class="login-lock" aria-hidden="true"></span>
+          Acces securizat pentru traineri
+        </p>
+      </form>
+    </section>
 
-  <p class="login-copyright">© 2026 Reflexovital. Toate drepturile rezervate.</p>
+    <p class="login-copyright">© 2026 Reflexovital. Toate drepturile rezervate.</p>
+  </div>
 </section>
 
 <div class="password-help-modal" id="passwordHelpModal" aria-hidden="true">
